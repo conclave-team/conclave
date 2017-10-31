@@ -73,14 +73,16 @@ describe("CRDT", () => {
   });
 
   describe("localInsert", () => {
-    it("creates char with value", () => {
+    it("creates char with value, counter, and position", () => {
       const siteId = 1;
       const siteClock = 1;
 
       const crdt = new CRDT(siteId);
-      const char = crdt.localInsert('A', 0);
+      const newChar = crdt.localInsert('A', 0);
 
-      expect(char.value).toBe('A');
+      expect(newChar.value).toEqual('A');
+      expect(newChar.counter).toEqual(1);
+      expect(newChar.position instanceof Array).toBe(true);
     });
 
     it("increments the local counter", () => {
@@ -90,7 +92,7 @@ describe("CRDT", () => {
       const crdt = new CRDT(siteId);
       const char = crdt.localInsert('A', 0);
 
-      expect(crdt.counter).toBe(1);
+      expect(crdt.counter).toEqual(1);
     });
   });
 
@@ -98,7 +100,7 @@ describe("CRDT", () => {
     it("returns empty text when CRDT is empty", () => {
       const siteId = 1;
       const crdt = new CRDT(siteId);
-      expect(crdt.text).toBe("");
+      expect(crdt.text).toEqual("");
     });
 
     it("returns char's value when car is added to CRDT", () => {
@@ -112,7 +114,7 @@ describe("CRDT", () => {
 
       const newLength = crdt.insertChar(char1);
 
-      expect(crdt.text).toBe("A")
+      expect(crdt.text).toEqual("A")
     });
   });
 });
@@ -126,7 +128,7 @@ describe("Identifier", () => {
       const id2 = new Identifier(2, siteId2);
 
       const comparator = id1.compareTo(id2);
-      expect(comparator).toBe(-1);
+      expect(comparator).toEqual(-1);
     });
 
     it("compares itself to an id with a smaller digit", () => {
@@ -136,7 +138,7 @@ describe("Identifier", () => {
       const id2 = new Identifier(1, siteId2);
 
       const comparator = id1.compareTo(id2);
-      expect(comparator).toBe(1);
+      expect(comparator).toEqual(1);
     });
 
     it("compares itself to an id with a larger siteId", () => {
@@ -146,7 +148,7 @@ describe("Identifier", () => {
       const id2 = new Identifier(2, siteId2);
 
       const comparator = id1.compareTo(id2);
-      expect(comparator).toBe(-1);
+      expect(comparator).toEqual(-1);
     });
 
     it("compares itself to an id with a smaller siteId", () => {
@@ -156,7 +158,7 @@ describe("Identifier", () => {
       const id2 = new Identifier(1, siteId2);
 
       const comparator = id1.compareTo(id2);
-      expect(comparator).toBe(1);
+      expect(comparator).toEqual(1);
     });
 
     it("compares itself to an id with the same digit and site", () => {
@@ -166,7 +168,7 @@ describe("Identifier", () => {
       const id2 = new Identifier(1, siteId2);
 
       const comparator = id1.compareTo(id2);
-      expect(comparator).toBe(0);
+      expect(comparator).toEqual(0);
     });
   });
 

@@ -66,9 +66,9 @@ class CRDT {
   }
 
   localInsert(val, index) {
+    this.incrementCounter();
     const newChar = this.generateChar(val, index);
     this.insertChar(newChar);
-    this.incrementCounter();
     return newChar;
   }
 
