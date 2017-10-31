@@ -1,4 +1,6 @@
-import {CRDT, Char, Identifier} from "../crdt";
+import CRDT from "../lib/crdt";
+import Identifier from '../lib/identifier';
+import Char from '../lib/char';
 
 describe("CRDT", () => {
   describe("insertChar", () => {
@@ -233,7 +235,7 @@ describe("CRDT", () => {
     });
   });
 
-  describe('remoteDelete', () => {
+  describe('deleteChar', () => {
     const siteId = 1;
     const siteClock = 1;
     const id1 = new Identifier(1, siteId);
@@ -246,7 +248,7 @@ describe("CRDT", () => {
       crdt.insertChar(char1);
       expect(crdt.length).toBe(1);
 
-      crdt.remoteDelete(char1);
+      crdt.deleteChar(char1);
       expect(crdt.length).toBe(0);
     });
 
@@ -254,7 +256,7 @@ describe("CRDT", () => {
       const crdt = new CRDT(siteId);
 
       expect(
-        () => crdt.remoteDelete(char1)
+        () => crdt.deleteChar(char1)
       ).toThrow(new Error("Character could not be found"));
     });
   });

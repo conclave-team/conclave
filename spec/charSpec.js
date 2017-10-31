@@ -1,4 +1,5 @@
-import {Char, Identifier} from "../crdt";
+import Char from '../lib/char';
+import Identifier from "../lib/identifier";
 
 describe("Char", () => {
   describe("comparePositionTo", () => {
