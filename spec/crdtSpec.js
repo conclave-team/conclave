@@ -212,4 +212,14 @@ describe("CRDT", () => {
       ).toThrow(new Error("Character could not be found"));
     });
   });
+
+  describe('incrementCounter', () => {
+    it('increments the counter of the CRDT', () => {
+      const crdt = new CRDT(1);
+
+      expect(crdt.counter).toBe(0);
+      crdt.incrementCounter();
+      expect(crdt.counter).toBe(1);
+    });
+  });
 });
