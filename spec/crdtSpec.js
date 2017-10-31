@@ -2,6 +2,8 @@ import {CRDT, Char, Identifier} from "../crdt";
 
 describe("CRDT", () => {
   describe("insertChar", () => {
+
+
     it("adds char to CRDT", () => {
       const siteId = 1;
       const siteClock = 1;
@@ -26,5 +28,9 @@ describe("CRDT", () => {
 
       expect(crdt.insertChar(char1)).toBe(1);
     });
+  });
+
+  describe('generatePosBetween', () => {
+    it('returns a position of 5 when both identifiers are blank')
   });
 });
