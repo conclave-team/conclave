@@ -1,0 +1,30 @@
+{
+  "name": "conclave",
+  "version": "1.0.0",
+  "description": "Peer-to-peer collaborative text editor",
+  "main": "index.js",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Super-NES/conclave.git"
+  },
+  "author": "Super-NES",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Super-NES/conclave/issues"
+  },
+  "homepage": "https://github.com/Super-NES/conclave#readme",
+  "dependencies": {
+    "babel-core": "^6.26.0",
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-3": "^6.24.1",
+    "express": "^4.16.2"
+  },
+  "devDependencies": {
+    "babel-register": "^6.26.0",
+    "jasmine": "^2.8.0"
+  }
+}
