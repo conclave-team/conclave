@@ -17,7 +17,29 @@ describe("CRDT", () => {
     });
   });
 
-  // describe('localInsert', () => {
-  //
-  // });
+  describe("localInsert", () => {
+    it("creates char with value", () => {
+      const siteId = 1;
+      const siteClock = 1;
+
+      const crdt = new CRDT(siteId);
+      const char = crdt.localInsert('A', 0);
+
+      expect(char.value).toBe('A');
+    });
+
+    it("increments the local counter", () => {
+      const siteId = 1;
+      const siteClock = 1;
+
+      const crdt = new CRDT(siteId);
+      const char = crdt.localInsert('A', 0);
+
+      expect(crdt.counter).toBe(1);
+    });
+  });
+
+  describe("getChar", () => {
+    it("retrieves ")
+  });
 });
