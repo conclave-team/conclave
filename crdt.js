@@ -113,7 +113,7 @@ class CRDT {
     this.incrementCounter();
     return --this.length;
   }
-//sunny
+
   remoteDelete(char) {
     const idx = this.struct.indexOf(char);
 
@@ -133,7 +133,7 @@ class CRDT {
       char1.comparePositionTo(char2)
     ));
   }
-//sunny
+
   incrementCounter() {
     this.counter++;
   }
