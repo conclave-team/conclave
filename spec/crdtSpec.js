@@ -73,14 +73,16 @@ describe("CRDT", () => {
   });
 
   describe("localInsert", () => {
-    it("creates char with value", () => {
+    it("creates char with value, counter, and position", () => {
       const siteId = 1;
       const siteClock = 1;
 
       const crdt = new CRDT(siteId);
-      const char = crdt.localInsert('A', 0);
+      const newChar = crdt.localInsert('A', 0);
 
-      expect(char.value).toBe('A');
+      expect(newChar.value).toEqual('A');
+      expect(newChar.counter).toEqual(1);
+      expect(newChar.position instanceof Array).toBe(true);
     });
 
     it("increments the local counter", () => {
@@ -90,7 +92,7 @@ describe("CRDT", () => {
       const crdt = new CRDT(siteId);
       const char = crdt.localInsert('A', 0);
 
-      expect(crdt.counter).toBe(1);
+      expect(crdt.counter).toEqual(1);
     });
   });
 
@@ -98,7 +100,7 @@ describe("CRDT", () => {
     it("returns empty text when CRDT is empty", () => {
       const siteId = 1;
       const crdt = new CRDT(siteId);
-      expect(crdt.text).toBe("");
+      expect(crdt.text).toEqual("");
     });
 
     it("returns char's value when car is added to CRDT", () => {
@@ -112,7 +114,7 @@ describe("CRDT", () => {
 
       const newLength = crdt.insertChar(char1);
 
-      expect(crdt.text).toBe("A")
+      expect(crdt.text).toEqual("A")
     });
   });
 
@@ -166,68 +168,104 @@ describe("CRDT", () => {
     const crdt = new CRDT(siteId);
 
     it('returns a position with digit 5 when both positions are empty', () => {
-     expect(
-       crdt.generatePosBetween([], [])[0].digit
-     ).toBe(5)
+      expect(
+        crdt.generatePosBetween([], [])[0].digit
+      ).toBe(5)
     });
 
     it('returns a position with digit 6 when first position digit is 2', () => {
-     const pos1 = [new Identifier(2, siteId)];
+      const pos1 = [new Identifier(2, siteId)];
 
-     expect(
-       crdt.generatePosBetween(pos1, [])[0].digit
-     ).toBe(6)
+      expect(
+        crdt.generatePosBetween(pos1, [])[0].digit
+      ).toBe(6)
     });
 
     it('returns a position with digit 4 when second position digit is 8', () => {
-     const pos2 = [new Identifier(8, siteId)];
+      const pos2 = [new Identifier(8, siteId)];
 
-     expect(
-       crdt.generatePosBetween([], pos2)[0].digit
-     ).toBe(4)
+      expect(
+        crdt.generatePosBetween([], pos2)[0].digit
+      ).toBe(4)
     });
 
     it('returns a position half way between two positions when they have a difference of 1', () => {
-     const pos1 = [new Identifier(2, siteId)];
-     const pos2 = [new Identifier(3, siteId)];
-     const newPos = crdt.generatePosBetween(pos1, pos2);
-     const combinedPositionDigits = newPos.map(id => id.digit).join('');
+      const pos1 = [new Identifier(2, siteId)];
+      const pos2 = [new Identifier(3, siteId)];
+      const newPos = crdt.generatePosBetween(pos1, pos2);
+      const combinedPositionDigits = newPos.map(id => id.digit).join('');
 
-     expect(combinedPositionDigits).toBe('25');
+      expect(combinedPositionDigits).toBe('25');
     });
 
     it('returns a position half way between two positions when they have same digits but different siteIds', () => {
-     const pos1 = [new Identifier(2, siteId)];
-     const pos2 = [new Identifier(2, siteId + 1)];
-     const newPos = crdt.generatePosBetween(pos1, pos2);
-     const combinedPositionDigits = newPos.map(id => id.digit).join('');
+      const pos1 = [new Identifier(2, siteId)];
+      const pos2 = [new Identifier(2, siteId + 1)];
+      const newPos = crdt.generatePosBetween(pos1, pos2);
+      const combinedPositionDigits = newPos.map(id => id.digit).join('');
 
-     expect(combinedPositionDigits).toBe('25');
+      expect(combinedPositionDigits).toBe('25');
     });
 
     it('returns a position halfway between two positions with multiple ids', () => {
-     const pos1 = [new Identifier(2, siteId), new Identifier(4, siteId)];
-     const pos2 = [new Identifier(2, siteId), new Identifier(8, siteId)];
-     const newPos = crdt.generatePosBetween(pos1, pos2);
-     const combinedPositionDigits = newPos.map(id => id.digit).join('');
+      const pos1 = [new Identifier(2, siteId), new Identifier(4, siteId)];
+      const pos2 = [new Identifier(2, siteId), new Identifier(8, siteId)];
+      const newPos = crdt.generatePosBetween(pos1, pos2);
+      const combinedPositionDigits = newPos.map(id => id.digit).join('');
 
-     expect(combinedPositionDigits).toBe('26');
+      expect(combinedPositionDigits).toBe('26');
     });
 
     it('generates a position even when position arrays are different lengths', () => {
-     const pos1 = [new Identifier(2, siteId), new Identifier(2, siteId), new Identifier(4, siteId)];
-     const pos2 = [new Identifier(2, siteId), new Identifier(8, siteId)];
-     const newPos = crdt.generatePosBetween(pos1, pos2);
-     const combinedPositionDigits = newPos.map(id => id.digit).join('');
+      const pos1 = [new Identifier(2, siteId), new Identifier(2, siteId), new Identifier(4, siteId)];
+      const pos2 = [new Identifier(2, siteId), new Identifier(8, siteId)];
+      const newPos = crdt.generatePosBetween(pos1, pos2);
+      const combinedPositionDigits = newPos.map(id => id.digit).join('');
 
-     expect(combinedPositionDigits).toBe('25');
+      expect(combinedPositionDigits).toBe('25');
     });
 
     it('throws a sorting error if positions are sorted incorrectly', () => {
-     const pos1 = [new Identifier(2, siteId + 1)];
-     const pos2 = [new Identifier(2, siteId)];
+      const pos1 = [new Identifier(2, siteId + 1)];
+      const pos2 = [new Identifier(2, siteId)];
 
-     expect( function(){ crdt.generatePosBetween(pos1, pos2) }).toThrow(new Error("Fix Position Sorting"));
+      expect( function(){ crdt.generatePosBetween(pos1, pos2) }).toThrow(new Error("Fix Position Sorting"));
+    });
+  });
+
+  describe('remoteDelete', () => {
+    const siteId = 1;
+    const siteClock = 1;
+    const id1 = new Identifier(1, siteId);
+    const position = [id1]
+    const char1 = new Char('A', siteClock, position);
+
+    it('removes a char from the crdt', () => {
+      const crdt = new CRDT(siteId);
+
+      crdt.insertChar(char1);
+      expect(crdt.length).toBe(1);
+
+      crdt.remoteDelete(char1);
+      expect(crdt.length).toBe(0);
+    });
+
+    it("throws error if char couldn't be found", () => {
+      const crdt = new CRDT(siteId);
+
+      expect(
+        () => crdt.remoteDelete(char1)
+      ).toThrow(new Error("Character could not be found"));
+    });
+  });
+
+  describe('incrementCounter', () => {
+    it('increments the counter of the CRDT', () => {
+      const crdt = new CRDT(1);
+
+      expect(crdt.counter).toBe(0);
+      crdt.incrementCounter();
+      expect(crdt.counter).toBe(1);
     });
   });
 });

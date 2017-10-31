@@ -66,9 +66,9 @@ class CRDT {
   }
 
   localInsert(val, index) {
+    this.incrementCounter();
     const newChar = this.generateChar(val, index);
     this.insertChar(newChar);
-    this.incrementCounter();
     return newChar;
   }
 
@@ -116,7 +116,12 @@ class CRDT {
 
   remoteDelete(char) {
     const idx = this.struct.indexOf(char);
-    this.removeChar(idx);
+
+    if (idx < 0) {
+      throw new Error("Character could not be found");
+    }
+
+    this.localDelete(idx);
   }
 
   updateText() {
