@@ -131,10 +131,6 @@ class CRDT {
     const str = this.struct.map(char => char.value).join('');
     console.log(str);
   }
-// if char1's position is < char2 then return -1
-// if char1's position is > char2 then return 1
-// // if char1's position is === char2 then return
-
 
   sortByIdentifier() {
     return this.struct.sort((char1, char2) => (
