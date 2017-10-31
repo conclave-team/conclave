@@ -91,16 +91,15 @@ class CRDT {
     } else if (id2.digit - id1.digit === 1) {
 
       newPos.push(id1);
-      this.generatePosBetween(pos1.slice(1), [], newPos);
+      return this.generatePosBetween(pos1.slice(1), [], newPos);
 
     } else if (id1.digit === id2.digit) {
-
-      if (id1.site < id2.site) {
+      if (id1.siteId < id2.siteId) {
         newPos.push(id1);
-        this.generatePosBetween(pos1.slice(1), [], newPos);
-      } else if (id1.site === id2.site) {
+        return this.generatePosBetween(pos1.slice(1), [], newPos);
+      } else if (id1.siteId === id2.siteId) {
         newPos.push(id1);
-        this.generatePosBetween(pos1.slice(1), pos2.slice(1), newPos);
+        return this.generatePosBetween(pos1.slice(1), pos2.slice(1), newPos);
       } else {
         throw new Error("Fix Position Sorting");
       }
@@ -126,7 +125,7 @@ class CRDT {
 
   print() {
     const str = this.struct.map(char => char.value).join('');
-    console.log(str);
+    return str;
   }
 
   sortByIdentifier() {
