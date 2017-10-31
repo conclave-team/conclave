@@ -1,4 +1,4 @@
-import Identifier from '../crdt';
+import Identifier from '../lib/identifier';
 
 describe("Identifier", () => {
   describe("compareTo", () => {
