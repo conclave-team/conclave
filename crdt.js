@@ -3,7 +3,7 @@ class Identifier {
     this.digit = digit;
     this.siteId = siteId;
   }
-//nitin
+
   compareTo(otherId) {
     if (this.digit < otherId.digit) {
       return -1;
@@ -27,7 +27,7 @@ class Char {
     this.counter = counter;
     this.value = value;
   }
-//el
+
   comparePositionTo(otherChar) {
     const pos1 = this.position;
     const pos2 = otherChar.position;
@@ -55,29 +55,30 @@ class CRDT {
     this.length = 0;
     this.siteId = siteId;
     this.counter = 0;
+    this.text = "";
   }
-//sunny
+
   insertChar(char) {
     this.struct.push(char);
     this.struct = this.sortByIdentifier();
+    this.updateText();
     return ++this.length;
   }
-//nitin
+
   localInsert(val, index) {
     this.incrementCounter();
     const newChar = this.generateChar(val, index);
-
     this.insertChar(newChar);
     return newChar;
   }
-//el
+
   generateChar(val, index) {
     const posBefore = (this.struct[index - 1] && this.struct[index - 1].position) || [];
     const posAfter = (this.struct[index] && this.struct[index].position) || [];
     const newPos = this.generatePosBetween(posBefore, posAfter);
     return new Char(val, this.counter, newPos);
   }
-//sunny
+
   generatePosBetween(pos1, pos2, newPos=[]) {
     let id1 = pos1[0] || new Identifier(0, this.siteId);
     let id2 = pos2[0] || new Identifier(10, this.siteId);
@@ -106,11 +107,7 @@ class CRDT {
 
     }
   }
-//nitin
-  getChar(position) {
-    return this.struct[position];
-  }
-//el
+
   localDelete(index) {
     this.struct.splice(index, 1);
     this.incrementCounter();
@@ -126,10 +123,9 @@ class CRDT {
 
     this.localDelete(idx);
   }
-//nitin
-  print() {
-    const str = this.struct.map(char => char.value).join('');
-    return str;
+
+  updateText() {
+    this.text = this.struct.map(char => char.value).join('');
   }
 
   sortByIdentifier() {
