@@ -1,7 +1,7 @@
 import {CRDT, Char, Identifier} from "../crdt";
 
 describe("CRDT", () => {
-  describe("Local Insertion", () => {
+  describe("insertChar", () => {
     it("adds char to CRDT", () => {
       const siteId = 1;
       const siteClock = 1;
@@ -11,9 +11,13 @@ describe("CRDT", () => {
       const position = [id1]
       const char1 = new Char('A', siteClock, position);
 
-      crdt.localInsert(char1);
+      const newLength = crdt.insertChar(char1);
 
-      expect(crdt.length).toBe(1);
+      expect(newLength).toBe(1);
     });
   });
+
+  // describe('localInsert', () => {
+  //
+  // });
 });

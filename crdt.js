@@ -57,22 +57,34 @@ class CRDT {
     this.counter = 0;
   }
 
-  remoteInsert(char) {
-    this.incrementCounter();
+  insertChar(char) {
     this.struct.push(char);
     this.struct = this.sortByIdentifier();
-    return this.length++;
+    return ++this.length;
   }
 
   localInsert(val, index) {
-    const posBefore = this.struct[index - 1].position;
-    const posAfter = this.struct[index].position;
-    const newPos = generatePosBetween(posBefore, posAfter);
+    this.incrementCounter();
+    const newChar = this.generateChar(val, index);
+
+    this.insertChar(newChar);
+    return newChar;
+  }
+
+  generateChar(val, index) {
+    const posBefore = (this.struct[index - 1] && this.struct[index - 1].position) || [];
+    const posAfter = (this.struct[index] && this.struct[index].position) || [];
+    const newPos = this.generatePosBetween(posBefore, posAfter);
+    return new Char(val, this.counter, newPos);
   }
 
   generatePosBetween(pos1, pos2, newPos=[]) {
     if (pos1.length === 0) {
       pos1.push(new Identifier(0, this.siteId));
+    }
+
+    if (pos2.length === 0) {
+      pos2.push(new Identifier(10, this.siteId));
     }
 
     if (pos2[0].digit - pos1[0].digit > 1) {
