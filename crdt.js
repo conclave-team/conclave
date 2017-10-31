@@ -89,7 +89,7 @@ class CRDT {
     if (pos1[0].digit === pos2[0].digit) {
       if (pos1[0].site < pos2[0].site) {
         newPos.push(pos1[0]);
-        this.generatePosBetween(pos1.slice(1), [new Identifer(10, this.siteId)], newPos);
+        this.generatePosBetween(pos1.slice(1), [new Identifier(10, this.siteId)], newPos);
       } else if (pos1[0].site === pos2[0].site) {
         newPos.push(pos1[0]);
         this.generatePosBetween(pos1.slice(1), pos2.slice(1), newPos);
@@ -135,32 +135,8 @@ class CRDT {
   }
 }
 
-
-const crdt = new CRDT();
-// crdt.insertChar("s", 0);
-// crdt.getChar(0);
-// crdt.print();
-//
-// crdt.removeChar(0);
-// crdt.print();
-
-// input = [pid, character]
-// pid (tuple) = [position, site's counter value]
-// position (list of identifier tuples) = [integer, siteId], [integer, siteId]
-// const position = [1, 2]
-// const pid = [position, 1];
-// crdt.insertChar(pid, "u");
-
-const id1 = new Identifier(1, 1);
-const id2 = new Identifier(2, 1);
-
-const char1 = new Char('A', 1, [id1]);
-const char2 = new Char('B', 2, [id2]);
-
-
-crdt.insertChar(char2);
-crdt.insertChar(char1);
-
-crdt.print();
-crdt.remoteDelete(char2);
-crdt.print();
+export {
+  CRDT,
+  Char,
+  Identifier
+}
