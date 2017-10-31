@@ -119,7 +119,12 @@ class CRDT {
 //sunny
   remoteDelete(char) {
     const idx = this.struct.indexOf(char);
-    this.removeChar(idx);
+
+    if (idx < 0) {
+      throw new Error("Character could not be found");
+    }
+
+    this.localDelete(idx);
   }
 //nitin
   print() {
