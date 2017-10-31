@@ -55,11 +55,13 @@ class CRDT {
     this.length = 0;
     this.siteId = siteId;
     this.counter = 0;
+    this.text = "";
   }
 
   insertChar(char) {
     this.struct.push(char);
     this.struct = this.sortByIdentifier();
+    this.updateText();
     return ++this.length;
   }
 
@@ -121,10 +123,8 @@ class CRDT {
     this.removeChar(idx);
   }
 
-
-  print() {
-    const str = this.struct.map(char => char.value).join('');
-    console.log(str);
+  updateText() {
+    this.text = this.struct.map(char => char.value).join('');
   }
 
   sortByIdentifier() {
