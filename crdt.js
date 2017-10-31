@@ -110,10 +110,6 @@ class CRDT {
     }
   }
 
-  getChar(position) {
-    return this.struct[position];
-  }
-
   localDelete(index) {
     this.struct.splice(index, 1);
     this.incrementCounter();
