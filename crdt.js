@@ -80,44 +80,40 @@ class CRDT {
   }
 
   generatePosBetween(pos1, pos2, newPos=[]) {
-    if (pos1.length === 0) {
-      pos1.push(new Identifier(0, this.siteId));
-    }
+    let id1 = pos1[0] || new Identifier(0, this.siteId);
+    let id2 = pos2[0] || new Identifier(10, this.siteId);
 
-    if (pos2.length === 0) {
-      pos2.push(new Identifier(10, this.siteId));
-    }
+    if (id2.digit - id1.digit > 1) {
 
-    if (pos2[0].digit - pos1[0].digit > 1) {
-      let newDigit = Math.floor((pos1[0].digit + pos2[0].digit) / 2);
+      let newDigit = Math.floor((id1.digit + id2.digit) / 2);
       newPos.push(new Identifier(newDigit, this.siteId));
       return newPos;
-    }
 
-    if (pos2[0].digit - pos1[0].digit === 1) {
-      newPos.push(pos1[0]);
-      this.generatePosBetween(pos1.slice(1), [new Identifier(10, this.siteId)], newPos);
-    }
+    } else if (id2.digit - id1.digit === 1) {
 
-    if (pos1[0].digit === pos2[0].digit) {
-      if (pos1[0].site < pos2[0].site) {
-        newPos.push(pos1[0]);
-        this.generatePosBetween(pos1.slice(1), [new Identifier(10, this.siteId)], newPos);
-      } else if (pos1[0].site === pos2[0].site) {
-        newPos.push(pos1[0]);
-        this.generatePosBetween(pos1.slice(1), pos2.slice(1), newPos);
+      newPos.push(id1);
+      return this.generatePosBetween(pos1.slice(1), [], newPos);
+
+    } else if (id1.digit === id2.digit) {
+      if (id1.siteId < id2.siteId) {
+        newPos.push(id1);
+        return this.generatePosBetween(pos1.slice(1), [], newPos);
+      } else if (id1.siteId === id2.siteId) {
+        newPos.push(id1);
+        return this.generatePosBetween(pos1.slice(1), pos2.slice(1), newPos);
       } else {
         throw new Error("Fix Position Sorting");
       }
+
     }
   }
 
   localDelete(index) {
     this.struct.splice(index, 1);
     this.incrementCounter();
-    return this.length--;
+    return --this.length;
   }
-
+//sunny
   remoteDelete(char) {
     const idx = this.struct.indexOf(char);
     this.removeChar(idx);
@@ -132,7 +128,7 @@ class CRDT {
       char1.comparePositionTo(char2)
     ));
   }
-
+//sunny
   incrementCounter() {
     this.counter++;
   }
