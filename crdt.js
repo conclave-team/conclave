@@ -3,7 +3,7 @@ class Identifier {
     this.digit = digit;
     this.siteId = siteId;
   }
-
+//nitin
   compareTo(otherId) {
     if (this.digit < otherId.digit) {
       return -1;
@@ -27,7 +27,7 @@ class Char {
     this.counter = counter;
     this.value = value;
   }
-
+//el
   comparePositionTo(otherChar) {
     const pos1 = this.position;
     const pos2 = otherChar.position;
@@ -56,13 +56,13 @@ class CRDT {
     this.siteId = siteId;
     this.counter = 0;
   }
-
+//sunny
   insertChar(char) {
     this.struct.push(char);
     this.struct = this.sortByIdentifier();
     return ++this.length;
   }
-
+//nitin
   localInsert(val, index) {
     this.incrementCounter();
     const newChar = this.generateChar(val, index);
@@ -70,14 +70,14 @@ class CRDT {
     this.insertChar(newChar);
     return newChar;
   }
-
+//el
   generateChar(val, index) {
     const posBefore = (this.struct[index - 1] && this.struct[index - 1].position) || [];
     const posAfter = (this.struct[index] && this.struct[index].position) || [];
     const newPos = this.generatePosBetween(posBefore, posAfter);
     return new Char(val, this.counter, newPos);
   }
-
+//sunny
   generatePosBetween(pos1, pos2, newPos=[]) {
     if (pos1.length === 0) {
       pos1.push(new Identifier(0, this.siteId));
@@ -110,38 +110,33 @@ class CRDT {
       }
     }
   }
-
+//nitin
   getChar(position) {
     return this.struct[position];
   }
-
+//el
   localDelete(index) {
     this.struct.splice(index, 1);
     this.incrementCounter();
-    return this.length--;
+    return --this.length;
   }
-
+//sunny
   remoteDelete(char) {
     const idx = this.struct.indexOf(char);
     this.removeChar(idx);
   }
-
-
+//nitin
   print() {
     const str = this.struct.map(char => char.value).join('');
     console.log(str);
   }
-// if char1's position is < char2 then return -1
-// if char1's position is > char2 then return 1
-// // if char1's position is === char2 then return
-
-
+//el
   sortByIdentifier() {
     return this.struct.sort((char1, char2) => (
       char1.comparePositionTo(char2)
     ));
   }
-
+//sunny
   incrementCounter() {
     this.counter++;
   }
