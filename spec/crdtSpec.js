@@ -169,27 +169,26 @@ describe("CRDT", () => {
     const siteClock = 1;
     const crdt = new CRDT(siteId);
 
-    it('returns a position between 0 and base when both arrays are empty', () => {
-      const newPos = crdt.generatePosBetween([], [])[0].digit;
-      expect(newPos >= 0 && newPos < crdt.base).toBeTruthy();
+    it('returns a position with digit in (1...boundary) when both arrays are empty', () => {
+      const digit = crdt.generatePosBetween([], [])[0].digit;
+
+      expect(digit > 0 && digit <= crdt.boundary).toBeTruthy();
     });
 
-    // it('returns a position with digit 6 when first position digit is 2', () => {
-    //   const pos1 = [new Identifier(2, siteId)];
-    //
-    //   expect(
-    //     crdt.generatePosBetween(pos1, [])[0].digit
-    //   ).toBe(6)
-    // });
-    //
-    // it('returns a position with digit 4 when second position digit is 8', () => {
-    //   const pos2 = [new Identifier(8, siteId)];
-    //
-    //   expect(
-    //     crdt.generatePosBetween([], pos2)[0].digit
-    //   ).toBe(4)
-    // });
-    //
+    it('returns a position with digit in (3..7) when first position digit is 2', () => {
+      const pos1 = [new Identifier(2, siteId)];
+      const digit = crdt.generatePosBetween(pos1, [])[0].digit
+
+      expect(digit > 2 && digit <= (2 + crdt.boundary)).toBeTruthy();
+    });
+
+    it('returns a position with digit in (1..2) when second position digit is 3', () => {
+      const pos2 = [new Identifier(3, siteId)];
+      const digit = crdt.generatePosBetween([], pos2)[0].digit;
+
+      expect(digit > 0 && digit < 3).toBeTruthy();
+    });
+
     // it('returns a position half way between two positions when they have a difference of 1', () => {
     //   const pos1 = [new Identifier(2, siteId)];
     //   const pos2 = [new Identifier(3, siteId)];
