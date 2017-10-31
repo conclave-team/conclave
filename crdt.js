@@ -71,10 +71,6 @@ class CRDT {
   }
 
   generatePosBetween(pos1, pos2, newPos=[]) {
-    if (pos1.length === 0 && pos2.length === 0) {
-      // all digits are the same, must compare sites ?
-    }
-
     if (pos1.length === 0) {
       pos1.push(new Identifier(0, this.siteId));
     }
@@ -87,29 +83,20 @@ class CRDT {
 
     if (pos2[0].digit - pos1[0].digit === 1) {
       newPos.push(pos1[0]);
-      this.generatePosBetween(pos1.slice(1), [new Identifier(9, this.siteId)], newPos);
+      this.generatePosBetween(pos1.slice(1), [new Identifier(10, this.siteId)], newPos);
     }
 
     if (pos1[0].digit === pos2[0].digit) {
-      newPos.push(pos1[0]);
-      this.generatePosBetween(pos1.slice(1), pos2.slice(1), newPos);
+      if (pos1[0].site < pos2[0].site) {
+        newPos.push(pos1[0]);
+        this.generatePosBetween(pos1.slice(1), [new Identifer(10, this.siteId)], newPos);
+      } else if (pos1[0].site === pos2[0].site) {
+        newPos.push(pos1[0]);
+        this.generatePosBetween(pos1.slice(1), pos2.slice(1), newPos);
+      } else {
+        throw new Error("Fix Position Sorting");
+      }
     }
-  }
-
-    // if (pos1[0] !== pos2[0]) {
-    //   pos1Num = pos1.map(id => id.digit);
-    //   pos2Num = pos2.map(id => id.digit);
-    //   //head digits are different
-    // } else {
-    //   if (pos1[0].siteId < pos2[0].siteId) {
-    //     //head digits are the same, sites are different
-    //   } else if (pos1[0].siteId === pos2[0].siteId) {
-    //     //head digits and sites are the same
-    //     this.generatePosBetween(pos1.slice())
-    //   } else {
-    //     throw new Error("invalid site ordering");
-    //   }
-    // }
   }
 
   getChar(position) {
