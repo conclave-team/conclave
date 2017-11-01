@@ -1,0 +1,14 @@
+doctype html
+html(lang="en")
+  head
+    title='PeerJS'
+  body
+    h1(id='myId') Peer Link:
+    textarea(id='idText') Enter the peer id you would like to connect with
+    button(id='connect') Connect
+    h2(id='peerId') I am connected to peer(s):
+    textarea(id='dataText') type data to send here
+    button(id='send') Send
+    h3(id='received') Received data:
+    script(src="http://cdn.peerjs.com/0.3/peer.min.js")
+    script(src='js/app.js')
