@@ -164,6 +164,30 @@ describe("CRDT", () => {
     });
   });
 
+  describe("allocateId", () => {
+    const crdt = new CRDT(1);
+
+    it("returns a digit in (..) when strategy is + and boundary < distance", () => {
+      const digit = crdt.allocateId(1, 9, true);
+      expect(digit > 1 && digit <= 6).toBeTruthy();
+    });
+
+    it("returns a digit in (..) when strategy is + and boundary > distance", () => {
+      const digit = crdt.allocateId(1, 4, true);
+      expect(digit > 1 && digit < 4).toBeTruthy();
+    });
+
+    it("returns a digit in (..) when strategy is - and boundary < distance", () => {
+      const digit = crdt.allocateId(1, 9, false);
+      expect(digit >= 4 && digit < 9).toBeTruthy();
+    });
+
+    it("returns a digit in (..) when strategy is - and boundary > distance", () => {
+      const digit = crdt.allocateId(1, 4, false);
+      expect(digit > 1 && digit < 4).toBeTruthy();
+    });
+  });
+
   describe('generatePosBetween', () => {
     const siteId = 1;
     const siteClock = 1;
