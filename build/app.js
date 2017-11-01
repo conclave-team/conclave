@@ -15,7 +15,8 @@ var editor = new _editor2.default((0, _jquery2.default)('#write'));
 editor.$editor.keydown(function (e) {
   var char = e.key;
   var index = (0, _jquery2.default)(e.target).val().length;
-  editor.model.localInsert(char, index);
+  var charObj = editor.model.localInsert(char, index);
+  console.log(index, charObj);
 
   (0, _jquery2.default)('#read').val(editor.model.text);
 });

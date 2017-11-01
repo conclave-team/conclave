@@ -62,7 +62,7 @@ var CRDT = function () {
     key: 'boundaryPositive',
     value: function boundaryPositive(min, max) {
       max = min + Math.min(this.boundary, max - min);
-      return Math.random() * (max - min) + min;
+      return Math.floor(Math.random() * (max - min) + min);
     }
   }, {
     key: 'generatePosBetween',

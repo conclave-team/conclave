@@ -22,7 +22,6 @@ var Char = function () {
     value: function comparePositionTo(otherChar) {
       var pos1 = this.position;
       var pos2 = otherChar.position;
-      debugger;
       for (var i = 0; i < Math.min(pos1.length, pos2.length); i++) {
         var comp = pos1[i].compareTo(pos2[i]);
 

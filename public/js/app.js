@@ -16,7 +16,8 @@ var editor = new _editor2.default((0, _jquery2.default)('#write'));
 editor.$editor.keydown(function (e) {
   var char = e.key;
   var index = (0, _jquery2.default)(e.target).val().length;
-  editor.model.localInsert(char, index);
+  var charObj = editor.model.localInsert(char, index);
+  console.log(index, charObj);
 
   (0, _jquery2.default)('#read').val(editor.model.text);
 });
@@ -45,7 +46,6 @@ var Char = function () {
     value: function comparePositionTo(otherChar) {
       var pos1 = this.position;
       var pos2 = otherChar.position;
-      debugger;
       for (var i = 0; i < Math.min(pos1.length, pos2.length); i++) {
         var comp = pos1[i].compareTo(pos2[i]);
 
@@ -133,7 +133,7 @@ var CRDT = function () {
     key: 'boundaryPositive',
     value: function boundaryPositive(min, max) {
       max = min + Math.min(this.boundary, max - min);
-      return Math.random() * (max - min) + min;
+      return Math.floor(Math.random() * (max - min) + min);
     }
   }, {
     key: 'generatePosBetween',
