@@ -300,13 +300,14 @@ var Editor = function (_EventEmitter) {
   _createClass(Editor, [{
     key: 'bindEvents',
     value: function bindEvents() {
-      this.localInsertEvt();
-      this.localDeleteEvt();
+      this.charInsertEvt();
+      this.specialInsertEvt();
+      this.deleteEvt();
       this.remoteChangeEvt();
     }
   }, {
-    key: 'localInsertEvt',
-    value: function localInsertEvt() {
+    key: 'charInsertEvt',
+    value: function charInsertEvt() {
       var _this2 = this;
 
       var textbox = _Rx2.default.Observable.fromEvent(this.editor, 'keydown');
@@ -322,9 +323,26 @@ var Editor = function (_EventEmitter) {
       });
     }
   }, {
-    key: 'localDeleteEvt',
-    value: function localDeleteEvt() {
+    key: 'specialInsertEvt',
+    value: function specialInsertEvt() {
       var _this3 = this;
+
+      var textbox = _Rx2.default.Observable.fromEvent(this.editor, 'keydown');
+
+      textbox.filter(function (e) {
+        return e.key.match(/(Enter|Tab)/);
+      }).subscribe(function (e) {
+        var char = e.key === 'Enter' ? '\n' : '\t';
+        var index = e.target.value.length;
+        var insertedChar = _this3.model.localInsert(char, index);
+
+        _this3.emit('localInsert', insertedChar);
+      });
+    }
+  }, {
+    key: 'deleteEvt',
+    value: function deleteEvt() {
+      var _this4 = this;
 
       var textbox = _Rx2.default.Observable.fromEvent(this.editor, 'keydown');
 
@@ -332,18 +350,18 @@ var Editor = function (_EventEmitter) {
         return e.key === 'Backspace';
       }).subscribe(function (e) {
         var index = e.target.value.length - 1;
-        var deletedChar = _this3.model.localDelete(index);
+        var deletedChar = _this4.model.localDelete(index);
 
-        _this3.emit('localDelete', deletedChar);
+        _this4.emit('localDelete', deletedChar);
       });
     }
   }, {
     key: 'remoteChangeEvt',
     value: function remoteChangeEvt() {
-      var _this4 = this;
+      var _this5 = this;
 
       this.model.on('remoteChange', function () {
-        _this4.editor.value = _this4.model.text;
+        _this5.editor.value = _this5.model.text;
       });
     }
   }]);
