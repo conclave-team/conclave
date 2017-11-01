@@ -7,7 +7,7 @@
     "test": "jasmine",
     "start": "npm run build && npm run compile && babel-node app.js",
     "build": "babel lib -d build",
-    "compile": "browserify build/editor.js -o build/editor-compiled.js"
+    "compile": "browserify build/app.js -o public/js/app.js"
   },
   "repository": {
     "type": "git",
@@ -26,6 +26,7 @@
     "babel-preset-stage-3": "^6.24.1",
     "browserify": "^14.5.0",
     "express": "^4.16.2",
+    "jquery": "^3.2.1",
     "pug": "^2.0.0-rc.4"
   },
   "devDependencies": {
