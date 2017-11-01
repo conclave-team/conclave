@@ -21,6 +21,11 @@ editor1.on('localDelete', function (char) {
   editor2.model.deleteChar(char);
 });
 
+<<<<<<< HEAD
 editor2.on('localDelete', function (char) {
   editor1.model.deleteChar(char);
 });
+=======
+  (0, _jquery2.default)('#read').val(editor.model.text);
+});
+>>>>>>> 6a904cfba4b7162f89d7dcc34dc9c54278304a0b
