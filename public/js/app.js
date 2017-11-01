@@ -161,7 +161,7 @@ var CRDT = function () {
       var positive = level % 2 === 0 ? true : false;
 
       var id1 = pos1[0] || new _identifier2.default(0, this.siteId);
-      var id2 = pos2[0] || new _identifier2.default(this.base, this.siteId);
+      var id2 = pos2[0] || new _identifier2.default(base, this.siteId);
 
       if (id2.digit - id1.digit > 1) {
 
