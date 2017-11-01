@@ -1,14 +1,19 @@
 doctype html
 html(lang="en")
   head
-    title='PeerJS'
+    title='Conclave'
+    link(rel='stylesheet' href='css/style.css')
   body
-    h1(id='myId') Peer Link:
-    textarea(id='idText') Enter the peer id you would like to connect with
-    button(id='connect') Connect
-    h2(id='peerId') I am connected to peer(s):
-    textarea(id='dataText') type data to send here
-    button(id='send') Send
-    h3(id='received') Received data:
-    script(src="http://cdn.peerjs.com/0.3/peer.min.js")
+    h1 Hello World
+    .write-text
+      h3 Editor One
+      textarea(row='10' col='20' id='edit-1')
+    .read-text
+      h3 Editor Two
+      textarea(row='10' col='20' id='edit-2')
+    script(
+      src="https://code.jquery.com/jquery-3.2.1.min.js"
+      integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+      crossorigin="anonymous"
+    )
     script(src='js/app.js')
