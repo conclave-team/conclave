@@ -144,10 +144,16 @@ describe("CRDT", () => {
       expect(crdt.counter).toEqual(oldCounter + 1);
     });
 
-    it("decreases the crdt's length property and returns it", () => {
+    it("decreases the crdt's length property", () => {
       const oldLength = crdt.length;
-      const newLength = crdt.localDelete(0);
+      crdt.localDelete(0);
+      const newLength = crdt.length;
       expect(newLength).toEqual(oldLength - 1);
+    });
+
+    it("returns char object", () => {
+      const charObj = crdt.localDelete(0);
+      expect(charObj).toEqual(a);
     });
   });
 

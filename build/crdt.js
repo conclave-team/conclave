@@ -14,32 +14,52 @@ var _char = require('./char');
 
 var _char2 = _interopRequireDefault(_char);
 
+var _events = require('events');
+
+var _events2 = _interopRequireDefault(_events);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var CRDT = function () {
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var CRDT = function (_EventEmitter) {
+  _inherits(CRDT, _EventEmitter);
+
   function CRDT(peerId) {
     var base = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 16;
     var boundary = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 5;
 
     _classCallCheck(this, CRDT);
 
-    this.struct = [];
-    this.length = 0;
-    this.siteId = peerId;
-    this.counter = 0;
-    this.text = "";
-    this.base = base;
-    this.boundary = boundary;
+    var _this = _possibleConstructorReturn(this, (CRDT.__proto__ || Object.getPrototypeOf(CRDT)).call(this));
+
+    _this.struct = [];
+    _this.length = 0;
+    _this.siteId = peerId;
+    _this.counter = 0;
+    _this.text = "";
+    _this.base = base;
+    _this.boundary = boundary;
+    return _this;
   }
 
   _createClass(CRDT, [{
     key: 'insertChar',
     value: function insertChar(char) {
+      this.insert(char);
+      this.emit('remoteChange');
+    }
+  }, {
+    key: 'insert',
+    value: function insert(char) {
       this.struct.push(char);
       this.struct = this.sortByIdentifier();
       this.updateText();
+
       return ++this.length;
     }
   }, {
@@ -47,7 +67,7 @@ var CRDT = function () {
     value: function localInsert(val, index) {
       this.incrementCounter();
       var newChar = this.generateChar(val, index);
-      this.insertChar(newChar);
+      this.insert(newChar);
       return newChar;
     }
   }, {
@@ -111,10 +131,7 @@ var CRDT = function () {
   }, {
     key: 'localDelete',
     value: function localDelete(index) {
-      this.struct.splice(index, 1);
-      this.incrementCounter();
-      this.updateText();
-      return --this.length;
+      return this.delete(index);
     }
   }, {
     key: 'deleteChar',
@@ -124,8 +141,17 @@ var CRDT = function () {
       if (idx < 0) {
         throw new Error("Character could not be found");
       }
-
-      this.localDelete(idx);
+      this.delete(idx);
+      this.emit('remoteChange');
+    }
+  }, {
+    key: 'delete',
+    value: function _delete(index) {
+      var char = this.struct.splice(index, 1);
+      this.incrementCounter();
+      this.updateText();
+      --this.length;
+      return char[0];
     }
   }, {
     key: 'updateText',
@@ -149,6 +175,6 @@ var CRDT = function () {
   }]);
 
   return CRDT;
-}();
+}(_events2.default);
 
 exports.default = CRDT;

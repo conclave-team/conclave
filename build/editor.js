@@ -10,52 +10,89 @@ var _crdt = require('./crdt');
 
 var _crdt2 = _interopRequireDefault(_crdt);
 
+var _Rx = require('rxjs/Rx');
+
+var _Rx2 = _interopRequireDefault(_Rx);
+
+var _events = require('events');
+
+var _events2 = _interopRequireDefault(_events);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Editor = function () {
-  function Editor($editor) {
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Editor = function (_EventEmitter) {
+  _inherits(Editor, _EventEmitter);
+
+  function Editor(editor) {
     _classCallCheck(this, Editor);
 
-    this.$editor = $editor;
-    this.model = new _crdt2.default(10);
+    var _this = _possibleConstructorReturn(this, (Editor.__proto__ || Object.getPrototypeOf(Editor)).call(this));
 
-    // this.bindEvents();
+    _this.editor = editor;
+    _this.model = new _crdt2.default(Math.floor(Math.random() * 100));
+
+    _this.bindEvents();
+    return _this;
   }
 
   _createClass(Editor, [{
     key: 'bindEvents',
     value: function bindEvents() {
-      this.keyDownEvt();
+      this.localInsertEvt();
+      this.localDeleteEvt();
+      this.remoteChangeEvt();
     }
   }, {
-    key: 'keyDownEvt',
-    value: function keyDownEvt() {
-      var _this = this;
+    key: 'localInsertEvt',
+    value: function localInsertEvt() {
+      var _this2 = this;
 
-      var self = this;
+      var textbox = _Rx2.default.Observable.fromEvent(this.editor, 'keydown');
 
-      this.$editor.keydown(function (e) {
+      textbox.filter(function (e) {
+        return e.key.match(/^(\w|\W)$/);
+      }).subscribe(function (e) {
         var char = e.key;
-        var index = void 0;
+        var index = e.target.value.length;
+        var insertedChar = _this2.model.localInsert(char, index);
 
-        if (char === 'backspace' || !char.match(/^(\w|\W)$/)) {
-          return false;
-        }
+        _this2.emit('localInsert', insertedChar);
+      });
+    }
+  }, {
+    key: 'localDeleteEvt',
+    value: function localDeleteEvt() {
+      var _this3 = this;
 
-        if (char === 'backspace') {
-          index = self.$editor.val().length - 1;
-          return _this.model.localDelete(index);
-        } else {
-          index = self.$editor.val().length;
-          return _this.model.localInsert(char, index);
-        }
+      var textbox = _Rx2.default.Observable.fromEvent(this.editor, 'keydown');
+
+      textbox.filter(function (e) {
+        return e.key === 'Backspace';
+      }).subscribe(function (e) {
+        var index = e.target.value.length - 1;
+        var deletedChar = _this3.model.localDelete(index);
+
+        _this3.emit('localDelete', deletedChar);
+      });
+    }
+  }, {
+    key: 'remoteChangeEvt',
+    value: function remoteChangeEvt() {
+      var _this4 = this;
+
+      this.model.on('remoteChange', function () {
+        _this4.editor.value = _this4.model.text;
       });
     }
   }]);
 
   return Editor;
-}();
+}(_events2.default);
 
 exports.default = Editor;

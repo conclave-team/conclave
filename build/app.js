@@ -4,33 +4,23 @@ var _editor = require('./editor');
 
 var _editor2 = _interopRequireDefault(_editor);
 
-var _jquery = require('jquery');
-
-var _jquery2 = _interopRequireDefault(_jquery);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var editor = new _editor2.default((0, _jquery2.default)('#write'));
+var editor1 = new _editor2.default(document.querySelector('#edit-1'));
+var editor2 = new _editor2.default(document.querySelector('#edit-2'));
 
-editor.$editor.keydown(function (e) {
-  var char = e.key;
-  var index = void 0,
-      charObj = void 0;
+editor1.on('localInsert', function (char) {
+  editor2.model.insertChar(char);
+});
 
-  if (char !== 'Backspace' && !char.match(/^(\w|\W)$/)) {
-    return false;
-  }
+editor2.on('localInsert', function (char) {
+  editor1.model.insertChar(char);
+});
 
-  if (char === 'Backspace') {
+editor1.on('localDelete', function (char) {
+  editor2.model.deleteChar(char);
+});
 
-    index = editor.$editor.val().length - 1;
-    charObj = editor.model.localDelete(index);
-  } else {
-
-    index = editor.$editor.val().length;
-    charObj = editor.model.localInsert(char, index);
-  }
-
-  console.log(index, charObj);
-  (0, _jquery2.default)('#read').val(editor.model.text);
+editor2.on('localDelete', function (char) {
+  editor1.model.deleteChar(char);
 });
