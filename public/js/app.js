@@ -15,6 +15,11 @@ var editor = new _editor2.default((0, _jquery2.default)('#write'));
 
 editor.$editor.keydown(function (e) {
   var char = e.key;
+
+  if (!char.match(/^(\w|\W)$/)) {
+    return false;
+  }
+
   var index = (0, _jquery2.default)(e.target).val().length;
   var charObj = editor.model.localInsert(char, index);
   console.log(index, charObj);
@@ -91,7 +96,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var CRDT = function () {
   function CRDT(peerId) {
-    var base = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 10;
+    var base = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 16;
     var boundary = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 5;
 
     _classCallCheck(this, CRDT);
@@ -130,35 +135,50 @@ var CRDT = function () {
       return new _char2.default(val, this.counter, newPos);
     }
   }, {
-    key: 'boundaryPositive',
-    value: function boundaryPositive(min, max) {
-      max = min + Math.min(this.boundary, max - min);
-      return Math.floor(Math.random() * (max - min) + min);
+    key: 'allocateId',
+    value: function allocateId(min, max, positive) {
+      if (positive) {
+        min = min + 1;
+        if (this.boundary < max - min - 1) {
+          max = min + this.boundary;
+        }
+      } else {
+        if (this.boundary < max - min) {
+          min = max - this.boundary;
+        } else {
+          min = min + 1;
+        }
+      }
+      return Math.floor(Math.random() * (max - min)) + min;
     }
   }, {
     key: 'generatePosBetween',
     value: function generatePosBetween(pos1, pos2) {
       var newPos = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+      var level = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+
+      var base = Math.pow(2, level) * this.base;
+      var positive = level % 2 === 0 ? true : false;
 
       var id1 = pos1[0] || new _identifier2.default(0, this.siteId);
       var id2 = pos2[0] || new _identifier2.default(this.base, this.siteId);
 
       if (id2.digit - id1.digit > 1) {
 
-        var newDigit = this.boundaryPositive(id1.digit, id2.digit);
+        var newDigit = this.allocateId(id1.digit, id2.digit, positive);
         newPos.push(new _identifier2.default(newDigit, this.siteId));
         return newPos;
       } else if (id2.digit - id1.digit === 1) {
 
         newPos.push(id1);
-        return this.generatePosBetween(pos1.slice(1), [], newPos);
+        return this.generatePosBetween(pos1.slice(1), [], newPos, level + 1);
       } else if (id1.digit === id2.digit) {
         if (id1.siteId < id2.siteId) {
           newPos.push(id1);
-          return this.generatePosBetween(pos1.slice(1), [], newPos);
+          return this.generatePosBetween(pos1.slice(1), [], newPos, level + 1);
         } else if (id1.siteId === id2.siteId) {
           newPos.push(id1);
-          return this.generatePosBetween(pos1.slice(1), pos2.slice(1), newPos);
+          return this.generatePosBetween(pos1.slice(1), pos2.slice(1), newPos, level + 1);
         } else {
           throw new Error("Fix Position Sorting");
         }

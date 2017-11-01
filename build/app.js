@@ -14,6 +14,11 @@ var editor = new _editor2.default((0, _jquery2.default)('#write'));
 
 editor.$editor.keydown(function (e) {
   var char = e.key;
+
+  if (!char.match(/^(\w|\W)$/)) {
+    return false;
+  }
+
   var index = (0, _jquery2.default)(e.target).val().length;
   var charObj = editor.model.localInsert(char, index);
   console.log(index, charObj);
