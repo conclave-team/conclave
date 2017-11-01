@@ -14,14 +14,23 @@ var editor = new _editor2.default((0, _jquery2.default)('#write'));
 
 editor.$editor.keydown(function (e) {
   var char = e.key;
+  var index = void 0,
+      charObj = void 0;
 
-  if (!char.match(/^(\w|\W)$/)) {
+  if (char !== 'Backspace' && !char.match(/^(\w|\W)$/)) {
     return false;
   }
 
-  var index = (0, _jquery2.default)(e.target).val().length;
-  var charObj = editor.model.localInsert(char, index);
-  console.log(index, charObj);
+  if (char === 'Backspace') {
 
+    index = editor.$editor.val().length - 1;
+    charObj = editor.model.localDelete(index);
+  } else {
+
+    index = editor.$editor.val().length;
+    charObj = editor.model.localInsert(char, index);
+  }
+
+  console.log(index, charObj);
   (0, _jquery2.default)('#read').val(editor.model.text);
 });
