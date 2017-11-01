@@ -1,1 +1,4 @@
 /node_modules
+/public/js
+/build
+package-lock.json
