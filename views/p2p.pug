@@ -1,0 +1,18 @@
+doctype html
+html(lang="en")
+  head
+    title='Conclave'
+  body
+    h1 Conclave Chat
+    textarea(id='dataText')
+    button(id='send') Send
+    p Sharing Link:
+      a(id='myLink')
+    p(id='peerId') Connected peers:
+    h3 Messages Sent:
+    ul(id='sent')
+    h3 Messages Received:
+    ul(id='received')
+    script.
+      const peerId = '!{id}'
+    script(src='js/app.js')
