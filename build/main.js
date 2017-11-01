@@ -15,20 +15,14 @@ var conns = [];
 
 peer.on('open', function (id) {
   var sharingLink = 'http://localhost:3000/?id=' + id;
-  var aTag = document.getElementById('myLink');
-  aTag.append(sharingLink);
-  aTag.setAttribute('href', sharingLink);
+  document.getElementById('myId').append(sharingLink);
 });
 
 if (peerId != 0) {
   var conn = peer.connect(peerId);
   conns.push(conn);
-
-  var node = document.createElement('LI');
-  node.appendChild(document.createTextNode(conn.peer));
-  document.getElementById('peerId').appendChild(node);
-
   console.log('Connected to peer: ', conn);
+  document.getElementById('peerId').append(conn.peer, ', ');
 }
 
 document.getElementById('send').onclick = function () {
@@ -48,10 +42,8 @@ peer.on('connection', function (connection) {
     connection.on('open', function () {
       var conn = peer.connect(Object.keys(peer.connections)[0]);
       conns.push(conn);
-
-      var node = document.createElement('LI');
-      node.appendChild(document.createTextNode(conn.peer));
-      document.getElementById('peerId').appendChild(node);
+      console.log('Connected to peer: ', conn);
+      document.getElementById('peerId').append(conn.peer, ', ');
     });
   }
 
