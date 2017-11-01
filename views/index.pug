@@ -1,0 +1,21 @@
+doctype html
+html(lang="en")
+  head
+    title='Conclave'
+    link(rel='stylesheet' href='css/style.css')
+  body
+    h1 Hello World
+    .write-text
+      h3 Write here
+      textarea(row='10' col='20' id='write')
+    .read-text
+      h3 Read here
+      textarea(row='10' col='20' id='read')
+    script(
+      src="https://code.jquery.com/jquery-3.2.1.min.js"
+      integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+      crossorigin="anonymous"
+    )
+    script(src='editor-compiled.js')
+    script.
+      const editor = new Editor($('#write'))
