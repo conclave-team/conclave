@@ -189,41 +189,41 @@ describe("CRDT", () => {
       expect(digit > 0 && digit < 3).toBeTruthy();
     });
 
-    // it('returns a position half way between two positions when they have a difference of 1', () => {
-    //   const pos1 = [new Identifier(2, siteId)];
-    //   const pos2 = [new Identifier(3, siteId)];
-    //   const newPos = crdt.generatePosBetween(pos1, pos2);
-    //   const combinedPositionDigits = newPos.map(id => id.digit).join('');
-    //
-    //   expect(combinedPositionDigits).toBe('25');
-    // });
-    //
-    // it('returns a position half way between two positions when they have same digits but different siteIds', () => {
-    //   const pos1 = [new Identifier(2, siteId)];
-    //   const pos2 = [new Identifier(2, siteId + 1)];
-    //   const newPos = crdt.generatePosBetween(pos1, pos2);
-    //   const combinedPositionDigits = newPos.map(id => id.digit).join('');
-    //
-    //   expect(combinedPositionDigits).toBe('25');
-    // });
-    //
-    // it('returns a position halfway between two positions with multiple ids', () => {
-    //   const pos1 = [new Identifier(2, siteId), new Identifier(4, siteId)];
-    //   const pos2 = [new Identifier(2, siteId), new Identifier(8, siteId)];
-    //   const newPos = crdt.generatePosBetween(pos1, pos2);
-    //   const combinedPositionDigits = newPos.map(id => id.digit).join('');
-    //
-    //   expect(combinedPositionDigits).toBe('26');
-    // });
-    //
-    // it('generates a position even when position arrays are different lengths', () => {
-    //   const pos1 = [new Identifier(2, siteId), new Identifier(2, siteId), new Identifier(4, siteId)];
-    //   const pos2 = [new Identifier(2, siteId), new Identifier(8, siteId)];
-    //   const newPos = crdt.generatePosBetween(pos1, pos2);
-    //   const combinedPositionDigits = newPos.map(id => id.digit).join('');
-    //
-    //   expect(combinedPositionDigits).toBe('25');
-    // });
+    it('returns a position with second digit in (27..31) when two positions have a difference of 1', () => {
+      const pos1 = [new Identifier(2, siteId)];
+      const pos2 = [new Identifier(3, siteId)];
+      const newPos = crdt.generatePosBetween(pos1, pos2);
+      const combinedPositionDigits = +newPos.map(id => id.digit).join('');
+
+      expect(combinedPositionDigits > 226 && combinedPositionDigits < 232).toBeTruthy();
+    });
+
+    it('returns a position with second digit in (27) when same positions but different siteIds', () => {
+      const pos1 = [new Identifier(2, siteId)];
+      const pos2 = [new Identifier(2, siteId + 1)];
+      const newPos = crdt.generatePosBetween(pos1, pos2);
+      const combinedPositionDigits = newPos.map(id => id.digit).join('');
+
+      expect(combinedPositionDigits > 226 && combinedPositionDigits < 232).toBeTruthy();
+    });
+
+    it('returns a position between two positions with multiple ids', () => {
+      const pos1 = [new Identifier(2, siteId), new Identifier(4, siteId)];
+      const pos2 = [new Identifier(2, siteId), new Identifier(8, siteId)];
+      const newPos = crdt.generatePosBetween(pos1, pos2);
+      const combinedPositionDigits = +newPos.map(id => id.digit).join('');
+
+      expect(combinedPositionDigits > 24 && combinedPositionDigits < 28).toBeTruthy();
+    });
+
+    it('generates a position even when position arrays are different lengths', () => {
+      const pos1 = [new Identifier(2, siteId), new Identifier(2, siteId), new Identifier(4, siteId)];
+      const pos2 = [new Identifier(2, siteId), new Identifier(8, siteId)];
+      const newPos = crdt.generatePosBetween(pos1, pos2);
+      const combinedPositionDigits = +newPos.map(id => id.digit).join('');
+
+      expect(combinedPositionDigits > 22 && combinedPositionDigits < 28).toBeTruthy();
+    });
 
     it('throws a sorting error if positions are sorted incorrectly', () => {
       const pos1 = [new Identifier(2, siteId + 1)];
