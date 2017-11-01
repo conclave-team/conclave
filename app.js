@@ -7,8 +7,9 @@ app.set('views', './views');
 app.set('view engine', 'pug');
 
 app.get('/', function (req, res) {
-  const id = req.query.id ? req.query.id : 0;
-  res.render('p2p', { id: id });
+  // const id = req.query.id ? req.query.id : 0;
+  // res.render('p2p', { id: id });
+  res.render('index');
 });
 
 app.listen(3000, function () {

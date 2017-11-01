@@ -3,17 +3,10 @@ html(lang="en")
   head
     title='Conclave'
     link(rel='stylesheet' href='css/style.css')
+    link(rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css")
   body
     h1 Hello World
     .write-text
       h3 Editor One
       textarea(row='10' col='20' id='edit-1')
-    .read-text
-      h3 Editor Two
-      textarea(row='10' col='20' id='edit-2')
-    script(
-      src="https://code.jquery.com/jquery-3.2.1.min.js"
-      integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-      crossorigin="anonymous"
-    )
-    script(src='js/app.js')
+    script(src='js/bundle.js')

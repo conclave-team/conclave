@@ -18,6 +18,10 @@ var _events = require('events');
 
 var _events2 = _interopRequireDefault(_events);
 
+var _simplemde = require('simplemde');
+
+var _simplemde2 = _interopRequireDefault(_simplemde);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -34,7 +38,15 @@ var Editor = function (_EventEmitter) {
 
     var _this = _possibleConstructorReturn(this, (Editor.__proto__ || Object.getPrototypeOf(Editor)).call(this));
 
-    _this.editor = editor;
+    _this.editor = new _simplemde2.default({
+      autoDownloadFontAwesome: false,
+      autofocus: true,
+      element: editor,
+      initialValue: '',
+      spellChecker: false,
+      status: false,
+      toolbar: false
+    });
     _this.model = new _crdt2.default(Math.floor(Math.random() * 100));
 
     _this.bindEvents();

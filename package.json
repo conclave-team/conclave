@@ -2,12 +2,12 @@
   "name": "conclave",
   "version": "1.0.0",
   "description": "Peer-to-peer collaborative text editor",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "jasmine",
     "start": "npm run build && npm run compile && babel-node app.js",
     "build": "babel lib -d build",
-    "compile": "browserify build/app.js -o public/js/app.js"
+    "compile": "browserify build/main.js -o public/js/bundle.js"
   },
   "repository": {
     "type": "git",
@@ -27,9 +27,10 @@
     "browserify": "^14.5.0",
     "express": "^4.16.2",
     "jquery": "^3.2.1",
-    "rxjs": "^5.5.2",
     "peerjs": "^0.3.14",
-    "pug": "^2.0.0-rc.4"
+    "pug": "^2.0.0-rc.4",
+    "rxjs": "^5.5.2",
+    "simplemde": "^1.11.2"
   },
   "devDependencies": {
     "babel-register": "^6.26.0",

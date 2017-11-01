@@ -79,10 +79,21 @@ var CRDT = function (_EventEmitter) {
       return new _char2.default(val, this.counter, newPos);
     }
   }, {
-    key: 'boundaryPositive',
-    value: function boundaryPositive(min, max) {
-      max = min + Math.min(this.boundary, max - min);
-      return Math.random() * (max - min) + min;
+    key: 'allocateId',
+    value: function allocateId(min, max, positive) {
+      if (positive) {
+        min = min + 1;
+        if (this.boundary < max - min - 1) {
+          max = min + this.boundary;
+        }
+      } else {
+        if (this.boundary < max - min) {
+          min = max - this.boundary;
+        } else {
+          min = min + 1;
+        }
+      }
+      return Math.floor(Math.random() * (max - min)) + min;
     }
   }, {
     key: 'generatePosBetween',
