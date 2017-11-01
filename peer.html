@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>PeerJS</title>
+  </head>
+
+  <body>
+    <h1 id="myId">Peer Link: </h1>
+    <textarea id="idText">Enter the peer id you would like to connect with</textarea>
+    <button id="connect">Connect</button>
+    <br />
+    <h2 id="peerId">I am connected to peer(s): </h2>
+    <textarea id="dataText">type data to send here</textarea>
+    <button id="send">Send</button>
+    <h3>Received data:</h3>
+    <br />
+    <p id="received"></p>
+    <script src="http://cdn.peerjs.com/0.3/peer.min.js"></script>
+    <script src="./peer.js"></script>
+  </body>
+</html>
