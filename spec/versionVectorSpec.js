@@ -51,25 +51,25 @@ describe("VersionVector", () => {
     });
   });
 
-  describe('compareFunction', () => {
+  describe('comparator', () => {
     const vector1 = new VersionVector(10);
     const vector2 = new VersionVector(20);
 
     it('returns -1 if first vector site is less than second', () => {
-      const vec1 = vector1.local;
-      const vec2 = vector2.local;
-      expect(vector1.compareFunction(vec1, vec2)).toBe(-1);
+      const ver1 = vector1.local;
+      const ver2 = vector2.local;
+      expect(vector1.comparator(ver1, ver2)).toBe(-1);
     });
 
     it('returns 1 if first vector site is greater than second', () => {
-      const vec1 = vector1.local;
-      const vec2 = vector2.local;
-      expect(vector1.compareFunction(vec2, vec1)).toBe(1);
+      const ver1 = vector1.local;
+      const ver2 = vector2.local;
+      expect(vector1.comparator(ver2, ver1)).toBe(1);
     });
 
     it('returns 0 if first vector site is same as second', () => {
-      const vec1 = vector1.local;
-      expect(vector1.compareFunction(vec1, vec1)).toBe(0);
+      const ver1 = vector1.local;
+      expect(vector1.comparator(ver1, ver1)).toBe(0);
     });
   });
 });
