@@ -1,9 +1,9 @@
-.read-text {
+.right-text {
   float: right;
   width: 45%;
 }
 
-.write-text {
+.left-text {
   float: left;
   width: 45%;
 }

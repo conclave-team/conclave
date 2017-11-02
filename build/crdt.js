@@ -14,61 +14,83 @@ var _char = require('./char');
 
 var _char2 = _interopRequireDefault(_char);
 
-var _events = require('events');
-
-var _events2 = _interopRequireDefault(_events);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var CRDT = function (_EventEmitter) {
-  _inherits(CRDT, _EventEmitter);
-
-  function CRDT(peerId) {
-    var base = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 16;
-    var boundary = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 5;
+var CRDT = function () {
+  function CRDT(peerId, editor) {
+    var base = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 16;
+    var boundary = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 5;
 
     _classCallCheck(this, CRDT);
 
-    var _this = _possibleConstructorReturn(this, (CRDT.__proto__ || Object.getPrototypeOf(CRDT)).call(this));
-
-    _this.struct = [];
-    _this.length = 0;
-    _this.siteId = peerId;
-    _this.counter = 0;
-    _this.text = "";
-    _this.base = base;
-    _this.boundary = boundary;
-    return _this;
+    this.struct = [];
+    this.length = 0;
+    this.siteId = peerId;
+    this.counter = 0;
+    this.text = "";
+    this.base = base;
+    this.boundary = boundary;
+    this.conns = [];
+    this.editor = editor;
   }
 
   _createClass(CRDT, [{
-    key: 'insertChar',
-    value: function insertChar(char) {
-      this.insert(char);
-      this.emit('remoteChange');
-    }
-  }, {
-    key: 'insert',
-    value: function insert(char) {
-      this.struct.push(char);
-      this.struct = this.sortByIdentifier();
-      this.updateText();
-
-      return ++this.length;
-    }
-  }, {
     key: 'localInsert',
     value: function localInsert(val, index) {
       this.incrementCounter();
       var newChar = this.generateChar(val, index);
-      this.insert(newChar);
+      this.insertAndRelay(newChar);
       return newChar;
+    }
+    // also called when peer.on("data", insert char data)
+
+  }, {
+    key: 'insertAndRelay',
+    value: function insertAndRelay(char) {
+      this.struct.push(char);
+      this.struct = this.sortByIdentifier();
+      this.updateText();
+      this.editor.updateView();
+      this.broadcastInsertion(char);
+      return ++this.length;
+    }
+  }, {
+    key: 'broadcastInsertion',
+    value: function broadcastInsertion(char) {
+      // something like peer.send(char data) for each connection
+      this.conns[0] && this.conns[0].insertAndRelay(char);
+    }
+  }, {
+    key: 'localDelete',
+    value: function localDelete(index) {
+      this.incrementCounter();
+      var deletedChar = this.struct[index];
+      this.deleteAndRelay(deletedChar);
+      return deletedChar;
+    }
+    // also called when peer.on("data", char object)
+
+  }, {
+    key: 'deleteAndRelay',
+    value: function deleteAndRelay(char) {
+      var idx = this.struct.indexOf(char);
+      if (idx < 0) {
+        throw new Error("Character could not be found");
+      }
+
+      this.struct.splice(idx, 1);
+      this.updateText();
+      this.editor.updateView();
+      this.broadcastDeletion(char);
+      return --this.length;
+    }
+  }, {
+    key: 'broadcastDeletion',
+    value: function broadcastDeletion(char) {
+      // something like peer.send(delete char) for each connection
+      this.conns[0] && this.conns[0].deleteAndRelay(char);
     }
   }, {
     key: 'generateChar',
@@ -77,23 +99,6 @@ var CRDT = function (_EventEmitter) {
       var posAfter = this.struct[index] && this.struct[index].position || [];
       var newPos = this.generatePosBetween(posBefore, posAfter);
       return new _char2.default(val, this.counter, newPos);
-    }
-  }, {
-    key: 'allocateId',
-    value: function allocateId(min, max, positive) {
-      if (positive) {
-        min = min + 1;
-        if (this.boundary < max - min - 1) {
-          max = min + this.boundary;
-        }
-      } else {
-        if (this.boundary < max - min) {
-          min = max - this.boundary;
-        } else {
-          min = min + 1;
-        }
-      }
-      return Math.floor(Math.random() * (max - min)) + min;
     }
   }, {
     key: 'generatePosBetween',
@@ -129,29 +134,21 @@ var CRDT = function (_EventEmitter) {
       }
     }
   }, {
-    key: 'localDelete',
-    value: function localDelete(index) {
-      return this.delete(index);
-    }
-  }, {
-    key: 'deleteChar',
-    value: function deleteChar(char) {
-      var idx = this.struct.indexOf(char);
-
-      if (idx < 0) {
-        throw new Error("Character could not be found");
+    key: 'allocateId',
+    value: function allocateId(min, max, positive) {
+      if (positive) {
+        min = min + 1;
+        if (this.boundary < max - min - 1) {
+          max = min + this.boundary;
+        }
+      } else {
+        if (this.boundary < max - min) {
+          min = max - this.boundary;
+        } else {
+          min = min + 1;
+        }
       }
-      this.delete(idx);
-      this.emit('remoteChange');
-    }
-  }, {
-    key: 'delete',
-    value: function _delete(index) {
-      var char = this.struct.splice(index, 1);
-      this.incrementCounter();
-      this.updateText();
-      --this.length;
-      return char[0];
+      return Math.floor(Math.random() * (max - min)) + min;
     }
   }, {
     key: 'updateText',
@@ -175,6 +172,6 @@ var CRDT = function (_EventEmitter) {
   }]);
 
   return CRDT;
-}(_events2.default);
+}();
 
 exports.default = CRDT;
