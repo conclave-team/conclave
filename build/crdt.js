@@ -19,21 +19,19 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var CRDT = function () {
-  function CRDT(peerId, editor) {
-    var base = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 16;
-    var boundary = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 5;
+  function CRDT(controller) {
+    var base = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 16;
+    var boundary = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 5;
 
     _classCallCheck(this, CRDT);
 
+    this.controller = controller;
     this.struct = [];
-    this.length = 0;
-    this.siteId = peerId;
+    this.siteId = controller.siteId;
     this.counter = 0;
     this.text = "";
     this.base = base;
     this.boundary = boundary;
-    this.conns = [];
-    this.editor = editor;
   }
 
   _createClass(CRDT, [{
@@ -44,24 +42,19 @@ var CRDT = function () {
       this.insertChar(newChar);
       return newChar;
     }
-
-    // also called when peer.on("data", insert char data)
-
   }, {
     key: 'insertChar',
     value: function insertChar(char) {
       this.broadcastInsert(char);
       this.struct.push(char);
-      this.length++;
       this.struct = this.sortByIdentifier();
       this.updateText();
-      // this.editor.updateView();
+      this.controller.updateEditor();
     }
   }, {
     key: 'broadcastInsert',
     value: function broadcastInsert(char) {
-      // something like peer.send(char data) for each connection
-      this.conns[0] && this.conns[0].insertChar(char);
+      this.controller.broadcastInsertion(JSON.stringify(char));
     }
   }, {
     key: 'handleLocalDelete',
@@ -71,9 +64,6 @@ var CRDT = function () {
       this.deleteChar(deletedChar);
       return deletedChar;
     }
-
-    // also called when peer.on("data", char object)
-
   }, {
     key: 'deleteChar',
     value: function deleteChar(char) {
@@ -85,15 +75,13 @@ var CRDT = function () {
       }
 
       this.struct.splice(idx, 1);
-      this.length--;
       this.updateText();
-      // this.editor.updateView();
+      this.controller.updateEditor();
     }
   }, {
     key: 'broadcastDelete',
     value: function broadcastDelete(char) {
-      // something like peer.send(delete char) for each connection
-      this.conns[0] && this.conns[0].deleteChar(char);
+      this.controller.broadcastDeletion(JSON.stringify(char));
     }
   }, {
     key: 'generateChar',

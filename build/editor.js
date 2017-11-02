@@ -19,36 +19,42 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Editor = function () {
-  function Editor(peerId) {
+  function Editor(controller) {
     _classCallCheck(this, Editor);
 
+    this.controller = controller;
     this.mde = new _simplemde2.default({
       placeholder: 'Type here...',
       spellChecker: false,
       toolbar: false
     });
-    this.crdt = new _crdt2.default(peerId, this);
-    //    this.bindChangeEvent();
   }
 
-  // bindChangeEvent() {
-  //   this.mde.codemirror.on("change", (self, changeObj) => {
-  //     const idx = this.findLinearIdx(changeObj.from.line, changeObj.from.ch);
-  //
-  //     if (changeObj.origin === "+input") {
-  //       const char = changeObj.text.length > 1 ? '\n' : changeObj.text
-  //       this.crdt.localInsert(char, idx);
-  //     } else if (changeObj.origin === "+delete") {
-  //       this.crdt.localDelete(idx);
-  //     }
-  //   });
-  // }
-
   _createClass(Editor, [{
+    key: 'bindChangeEvent',
+    value: function bindChangeEvent() {
+      var _this = this;
+
+      this.mde.codemirror.on("change", function (_, changeObj) {
+        var idx = _this.findLinearIdx(changeObj.from.line, changeObj.from.ch);
+        var changedChar = void 0;
+        var insertion = void 0;
+
+        if (changeObj.origin === "+input") {
+          var char = changeObj.text.length > 1 ? '\n' : changeObj.text;
+          changedChar = _this.controller.handleInsert(char, idx);
+          _this.controller.broadcastInsertion(JSON.stringify(changedChar));
+        } else if (changeObj.origin === "+delete") {
+          changedChar = _this.controller.handleDelete(idx);
+          _this.controller.broadcastDeletion(JSON.stringify(changedChar));
+        }
+      });
+    }
+  }, {
     key: 'updateView',
-    value: function updateView() {
+    value: function updateView(newText) {
       var cursor = this.mde.codemirror.getCursor();
-      this.mde.value(this.crdt.text);
+      this.mde.value(newText);
       this.mde.codemirror.setCursor(cursor);
     }
   }, {
@@ -62,61 +68,6 @@ var Editor = function () {
 
       return index + chIdx;
     }
-
-    //    this.bindEvents();
-    // }
-    //
-    // bindEvents() {
-    //   this.charInsertEvt();
-    //   this.specialInsertEvt();
-    //   this.deleteEvt();
-    //   this.remoteChangeEvt();
-    // }
-    //
-    // charInsertEvt() {
-    //     const textbox = Rx.Observable.fromEvent(this.editor, 'keydown');
-    //
-    //     textbox.filter(e => e.key.match(/^(\w|\W)$/))
-    //            .subscribe(e => {
-    //              const char = e.key;
-    //              const index = e.target.value.length;
-    //              const insertedChar = this.model.localInsert(char, index)
-    //
-    //              this.emit('localInsert', insertedChar);
-    //            });
-    // }
-    //
-    // specialInsertEvt() {
-    //     const textbox = Rx.Observable.fromEvent(this.editor, 'keydown');
-    //
-    //     textbox.filter(e => e.key.match(/(Enter|Tab)/))
-    //            .subscribe(e => {
-    //              const char = e.key === 'Enter' ? '\n' : '\t';
-    //              const index = e.target.value.length;
-    //              const insertedChar = this.model.localInsert(char, index)
-    //
-    //              this.emit('localInsert', insertedChar);
-    //            });
-    // }
-    //
-    // deleteEvt() {
-    //     const textbox = Rx.Observable.fromEvent(this.editor, 'keydown');
-    //
-    //     textbox.filter(e => e.key === 'Backspace')
-    //            .subscribe(e => {
-    //              const index = e.target.value.length - 1;
-    //              const deletedChar = this.model.localDelete(index);
-    //
-    //              this.emit('localDelete', deletedChar);
-    //            });
-    // }
-    //
-    // remoteChangeEvt() {
-    //     this.model.on('remoteChange', () => {
-    //       this.editor.value = this.model.text;
-    //     });
-    //  }
-
   }]);
 
   return Editor;
