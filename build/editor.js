@@ -28,26 +28,23 @@ var Editor = function () {
       toolbar: false
     });
     this.crdt = new _crdt2.default(peerId, this);
-    this.bindChangeEvent();
+    //    this.bindChangeEvent();
   }
 
-  _createClass(Editor, [{
-    key: 'bindChangeEvent',
-    value: function bindChangeEvent() {
-      var _this = this;
+  // bindChangeEvent() {
+  //   this.mde.codemirror.on("change", (self, changeObj) => {
+  //     const idx = this.findLinearIdx(changeObj.from.line, changeObj.from.ch);
+  //
+  //     if (changeObj.origin === "+input") {
+  //       const char = changeObj.text.length > 1 ? '\n' : changeObj.text
+  //       this.crdt.localInsert(char, idx);
+  //     } else if (changeObj.origin === "+delete") {
+  //       this.crdt.localDelete(idx);
+  //     }
+  //   });
+  // }
 
-      this.mde.codemirror.on("change", function (self, changeObj) {
-        var idx = _this.findLinearIdx(changeObj.from.line, changeObj.from.ch);
-        console.log(changeObj);
-        if (changeObj.origin === "+input") {
-          var char = changeObj.text.length > 1 ? '\n' : changeObj.text;
-          _this.crdt.localInsert(char, idx);
-        } else if (changeObj.origin === "+delete") {
-          _this.crdt.localDelete(idx);
-        }
-      });
-    }
-  }, {
+  _createClass(Editor, [{
     key: 'updateView',
     value: function updateView() {
       var cursor = this.mde.codemirror.getCursor();

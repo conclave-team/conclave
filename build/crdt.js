@@ -37,60 +37,63 @@ var CRDT = function () {
   }
 
   _createClass(CRDT, [{
-    key: 'localInsert',
-    value: function localInsert(val, index) {
-      this.incrementCounter();
+    key: 'handleLocalInsert',
+    value: function handleLocalInsert(val, index) {
       var newChar = this.generateChar(val, index);
-      this.insertAndRelay(newChar);
+      this.incrementCounter();
+      this.insertChar(newChar);
       return newChar;
     }
+
     // also called when peer.on("data", insert char data)
 
   }, {
-    key: 'insertAndRelay',
-    value: function insertAndRelay(char) {
+    key: 'insertChar',
+    value: function insertChar(char) {
+      this.broadcastInsert(char);
       this.struct.push(char);
+      this.length++;
       this.struct = this.sortByIdentifier();
       this.updateText();
-      this.editor.updateView();
-      this.broadcastInsertion(char);
-      return ++this.length;
+      // this.editor.updateView();
     }
   }, {
-    key: 'broadcastInsertion',
-    value: function broadcastInsertion(char) {
+    key: 'broadcastInsert',
+    value: function broadcastInsert(char) {
       // something like peer.send(char data) for each connection
-      this.conns[0] && this.conns[0].insertAndRelay(char);
+      this.conns[0] && this.conns[0].insertChar(char);
     }
   }, {
-    key: 'localDelete',
-    value: function localDelete(index) {
-      this.incrementCounter();
+    key: 'handleLocalDelete',
+    value: function handleLocalDelete(index) {
       var deletedChar = this.struct[index];
-      this.deleteAndRelay(deletedChar);
+      this.incrementCounter();
+      this.deleteChar(deletedChar);
       return deletedChar;
     }
+
     // also called when peer.on("data", char object)
 
   }, {
-    key: 'deleteAndRelay',
-    value: function deleteAndRelay(char) {
+    key: 'deleteChar',
+    value: function deleteChar(char) {
+      this.broadcastDelete(char);
+
       var idx = this.struct.indexOf(char);
       if (idx < 0) {
         throw new Error("Character could not be found");
       }
 
       this.struct.splice(idx, 1);
+      this.length--;
       this.updateText();
-      this.editor.updateView();
-      this.broadcastDeletion(char);
-      return --this.length;
+      // this.editor.updateView();
     }
   }, {
-    key: 'broadcastDeletion',
-    value: function broadcastDeletion(char) {
+    key: 'broadcastDelete',
+    value: function broadcastDelete(char) {
       // something like peer.send(delete char) for each connection
-      this.conns[0] && this.conns[0].deleteAndRelay(char);
+      this.conns[0] && this.conns[0].deleteChar(char);
     }
   }, {
     key: 'generateChar',
