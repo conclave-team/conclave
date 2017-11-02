@@ -38,7 +38,7 @@ var Editor = function () {
 
       this.mde.codemirror.on("change", function (self, changeObj) {
         var idx = _this.findLinearIdx(changeObj.from.line, changeObj.from.ch);
-
+        console.log(changeObj);
         if (changeObj.origin === "+input") {
           var char = changeObj.text.length > 1 ? '\n' : changeObj.text;
           _this.crdt.localInsert(char, idx);
