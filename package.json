@@ -7,7 +7,7 @@
     "test": "jasmine",
     "start": "npm run build && npm run compile && babel-node app.js",
     "build": "babel lib -d build",
-    "compile": "browserify build/main.js -o public/js/bundle.js"
+    "compile": "browserify build/controller.js -o public/js/bundle.js"
   },
   "repository": {
     "type": "git",
