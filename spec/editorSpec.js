@@ -1,6 +1,6 @@
 import { JSDOM } from 'jsdom';
 
-import Editor from '../lib/editor';
+//import Editor from '../lib/editor';
 //import CRDT from '../lib/crdt';
 //import SimpleMDE from 'simplemde';
 
