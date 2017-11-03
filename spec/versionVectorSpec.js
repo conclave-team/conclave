@@ -13,6 +13,10 @@ describe("VersionVector", () => {
     });
   });
 
+  describe('increment', () => {
+    
+  });
+
   describe('update', () => {
     it('increments the version if the entry exists in the all arr', () => {
       const vector = new VersionVector(10);
