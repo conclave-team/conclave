@@ -20,13 +20,16 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var Editor = function () {
   function Editor(controller) {
+    var initialText = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "";
+
     _classCallCheck(this, Editor);
 
     this.controller = controller;
     this.mde = new _simplemde2.default({
       placeholder: 'Type here...',
       spellChecker: false,
-      toolbar: false
+      toolbar: false,
+      initialValue: initialText
     });
   }
 
@@ -37,8 +40,6 @@ var Editor = function () {
 
       this.mde.codemirror.on("change", function (_, changeObj) {
         var idx = _this.findLinearIdx(changeObj.from.line, changeObj.from.ch);
-        var changedChar = void 0;
-        var insertion = void 0;
 
         if (changeObj.origin === "+input") {
           var char = changeObj.text.length > 1 ? '\n' : changeObj.text;
