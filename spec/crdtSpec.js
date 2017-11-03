@@ -5,10 +5,10 @@ import Char from '../lib/char';
 describe("CRDT", () => {
   describe("insertChar", () => {
     const siteId = 1;
-    const siteClock = 1;
+    const siteCounter = 1;
     const id1 = new Identifier(1, siteId);
     const position = [id1]
-    const char1 = new Char('A', siteClock, position);
+    const char1 = new Char('A', siteCounter, position);
 
     it("adds char to CRDT", () => {
       const crdt = new CRDT(siteId);
@@ -17,12 +17,6 @@ describe("CRDT", () => {
 
       crdt.insertChar(char1);
       expect(crdt.length).toBe(1);
-    });
-
-    it("returns new length of the CRDT", () => {
-      const crdt = new CRDT(siteId);
-
-      expect(crdt.insertChar(char1)).toBe(1);
     });
 
     it('does not increment counter', () => {
@@ -34,7 +28,7 @@ describe("CRDT", () => {
 
     it("Sorts the chars correctly", () => {
       const crdt = new CRDT(siteId);
-      const char2 = new Char('B', siteClock + 1, [new Identifier(0, 0), new Identifier(5, 0)]);
+      const char2 = new Char('B', siteCounter + 1, [new Identifier(0, 0), new Identifier(5, 0)]);
 
       crdt.insertChar(char1);
       crdt.insertChar(char2);
@@ -74,53 +68,56 @@ describe("CRDT", () => {
     })
   });
 
-  describe("localInsert", () => {
-    it("creates char with value, counter, and position", () => {
-      const siteId = 1;
-      const siteClock = 1;
+  describe("handleLocalInsert", () => {
+    let crdt;
 
-      const crdt = new CRDT(siteId);
-      const newChar = crdt.localInsert('A', 0);
-
-      expect(newChar.value).toEqual('A');
-      expect(newChar.counter).toEqual(1);
-      expect(newChar.position instanceof Array).toBe(true);
+    beforeEach(() => {
+      const siteId = 25;
+      crdt = new CRDT(siteId);
     });
 
     it("increments the local counter", () => {
-      const siteId = 1;
-      const siteClock = 1;
+      expect(crdt.counter).toEqual(0);
 
-      const crdt = new CRDT(siteId);
-      const char = crdt.localInsert('A', 0);
+      crdt.handleLocalInsert('A', 0);
 
       expect(crdt.counter).toEqual(1);
+    });
+
+    it("adds char to CRDT", () => {
+      expect(crdt.length).toBe(0)
+
+      crdt.handleLocalInsert('A', 0);
+
+      expect(crdt.length).toBe(1);
     });
   });
 
   describe("updateText", () => {
+    let crdt;
+    let siteId;
+    let siteCounter;
+
+    beforeEach(() => {
+      siteId = 1;
+      siteCounter = 1;
+      crdt = new CRDT(siteId);
+    });
+
     it("returns empty text when CRDT is empty", () => {
-      const siteId = 1;
-      const crdt = new CRDT(siteId);
       expect(crdt.text).toEqual("");
     });
 
     it("returns char's value when car is added to CRDT", () => {
-      const siteId = 1;
-      const siteClock = 1;
+      const position = [new Identifier(1, siteId)];
+      const char1 = new Char('A', siteCounter, position);
 
-      const crdt = new CRDT(siteId);
-      const id1 = new Identifier(1, siteId);
-      const position = [id1]
-      const char1 = new Char('A', siteClock, position);
-
-      const newLength = crdt.insertChar(char1);
-
+      crdt.insertChar(char1);
       expect(crdt.text).toEqual("A")
     });
   });
 
-  describe("localDelete", () => {
+  describe("handleLocalDelete", () => {
     let crdt;
     let a;
     let b;
@@ -134,26 +131,21 @@ describe("CRDT", () => {
     });
 
     it("deletes the correct character", () => {
-      crdt.localDelete(0);
+      crdt.handleLocalDelete(0);
       expect(crdt.struct).toEqual([b]);
     });
 
     it("increments the crdt's counter", () => {
       const oldCounter = crdt.counter;
-      crdt.localDelete(0);
+      crdt.handleLocalDelete(0);
       expect(crdt.counter).toEqual(oldCounter + 1);
     });
 
     it("decreases the crdt's length property", () => {
       const oldLength = crdt.length;
-      crdt.localDelete(0);
+      crdt.handleLocalDelete(0);
       const newLength = crdt.length;
       expect(newLength).toEqual(oldLength - 1);
-    });
-
-    it("returns char object", () => {
-      const charObj = crdt.localDelete(0);
-      expect(charObj).toEqual(a);
     });
   });
 
@@ -196,7 +188,6 @@ describe("CRDT", () => {
 
   describe('generatePosBetween', () => {
     const siteId = 1;
-    const siteClock = 1;
     const crdt = new CRDT(siteId);
 
     it('returns a position with digit in (1...boundary) when both arrays are empty', () => {
@@ -264,15 +255,19 @@ describe("CRDT", () => {
   });
 
   describe('deleteChar', () => {
-    const siteId = 1;
-    const siteClock = 1;
-    const id1 = new Identifier(1, siteId);
-    const position = [id1]
-    const char1 = new Char('A', siteClock, position);
+    let crdt;
+    let char1;
+    let position;
+
+    beforeEach(() => {
+      const siteId = 1;
+      const siteCounter = 1;
+      crdt = new CRDT(siteId);
+      position = [new Identifier(1, siteId)];
+      char1 = new Char('A', siteCounter, position);
+    });
 
     it('removes a char from the crdt', () => {
-      const crdt = new CRDT(siteId);
-
       crdt.insertChar(char1);
       expect(crdt.length).toBe(1);
 
@@ -281,8 +276,6 @@ describe("CRDT", () => {
     });
 
     it("throws error if char couldn't be found", () => {
-      const crdt = new CRDT(siteId);
-
       expect(
         () => crdt.deleteChar(char1)
       ).toThrow(new Error("Character could not be found"));

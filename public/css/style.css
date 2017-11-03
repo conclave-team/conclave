@@ -1,13 +1,3 @@
-.read-text {
-  float: right;
-  width: 45%;
-}
-
-.write-text {
-  float: left;
-  width: 45%;
-}
-
 textarea {
   width: 100%;
   height: 200px;
