@@ -46,7 +46,7 @@ var CRDT = function () {
     key: 'insertChar',
     value: function insertChar(char) {
       this.struct.push(char);
-      this.struct = this.sortByIdentifier();
+      this.struct = this.sortByPosition();
       this.updateText();
       this.controller.updateEditor();
     }
@@ -61,7 +61,13 @@ var CRDT = function () {
   }, {
     key: 'deleteChar',
     value: function deleteChar(char) {
+<<<<<<< HEAD
       var idx = this.struct.indexOf(char);
+=======
+      this.controller.broadcastDeletion(char);
+
+      var idx = this.findByPosition(char);
+>>>>>>> 4368ab9591b572fd01b18096260f2d6d4104a178
       if (idx < 0) {
         throw new Error("Character could not be found");
       }
@@ -136,11 +142,19 @@ var CRDT = function () {
       }).join('');
     }
   }, {
-    key: 'sortByIdentifier',
-    value: function sortByIdentifier() {
+    key: 'sortByPosition',
+    value: function sortByPosition() {
       return this.struct.sort(function (char1, char2) {
         return char1.comparePositionTo(char2);
       });
+    }
+  }, {
+    key: 'findByPosition',
+    value: function findByPosition(char) {
+      var thisChar = this.struct.filter(function (ch) {
+        return ch.pos === char.pos;
+      });
+      return this.struct.indexOf(thisChar);
     }
   }, {
     key: 'incrementCounter',
