@@ -40,11 +40,11 @@ var CRDT = function () {
       this.incrementCounter();
       var newChar = this.generateChar(val, index);
       this.insertChar(newChar);
+      this.controller.broadcastInsertion(newChar);
     }
   }, {
     key: 'insertChar',
     value: function insertChar(char) {
-      this.controller.broadcastInsertion(char);
       this.struct.push(char);
       this.struct = this.sortByPosition();
       this.updateText();
@@ -56,13 +56,18 @@ var CRDT = function () {
       var deletedChar = this.struct[index];
       this.incrementCounter();
       this.deleteChar(deletedChar);
+      this.controller.broadcastDeletion(deletedChar);
     }
   }, {
     key: 'deleteChar',
     value: function deleteChar(char) {
+<<<<<<< HEAD
+      var idx = this.struct.indexOf(char);
+=======
       this.controller.broadcastDeletion(char);
 
       var idx = this.findByPosition(char);
+>>>>>>> 4368ab9591b572fd01b18096260f2d6d4104a178
       if (idx < 0) {
         throw new Error("Character could not be found");
       }
