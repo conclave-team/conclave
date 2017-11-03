@@ -42,11 +42,9 @@ var Editor = function () {
 
         if (changeObj.origin === "+input") {
           var char = changeObj.text.length > 1 ? '\n' : changeObj.text;
-          changedChar = _this.controller.handleInsert(char, idx);
-          _this.controller.broadcastInsertion(JSON.stringify(changedChar));
+          _this.controller.handleInsert(char, idx);
         } else if (changeObj.origin === "+delete") {
-          changedChar = _this.controller.handleDelete(idx);
-          _this.controller.broadcastDeletion(JSON.stringify(changedChar));
+          _this.controller.handleDelete(idx);
         }
       });
     }

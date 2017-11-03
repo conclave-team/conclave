@@ -40,21 +40,15 @@ var CRDT = function () {
       var newChar = this.generateChar(val, index);
       this.incrementCounter();
       this.insertChar(newChar);
-      return newChar;
     }
   }, {
     key: 'insertChar',
     value: function insertChar(char) {
-      this.broadcastInsert(char);
+      this.controller.broadcastInsertion(char);
       this.struct.push(char);
       this.struct = this.sortByIdentifier();
       this.updateText();
       this.controller.updateEditor();
-    }
-  }, {
-    key: 'broadcastInsert',
-    value: function broadcastInsert(char) {
-      this.controller.broadcastInsertion(JSON.stringify(char));
     }
   }, {
     key: 'handleLocalDelete',
@@ -62,12 +56,11 @@ var CRDT = function () {
       var deletedChar = this.struct[index];
       this.incrementCounter();
       this.deleteChar(deletedChar);
-      return deletedChar;
     }
   }, {
     key: 'deleteChar',
     value: function deleteChar(char) {
-      this.broadcastDelete(char);
+      this.controller.broadcastDeletion(char);
 
       var idx = this.struct.indexOf(char);
       if (idx < 0) {
@@ -77,11 +70,6 @@ var CRDT = function () {
       this.struct.splice(idx, 1);
       this.updateText();
       this.controller.updateEditor();
-    }
-  }, {
-    key: 'broadcastDelete',
-    value: function broadcastDelete(char) {
-      this.controller.broadcastDeletion(JSON.stringify(char));
     }
   }, {
     key: 'generateChar',
