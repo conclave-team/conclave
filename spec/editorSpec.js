@@ -50,13 +50,5 @@ describe("Editor", () => {
     it("splits the editor contents by line", () => {
 
     });
-
-    it("calculates linear index from a single line of text", () => {
-
-    });
-
-    it("calculates linear index from multiple lines of text", () => {
-
-    });
   });
 });
