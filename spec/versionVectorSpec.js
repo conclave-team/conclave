@@ -4,6 +4,10 @@ describe("VersionVector", () => {
   describe('constructor', () => {
     const vector = new VersionVector(10);
 
+    it('initializes a local property on the object', () => {
+      expect(vector.local).toBeTruthy();
+    });
+
     it('initializes a allVersions property', () => {
       expect(vector.allVersions).toBeTruthy();
     });
@@ -14,7 +18,21 @@ describe("VersionVector", () => {
   });
 
   describe('increment', () => {
-    
+    it('increments the counter in the local property', () => {
+      const vector = new VersionVector(10);
+
+      expect(vector.local.counter).toBe(0);
+
+      vector.increment();
+      expect(vector.local.counter).toBe(1);
+    });
+
+    it('increments the counter of the version in the allVersions array', () => {
+      const vector = new VersionVector(10);
+      vector.increment();
+
+      expect(vector.allVersions.get(0).counter).toBe(1)
+    });
   });
 
   describe('update', () => {
