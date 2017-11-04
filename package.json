@@ -5,9 +5,10 @@
   "main": "app.js",
   "scripts": {
     "test": "jasmine",
-    "start": "npm run build && npm run compile && babel-node app.js",
+    "start": "node app.js",
     "build": "babel lib -d build",
-    "compile": "browserify build/controller.js -o public/js/bundle.js"
+    "compile": "browserify build/controller.js -o public/js/bundle.js",
+    "postinstall": "npm run build && npm run compile"
   },
   "repository": {
     "type": "git",
@@ -31,7 +32,8 @@
     "pug": "^2.0.0-rc.4",
     "rxjs": "^5.5.2",
     "simplemde": "^1.11.2",
-    "sorted-cmp-array": "^2.0.1"
+    "sorted-cmp-array": "^2.0.1",
+    "uuid": "^3.1.0"
   },
   "devDependencies": {
     "babel-register": "^6.26.0",

@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
+let listener;
 
 app.use(express.static('public'));
 app.set('views', './views');
@@ -12,6 +13,6 @@ app.get('/', function (req, res) {
   res.render('index', { id: id, host: host });
 });
 
-app.listen(3000, function () {
-  console.log('Example app listening on port 3000!')
+listener = app.listen(process.env.PORT || 3000, function (port) {
+  console.log(`Conclave is listening on port ${listener.address().port}`);
 });
