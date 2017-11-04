@@ -3,6 +3,13 @@ import Identifier from '../lib/identifier';
 import Char from '../lib/char';
 
 describe("CRDT", () => {
+  const mockController = {
+    siteId: 1,
+    updateEditor: () => {},
+    broadcastInsertion: () => {},
+    broadcastDeletion: () => {}
+  };
+
   describe("insertChar", () => {
     const siteId = 1;
     const siteCounter = 1;
@@ -11,23 +18,23 @@ describe("CRDT", () => {
     const char1 = new Char('A', siteCounter, position);
 
     it("adds char to CRDT", () => {
-      const crdt = new CRDT(siteId);
+      const crdt = new CRDT(mockController);
 
-      expect(crdt.length).toBe(0)
+      expect(crdt.struct.length).toBe(0)
 
       crdt.insertChar(char1);
-      expect(crdt.length).toBe(1);
+      expect(crdt.struct.length).toBe(1);
     });
 
     it('does not increment counter', () => {
-      const crdt = new CRDT(siteId);
+      const crdt = new CRDT(mockController);
       crdt.insertChar(char1);
 
       expect(crdt.counter).toBe(0);
     });
 
     it("Sorts the chars correctly", () => {
-      const crdt = new CRDT(siteId);
+      const crdt = new CRDT(mockController);
       const char2 = new Char('B', siteCounter + 1, [new Identifier(0, 0), new Identifier(5, 0)]);
 
       crdt.insertChar(char1);
@@ -73,7 +80,7 @@ describe("CRDT", () => {
 
     beforeEach(() => {
       const siteId = 25;
-      crdt = new CRDT(siteId);
+      crdt = new CRDT(mockController);
     });
 
     it("increments the local counter", () => {
@@ -85,11 +92,11 @@ describe("CRDT", () => {
     });
 
     it("adds char to CRDT", () => {
-      expect(crdt.length).toBe(0)
+      expect(crdt.struct.length).toBe(0)
 
       crdt.handleLocalInsert('A', 0);
 
-      expect(crdt.length).toBe(1);
+      expect(crdt.struct.length).toBe(1);
     });
   });
 
@@ -101,7 +108,7 @@ describe("CRDT", () => {
     beforeEach(() => {
       siteId = 1;
       siteCounter = 1;
-      crdt = new CRDT(siteId);
+      crdt = new CRDT(mockController);
     });
 
     it("returns empty text when CRDT is empty", () => {
@@ -123,9 +130,9 @@ describe("CRDT", () => {
     let b;
 
     beforeEach(() => {
-      crdt = new CRDT(25);
-      a = new Char("a", 0, [new Identifier(1, 25)]);
-      b = new Char("b", 0, [new Identifier(2, 25)]);
+      crdt = new CRDT(mockController);
+      a = new Char("a", 0, [new Identifier(1, mockController.siteId)]);
+      b = new Char("b", 0, [new Identifier(2, mockController.siteId)]);
       crdt.insertChar(a);
       crdt.insertChar(b);
     });
@@ -140,24 +147,17 @@ describe("CRDT", () => {
       crdt.handleLocalDelete(0);
       expect(crdt.counter).toEqual(oldCounter + 1);
     });
-
-    it("decreases the crdt's length property", () => {
-      const oldLength = crdt.length;
-      crdt.handleLocalDelete(0);
-      const newLength = crdt.length;
-      expect(newLength).toEqual(oldLength - 1);
-    });
   });
 
-  describe("sortByIdentifier", () => {
-    let crdt = new CRDT(25);
-    const a = new Char("a", 0, [new Identifier(2, 25)]);
-    const b = new Char("b", 0, [new Identifier(1, 25)]);
+  describe("sortByPosition", () => {
+    let crdt = new CRDT(mockController);
+    const a = new Char("a", 0, [new Identifier(2, mockController.siteId)]);
+    const b = new Char("b", 0, [new Identifier(1, mockController.siteId)]);
     crdt.insertChar(a);
     crdt.insertChar(b);
 
     it("returns the sorted structure", () => {
-      const sorted = crdt.sortByIdentifier();
+      const sorted = crdt.sortByPosition();
       expect(sorted).toEqual([b, a]);
     });
   });
@@ -188,7 +188,7 @@ describe("CRDT", () => {
 
   describe('generatePosBetween', () => {
     const siteId = 1;
-    const crdt = new CRDT(siteId);
+    const crdt = new CRDT(mockController);
 
     it('returns a position with digit in (1...boundary) when both arrays are empty', () => {
       const digit = crdt.generatePosBetween([], [])[0].digit;
@@ -262,17 +262,17 @@ describe("CRDT", () => {
     beforeEach(() => {
       const siteId = 1;
       const siteCounter = 1;
-      crdt = new CRDT(siteId);
+      crdt = new CRDT(mockController);
       position = [new Identifier(1, siteId)];
       char1 = new Char('A', siteCounter, position);
     });
 
     it('removes a char from the crdt', () => {
       crdt.insertChar(char1);
-      expect(crdt.length).toBe(1);
+      expect(crdt.struct.length).toBe(1);
 
       crdt.deleteChar(char1);
-      expect(crdt.length).toBe(0);
+      expect(crdt.struct.length).toBe(0);
     });
 
     it("throws error if char couldn't be found", () => {
