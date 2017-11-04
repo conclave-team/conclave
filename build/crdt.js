@@ -55,20 +55,14 @@ var CRDT = function () {
     value: function handleLocalDelete(index) {
       var deletedChar = this.struct[index];
       this.incrementCounter();
-      this.deleteChar(deletedChar);
       this.controller.broadcastDeletion(deletedChar);
     }
   }, {
     key: 'deleteChar',
     value: function deleteChar(char) {
-<<<<<<< HEAD
-      var idx = this.struct.indexOf(char);
-=======
-      this.controller.broadcastDeletion(char);
-
       var idx = this.findByPosition(char);
->>>>>>> 4368ab9591b572fd01b18096260f2d6d4104a178
       if (idx < 0) {
+        console.log(char);
         throw new Error("Character could not be found");
       }
 
@@ -151,10 +145,23 @@ var CRDT = function () {
   }, {
     key: 'findByPosition',
     value: function findByPosition(char) {
+      var _this = this;
+
+      var charId = this.getStringId(char.position);
+      var chId = void 0;
+
       var thisChar = this.struct.filter(function (ch) {
-        return ch.pos === char.pos;
-      });
+        chId = _this.getStringId(ch.position);
+        return charId === chId;
+      })[0];
       return this.struct.indexOf(thisChar);
+    }
+  }, {
+    key: 'getStringId',
+    value: function getStringId(pos) {
+      return pos.map(function (i) {
+        return i.digit;
+      }).join(".");
     }
   }, {
     key: 'incrementCounter',
