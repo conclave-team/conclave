@@ -61,12 +61,8 @@ var CRDT = function () {
   }, {
     key: 'deleteChar',
     value: function deleteChar(char) {
-      var idx = this.findByPosition(char);
-      if (idx < 0) {
-        throw new Error("Character could not be found");
-      }
-
-      this.struct.splice(idx, 1);
+      var index = this.findIndexByPosition(char);
+      this.struct.splice(index, 1);
       this.updateText();
       this.controller.updateEditor();
     }
@@ -85,14 +81,14 @@ var CRDT = function () {
       var level = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
 
       var base = Math.pow(2, level) * this.base;
-      var positive = level % 2 === 0 ? true : false;
+      var positiveStrategy = level % 2 === 0 ? true : false;
 
       var id1 = pos1[0] || new _identifier2.default(0, this.siteId);
       var id2 = pos2[0] || new _identifier2.default(base, this.siteId);
 
       if (id2.digit - id1.digit > 1) {
 
-        var newDigit = this.allocateId(id1.digit, id2.digit, positive);
+        var newDigit = this.allocateId(id1.digit, id2.digit, positiveStrategy);
         newPos.push(new _identifier2.default(newDigit, this.siteId));
         return newPos;
       } else if (id2.digit - id1.digit === 1) {
@@ -113,8 +109,8 @@ var CRDT = function () {
     }
   }, {
     key: 'allocateId',
-    value: function allocateId(min, max, positive) {
-      if (positive) {
+    value: function allocateId(min, max, positiveStrategy) {
+      if (positiveStrategy) {
         min = min + 1;
         if (this.boundary < max - min - 1) {
           max = min + this.boundary;
@@ -143,16 +139,23 @@ var CRDT = function () {
       });
     }
   }, {
-    key: 'findByPosition',
-    value: function findByPosition(char) {
+    key: 'findIndexByPosition',
+    value: function findIndexByPosition(char) {
       var _this = this;
 
       var charId = this.getStringId(char.position);
 
-      var thisChar = this.struct.filter(function (ch) {
+      var thisChar = this.struct.find(function (ch) {
         return charId === _this.getStringId(ch.position);
-      })[0];
-      return this.struct.indexOf(thisChar);
+      });
+
+      var index = this.struct.indexOf(thisChar);
+
+      if (index === -1) {
+        throw new Error("Character does not exist in CRDT.");
+      }
+
+      return index;
     }
   }, {
     key: 'getStringId',

@@ -5,15 +5,15 @@ describe("VersionVector", () => {
     const vector = new VersionVector({siteId: 10});
 
     it('initializes a local property on the object', () => {
-      expect(vector.local).toBeTruthy();
+      expect(vector.localVersion).toBeTruthy();
     });
 
-    it('initializes a allVersions property', () => {
-      expect(vector.allVersions).toBeTruthy();
+    it('initializes a Versions property', () => {
+      expect(vector.versions).toBeTruthy();
     });
 
     it('puts local vector in the all vector', () => {
-      expect(vector.allVersions.get(0).siteId).toBe(10);
+      expect(vector.versions.get(0).siteId).toBe(10);
     });
   });
 
@@ -21,17 +21,17 @@ describe("VersionVector", () => {
     it('increments the counter in the local property', () => {
       const vector = new VersionVector({siteId: 10});
 
-      expect(vector.local.counter).toBe(0);
+      expect(vector.localVersion.counter).toBe(0);
 
       vector.increment();
-      expect(vector.local.counter).toBe(1);
+      expect(vector.localVersion.counter).toBe(1);
     });
 
-    it('increments the counter of the version in the allVersions array', () => {
+    it('increments the counter of the version in the Versions array', () => {
       const vector = new VersionVector({siteId: 10});
       vector.increment();
 
-      expect(vector.allVersions.get(0).counter).toBe(1)
+      expect(vector.versions.get(0).counter).toBe(1)
     });
   });
 
@@ -40,64 +40,64 @@ describe("VersionVector", () => {
       const vector = new VersionVector({siteId: 10});
       vector.update({siteId: 10, counter: 1});
 
-      expect(vector.allVersions.get(0).counter).toBe(1);
+      expect(vector.versions.get(0).counter).toBe(1);
     });
 
     it('creates the entry if it does not exist and then increments', () => {
       const vector = new VersionVector({siteId: 10});
 
-      expect(vector.allVersions.get(0).siteId).toBe(10);
+      expect(vector.versions.get(0).siteId).toBe(10);
       vector.update({siteId: 5, counter: 1});
 
-      expect(vector.allVersions.get(0).siteId).toBe(5);
-      expect(vector.allVersions.get(0).counter).toBe(1);
+      expect(vector.versions.get(0).siteId).toBe(5);
+      expect(vector.versions.get(0).counter).toBe(1);
     });
 
     it('creates exceptions if version counter is greater by more than 1', () => {
       const vector = new VersionVector({ siteId: 10});
       vector.update({siteId: 10, counter: 2});
 
-      expect(vector.allVersions.get(0).exceptions.has(1)).toBe(true);
+      expect(vector.versions.get(0).exceptions.has(1)).toBe(true);
     });
 
     it('does not update version counter if remote version counter is equal to current counter', () => {
       const vector = new VersionVector({ siteId: 10});
       vector.update({siteId: 10, counter: 0});
 
-      expect(vector.allVersions.get(0).counter).toBe(0);
+      expect(vector.versions.get(0).counter).toBe(0);
     });
 
     it('does not update version counter if remote version counter is less than current counter', () => {
       const vector = new VersionVector({ siteId: 10});
       vector.update({siteId: 10, counter: -1});
-      expect(vector.allVersions.get(0).counter).toBe(0);
+      expect(vector.versions.get(0).counter).toBe(0);
     });
 
     it('removes exceptions if counter exists in exceptions set', () => {
       const vector = new VersionVector({ siteId: 10});
       vector.update({siteId: 10, counter: 2});
-      expect(vector.allVersions.get(0).exceptions.has(1)).toBe(true);
+      expect(vector.versions.get(0).exceptions.has(1)).toBe(true);
 
       vector.update({siteId: 10, counter: 1});
-      expect(vector.allVersions.get(0).exceptions.has(1)).toBe(false);
+      expect(vector.versions.get(0).exceptions.has(1)).toBe(false);
     });
   });
 
-  describe('comparator', () => {
+  describe('siteIdComparator', () => {
     const vector = new VersionVector(1);
     const version1 = {siteId: 5, counter: 1};
     const version2 = {siteId: 10, counter: 1};
 
     it('returns -1 if first vector site is less than second', () => {
-      expect(vector.comparator(version1, version2)).toBe(-1);
+      expect(vector.siteIdComparator(version1, version2)).toBe(-1);
     });
 
     it('returns 1 if first vector site is greater than second', () => {
-      expect(vector.comparator(version2, version1)).toBe(1);
+      expect(vector.siteIdComparator(version2, version1)).toBe(1);
     });
 
     it('returns 0 if first vector site is same as second', () => {
-      expect(vector.comparator(version1, version1)).toBe(0);
+      expect(vector.siteIdComparator(version1, version1)).toBe(0);
     });
   });
 
