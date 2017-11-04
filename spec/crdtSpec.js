@@ -302,6 +302,17 @@ describe("CRDT", () => {
       crdt.insertChar(char1);
       expect(crdt.text).toBe("A")
     });
+
+    it('removes a char from the crdt', () => {
+      const position = [new Identifier(1, siteId)];
+      const char1 = new Char('A', siteCounter, position);
+
+      crdt.insertChar(char1);
+      expect(crdt.text).toBe("A");
+
+      crdt.deleteChar(char1);
+      expect(crdt.text).toBe("");
+    });
   });
 
   describe("sortByPosition", () => {
