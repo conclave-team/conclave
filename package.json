@@ -5,9 +5,10 @@
   "main": "app.js",
   "scripts": {
     "test": "jasmine",
-    "start": "babel-node app.js",
+    "start": "node app.js",
     "build": "babel lib -d build",
-    "compile": "browserify build/controller.js -o public/js/bundle.js"
+    "compile": "browserify build/controller.js -o public/js/bundle.js",
+    "postinstall": "npm run build && npm run compile"
   },
   "repository": {
     "type": "git",
