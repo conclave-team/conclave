@@ -1,4 +1,33 @@
+@font-face {
+  font-family: "InputLight";
+  src: url('../assets/fonts/InputSans-Light.ttf');
+}
+
+@font-face {
+  font-family: "InputMedium";
+  src: url('../assets/fonts/InputSans-Medium.ttf');
+}
+
+body {
+  font-family: "InputLight";
+  margin: 0;
+  padding: 40px;
+}
+
+h1 {
+  font-family: "InputMedium";
+}
+
+p {
+  font-size: 14px;
+}
+
 textarea {
   width: 100%;
   height: 200px;
+}
+
+.CodeMirror {
+  font-family: 'InputLight';
+  border-radius: 8px;
 }
