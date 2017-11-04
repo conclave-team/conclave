@@ -55,6 +55,7 @@ var CRDT = function () {
     value: function handleLocalDelete(index) {
       var deletedChar = this.struct[index];
       this.incrementCounter();
+      this.deleteChar(deletedChar);
       this.controller.broadcastDeletion(deletedChar);
     }
   }, {
@@ -62,7 +63,6 @@ var CRDT = function () {
     value: function deleteChar(char) {
       var idx = this.findByPosition(char);
       if (idx < 0) {
-        console.log(char);
         throw new Error("Character could not be found");
       }
 
@@ -148,11 +148,9 @@ var CRDT = function () {
       var _this = this;
 
       var charId = this.getStringId(char.position);
-      var chId = void 0;
 
       var thisChar = this.struct.filter(function (ch) {
-        chId = _this.getStringId(ch.position);
-        return charId === chId;
+        return charId === _this.getStringId(ch.position);
       })[0];
       return this.struct.indexOf(thisChar);
     }
