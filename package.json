@@ -8,7 +8,8 @@
     "start": "node app.js",
     "build": "babel lib -d build",
     "compile": "browserify build/controller.js -o public/js/bundle.js",
-    "postinstall": "npm run build && npm run compile"
+    "postinstall": "npm run build && npm run compile",
+    "local": "npm run build && npm run compile && npm start"
   },
   "repository": {
     "type": "git",
