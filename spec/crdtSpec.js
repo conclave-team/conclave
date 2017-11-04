@@ -4,7 +4,7 @@ import Identifier from '../lib/identifier';
 
 describe("CRDT", () => {
   const siteId = Math.floor(Math.random() * 1000);
-  const = mockController = {
+  const mockController = {
     siteId: siteId,
     broadcastInsertion: function() {},
     broadcastDeletion: function() {},
@@ -16,7 +16,7 @@ describe("CRDT", () => {
 
     beforeEach(() => {
       crdt = new CRDT(mockController);
-      spyOn(crdt.mockController, 'broadcastInsertion');
+      spyOn(crdt.controller, 'broadcastInsertion');
     });
 
     it("increments the local counter", () => {
@@ -33,7 +33,7 @@ describe("CRDT", () => {
 
     it("calls broadcastInsertion", function() {
       crdt.handleLocalInsert('A', 0);
-      expect(crdt.mockController.broadcastInsertion).toHaveBeenCalled();
+      expect(crdt.controller.broadcastInsertion).toHaveBeenCalled();
     });
   });
 
@@ -47,7 +47,7 @@ describe("CRDT", () => {
       siteCounter = 1;
       const position = [new Identifier(1, siteId)];
       char1 = new Char('A', siteCounter, position);
-      spyOn(crdt.mockController, 'updateEditor');
+      spyOn(crdt.controller, 'updateEditor');
     });
 
     it("adds char to CRDT", () => {
@@ -73,7 +73,7 @@ describe("CRDT", () => {
 
     it("calls updateEditor", function() {
       crdt.insertChar(char1);
-      expect(crdt.mockController.updateEditor).toHaveBeenCalled();
+      expect(crdt.controller.updateEditor).toHaveBeenCalled();
     });
 
     it('does not increment counter', () => {
@@ -85,8 +85,8 @@ describe("CRDT", () => {
 
   describe("handleLocalDelete", () => {
     let crdt;
-    let a;
-    let b;
+    let char1;
+    let char2;
 
     beforeEach(() => {
       crdt = new CRDT(mockController);
@@ -94,7 +94,7 @@ describe("CRDT", () => {
       char2 = new Char("b", 0, [new Identifier(2, 25)]);
       crdt.insertChar(char1);
       crdt.insertChar(char2);
-      spyOn(crdt.mockController, 'broadcastDeletion');
+      spyOn(crdt.controller, 'broadcastDeletion');
     });
 
     it("increments the crdt's counter", () => {
@@ -111,7 +111,7 @@ describe("CRDT", () => {
 
     it("calls broadcastDeletion", function() {
       crdt.handleLocalDelete(0);
-      expect(crdt.mockController.broadcastDeletion).toHaveBeenCalled();
+      expect(crdt.controller.broadcastDeletion).toHaveBeenCalled();
     });
   });
 
@@ -127,7 +127,7 @@ describe("CRDT", () => {
       position = [new Identifier(1, siteId)];
       char = new Char('A', siteCounter, position);
       crdt.insertChar(char);
-      spyOn(crdt.mockController, 'updateEditor');
+      spyOn(crdt.controller, 'updateEditor');
     });
 
     it('removes a char from the crdt', () => {
@@ -144,7 +144,7 @@ describe("CRDT", () => {
 
     it("calls updateEditor", function() {
       crdt.deleteChar(char);
-      expect(crdt.mockController.updateEditor).toHaveBeenCalled();
+      expect(crdt.controller.updateEditor).toHaveBeenCalled();
     });
   });
 
@@ -181,7 +181,6 @@ describe("CRDT", () => {
 
   describe('generatePosBetween', () => {
     let crdt;
-    let siteId;
 
     beforeEach(() => {
       const boundary = 5;

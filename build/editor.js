@@ -20,13 +20,17 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var Editor = function () {
   function Editor(controller) {
+    var initialText = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "";
+
     _classCallCheck(this, Editor);
 
     this.controller = controller;
     this.mde = new _simplemde2.default({
+      element: document.querySelector('textarea'),
       placeholder: 'Type here...',
       spellChecker: false,
-      toolbar: false
+      toolbar: false,
+      initialValue: initialText
     });
   }
 
@@ -36,14 +40,14 @@ var Editor = function () {
       var _this = this;
 
       this.mde.codemirror.on("change", function (_, changeObj) {
-        var idx = _this.findLinearIdx(changeObj.from.line, changeObj.from.ch);
-        var changedChar = void 0;
-        var insertion = void 0;
+        var idx = void 0;
+        var char = changeObj.text.length > 1 ? "\n" : changeObj.text[0];
 
         if (changeObj.origin === "+input") {
-          var char = changeObj.text.length > 1 ? '\n' : changeObj.text;
+          idx = _this.findLinearIdx(changeObj.to.line, changeObj.to.ch);
           _this.controller.handleInsert(char, idx);
         } else if (changeObj.origin === "+delete") {
+          idx = _this.findLinearIdx(changeObj.from.line, changeObj.from.ch);
           _this.controller.handleDelete(idx);
         }
       });
@@ -59,6 +63,13 @@ var Editor = function () {
     key: 'findLinearIdx',
     value: function findLinearIdx(lineIdx, chIdx) {
       var linesOfText = this.mde.codemirror.getValue().split("\n");
+      if (lineIdx >= linesOfText.length) {
+        return -1;
+      }
+      if (chIdx > linesOfText[lineIdx].length) {
+        return -1;
+      }
+
       var index = 0;
       for (var i = 0; i < lineIdx; i++) {
         index += linesOfText[i].length;
