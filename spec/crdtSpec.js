@@ -46,7 +46,7 @@ describe("CRDT", () => {
       crdt = new CRDT(mockController);
       siteCounter = 1;
       const position = [new Identifier(1, siteId)];
-      char1 = new Char('A', siteCounter, position);
+      char1 = new Char('A', siteCounter, siteId, position);
       spyOn(crdt.controller, 'updateEditor');
     });
 
@@ -57,7 +57,7 @@ describe("CRDT", () => {
     });
 
     it("sorts chars based on position", () => {
-      const char2 = new Char('B', siteCounter + 1, [new Identifier(0, 0), new Identifier(5, 0)]);
+      const char2 = new Char('B', siteCounter + 1, siteId, [new Identifier(0, 0), new Identifier(5, 0)]);
 
       crdt.insertChar(char1);
       crdt.insertChar(char2);
@@ -90,8 +90,8 @@ describe("CRDT", () => {
 
     beforeEach(() => {
       crdt = new CRDT(mockController);
-      char1 = new Char("a", 0, [new Identifier(1, 25)]);
-      char2 = new Char("b", 0, [new Identifier(2, 25)]);
+      char1 = new Char("a", 0, siteId, [new Identifier(1, 25)]);
+      char2 = new Char("b", 0, siteId, [new Identifier(2, 25)]);
       crdt.insertChar(char1);
       crdt.insertChar(char2);
       spyOn(crdt.controller, 'broadcastDeletion');
@@ -125,7 +125,7 @@ describe("CRDT", () => {
       crdt = new CRDT(mockController);
       siteCounter = Math.floor(Math.random() * 1000);
       position = [new Identifier(1, siteId)];
-      char = new Char('A', siteCounter, position);
+      char = new Char('A', siteCounter, siteId, position);
       crdt.insertChar(char);
       spyOn(crdt.controller, 'updateEditor');
     });
@@ -297,7 +297,7 @@ describe("CRDT", () => {
 
     it("returns char value when char is inserted", () => {
       const position = [new Identifier(1, siteId)];
-      const char1 = new Char('A', siteCounter, position);
+      const char1 = new Char('A', siteCounter, siteId, position);
 
       crdt.insertChar(char1);
       expect(crdt.text).toBe("A")
@@ -305,7 +305,7 @@ describe("CRDT", () => {
 
     it('removes a char from the crdt', () => {
       const position = [new Identifier(1, siteId)];
-      const char1 = new Char('A', siteCounter, position);
+      const char1 = new Char('A', siteCounter, siteId, position);
 
       crdt.insertChar(char1);
       expect(crdt.text).toBe("A");
@@ -323,8 +323,8 @@ describe("CRDT", () => {
 
     beforeEach(() => {
         crdt = new CRDT(mockController);
-        char1 = new Char('A', siteCounter, [new Identifier(2, siteId)]);
-        char2 = new Char('B', siteCounter, [new Identifier(1, siteId)]);
+        char1 = new Char('A', siteCounter, siteId, [new Identifier(2, siteId)]);
+        char2 = new Char('B', siteCounter, siteId, [new Identifier(1, siteId)]);
         crdt.insertChar(char1);
         crdt.insertChar(char2);
       });
@@ -352,8 +352,8 @@ describe("CRDT", () => {
         updateEditor: function() {},
       }
       crdt = new CRDT(mockController);
-      char1 = new Char('A', siteCounter, [new Identifier(1, siteId)]);
-      char2 = new Char('B', siteCounter + 1, [new Identifier(3, siteId)]);
+      char1 = new Char('A', siteCounter, siteId, [new Identifier(1, siteId)]);
+      char2 = new Char('B', siteCounter + 1, siteId, [new Identifier(3, siteId)]);
     });
 
     it ("throws error when crdt is empty", () => {
