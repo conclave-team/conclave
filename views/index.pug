@@ -7,10 +7,10 @@ html(lang="en")
   body
     h1 Conclave
     textarea(row='10' col='20')
-    p Sharing Link: 
+    p Sharing Link:
       a(id='myLink')
     p(id='peerId') Connected peers:
     script.
-      const peerId = '!{id}'
-      const host = '!{host}'
+      const gPEERID = '!{id}'
+      const gHOST = '!{host}'
     script(src='js/bundle.js')
