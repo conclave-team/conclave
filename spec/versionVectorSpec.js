@@ -101,10 +101,10 @@ describe("VersionVector", () => {
     });
   });
 
-  describe('isDuplicate', () => {
+  describe('hasBeenApplied', () => {
     // it('returns false if version is undefined or null', () => {
-    //   expect(vector.isDuplicate(null)).toBe(false);
-    //   expect(vector.isDuplicate(undefined)).toBe(false);
+    //   expect(vector.hasBeenApplied(null)).toBe(false);
+    //   expect(vector.hasBeenApplied(undefined)).toBe(false);
     // });
 
     it('returns true if remote counter is equal to or less than local version counter and no exceptions', () => {
@@ -112,28 +112,28 @@ describe("VersionVector", () => {
       vector.update({siteId: 10, counter: 1});
       vector.update({siteId: 10, counter: 2});
 
-      expect(vector.isDuplicate({siteId: 10, counter: 1})).toBe(true);
-      expect(vector.isDuplicate({siteId: 10, counter: 2})).toBe(true);
+      expect(vector.hasBeenApplied({siteId: 10, counter: 1})).toBe(true);
+      expect(vector.hasBeenApplied({siteId: 10, counter: 2})).toBe(true);
     });
 
     it('returns false if version does not exist', () => {
       const vector = new VersionVector({ siteId: 10});
 
-      expect(vector.isDuplicate({siteId: 5, counter: 1})).toBe(false);
+      expect(vector.hasBeenApplied({siteId: 5, counter: 1})).toBe(false);
     });
 
     it('returns false if version counter is greater than stored version', () => {
       const vector = new VersionVector({ siteId: 10});
       vector.update({siteId: 10, counter: 1});
 
-      expect(vector.isDuplicate({siteId: 10, counter: 2})).toBe(false);
+      expect(vector.hasBeenApplied({siteId: 10, counter: 2})).toBe(false);
     });
 
     it('returns false if version counter is in exceptions', () => {
       const vector = new VersionVector({ siteId: 10});
       vector.update({siteId: 10, counter: 2});
 
-      expect(vector.isDuplicate({siteId: 10, counter: 1})).toBe(false);
+      expect(vector.hasBeenApplied({siteId: 10, counter: 1})).toBe(false);
     });
   });
 });

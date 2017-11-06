@@ -9,7 +9,7 @@ describe('Broadcast', () => {
       on: () => {},
       connect: () => {}
     },
-    updateConnectionList: () => {}
+    addToConnectionList: () => {}
   };
 
   describe('constructor', () => {
@@ -42,25 +42,25 @@ describe('Broadcast', () => {
       broadcast.onOpen();
       expect(broadcast.peer.on).toHaveBeenCalled();
     });
+  });
 
-    it('does not call "connect" on peer or "updateConnectionList" on controller when peerId "0"', () => {
+  describe('connectToTarget', () => {
+    const broadcast = new Broadcast(mockController);
+
+    it('does not call "connect" on peer or "addToConnectionList" on controller when peerId "0"', () => {
       spyOn(broadcast.peer, 'connect');
-      spyOn(broadcast.controller, 'updateConnectionList');
-      broadcast.onOpen();
+      spyOn(broadcast.controller, 'addToConnectionList');
+      broadcast.connectToTarget('0');
       expect(broadcast.peer.connect).not.toHaveBeenCalled();
-      expect(broadcast.controller.updateConnectionList).not.toHaveBeenCalled();
+      expect(broadcast.controller.addToConnectionList).not.toHaveBeenCalled();
     });
 
-    it('does call "connect" on peer or "updateConnectionList" on controller when peerId not "0"', () => {
-      broadcast.peerId = "78vjkhjkasdf7";
-
+    it('does call "connect" on peer or "addToConnectionList" on controller when peerId not "0"', () => {
       spyOn(broadcast.peer, 'connect');
-      spyOn(broadcast.controller, 'updateConnectionList');
-      broadcast.onOpen();
+      spyOn(broadcast.controller, 'addToConnectionList');
+      broadcast.connectToTarget("78vjkhjkasdf7");
       expect(broadcast.peer.connect).toHaveBeenCalled();
-      expect(broadcast.controller.updateConnectionList).toHaveBeenCalled();
-
-      broadcast.peerId = '0';
+      expect(broadcast.controller.addToConnectionList).toHaveBeenCalled();
     });
   });
 
