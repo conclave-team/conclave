@@ -10,7 +10,7 @@ describe("Editor.findLinearIdx", () => {
     const linesOfText = text;
     let index = 0
     for (let i = 0; i < lineIdx; i++) {
-      index += linesOfText[i].length;
+      index += linesOfText[i].length + 1;
     }
 
     return index + chIdx;
@@ -38,6 +38,16 @@ describe("Editor.findLinearIdx", () => {
 
   it("calculates linear index from multiple lines of text", () => {
     const linesOfText = ["abc", "defgh", "ijk", "lmnop"];
-    expect(findLinearIdx(1, 2, linesOfText)).toEqual(5);
+    expect(findLinearIdx(1, 2, linesOfText)).toEqual(6);
+  });
+
+  it("can find the linear index on the last line of text", () => {
+    const linesOfText = ["abc", "defgh", "ijk", "lmnop"];
+    expect(findLinearIdx(3, 2, linesOfText)).toEqual(16);
+  });
+
+  it("can find the linear index at the end of a line of text", () => {
+    const linesOfText = ["abc", "defgh", "ijk", "lmnop"];
+    expect(findLinearIdx(1, 5, linesOfText)).toEqual(9);
   });
 });
