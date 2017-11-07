@@ -1,4 +1,5 @@
 /node_modules
 /public/js/bundle.js
 /build
+debug.js
 .DS_Store
