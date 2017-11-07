@@ -2,3 +2,4 @@
 /public/js/bundle.js
 /build
 .DS_Store
+/performance/logs

@@ -77,7 +77,7 @@ function avgIdLength(crdt) {
   const convertCharIntoDigit = (char) => char.position.map(id => id.digit).join('');
   const idArray = crdt.struct.map(convertCharIntoDigit);
   const digitLengthSum = idArray.reduce((acc, id) => { return acc + id.length }, 0);
-  
+
   return Math.floor(digitLengthSum / idArray.length);
 }
 
@@ -123,6 +123,18 @@ function addDeleteRow(operations, crdt, func) {
 ${'-'.repeat(68)}`
 }
 
+function getTimestamp() {
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth() + 1;
+  const date = now.getUTCDate();
+  const hours = now.getUTCHours();
+  const minutes = now.getUTCMinutes();
+  const seconds = now.getUTCSeconds();
+
+  return `${year}-${month}-${date} ${hours}:${minutes}:${seconds}`;
+}
+
 export {
   addInsertRow,
   addDeleteRow,
@@ -131,5 +143,6 @@ export {
   insertBeginning,
   deleteRandom,
   deleteEnd,
-  deleteBeginning
+  deleteBeginning,
+  getTimestamp,
 };

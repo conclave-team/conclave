@@ -1,6 +1,8 @@
 import CRDT from '../lib/crdt';
 import * as Util from './util';
+import fs from 'fs';
 
+const logPath = 'performance/logs'
 const siteId = Math.floor(Math.random() * 1000);
 const mockController = {
   siteId: siteId,
@@ -31,6 +33,7 @@ ${Util.addInsertRow(100, crdt2, Util.insertRandom)}
 ${Util.addInsertRow(1000, crdt3, Util.insertRandom)}
 ${Util.addInsertRow(2000, crdt4, Util.insertRandom)}
 
+
 # DELETIONS
 --------------------------------------------------------------------
 |  # of Operations  |  Total Execute Time   | Avg. Operation Time  |
@@ -44,6 +47,7 @@ ${Util.addDeleteRow(2000, crdt4, Util.deleteRandom)}
 
 ## AT THE BEGINNING
 -------------------
+
 
 # INSERTIONS
 ---------------------------------------------------------------------------------------
@@ -90,4 +94,10 @@ ${Util.addDeleteRow(1000, crdt3, Util.deleteEnd)}
 ${Util.addDeleteRow(2000, crdt4, Util.deleteEnd)}
 `;
 
-console.log(table);
+fs.writeFile(`${logPath}/${Util.getTimestamp()}.log`, table, function(err) {
+  if (err) {
+    return console.log(err);
+  }
+
+  console.log(`Results saved to ${logPath}`)
+})
