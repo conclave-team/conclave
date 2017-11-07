@@ -61,7 +61,7 @@ describe("CRDT", () => {
 
       crdt.insertChar(char1);
       crdt.insertChar(char2);
-
+      expect(crdt.struct).toEqual([char2, char1]);
       expect(crdt.text).toBe('BA');
     });
 
@@ -90,8 +90,8 @@ describe("CRDT", () => {
 
     beforeEach(() => {
       crdt = new CRDT(mockController);
-      char1 = new Char("a", 0, siteId, [new Identifier(1, 25)]);
-      char2 = new Char("b", 0, siteId, [new Identifier(2, 25)]);
+      char1 = new Char("a", 1, siteId, [new Identifier(1, 25)]);
+      char2 = new Char("b", 2, siteId, [new Identifier(2, 25)]);
       crdt.insertChar(char1);
       crdt.insertChar(char2);
       spyOn(crdt.controller, 'broadcastDeletion');
