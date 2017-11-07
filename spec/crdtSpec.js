@@ -17,6 +17,7 @@ describe("CRDT", () => {
     beforeEach(() => {
       crdt = new CRDT(mockController);
       spyOn(crdt.controller, 'broadcastInsertion');
+      spyOn(crdt.controller, 'updateEditor');
     });
 
     it("increments the local counter", () => {
@@ -34,6 +35,11 @@ describe("CRDT", () => {
     it("calls broadcastInsertion", function() {
       crdt.handleLocalInsert('A', 0);
       expect(crdt.controller.broadcastInsertion).toHaveBeenCalled();
+    });
+
+    it("calls updateEditor", function() {
+      crdt.handleLocalInsert('A', 0);
+      expect(crdt.controller.updateEditor).toHaveBeenCalled();
     });
   });
 
@@ -315,26 +321,6 @@ describe("CRDT", () => {
     });
   });
 
-  describe("sortByPosition", () => {
-    let crdt;
-    let siteCounter;
-    let char1;
-    let char2;
-
-    beforeEach(() => {
-        crdt = new CRDT(mockController);
-        char1 = new Char('A', siteCounter, siteId, [new Identifier(2, siteId)]);
-        char2 = new Char('B', siteCounter, siteId, [new Identifier(1, siteId)]);
-        crdt.insertChar(char1);
-        crdt.insertChar(char2);
-      });
-
-    it("returns chars with lower position sorted before higher position (i.e. char2 before char1)", () => {
-      const sorted = crdt.sortByPosition();
-      expect(sorted).toEqual([char2, char1]);
-    });
-  });
-
   describe("findIndexByPosition", () => {
     let mockController;
     let crdt;
@@ -370,6 +356,61 @@ describe("CRDT", () => {
     it("throws error if char doesn't exist in crdt", () => {
       crdt.insertChar(char1);
       expect(() => crdt.deleteChar(char2)).toThrow(new Error("Character does not exist in CRDT."));
+    });
+  });
+
+  describe("findInsertIndex", () => {
+    let mockController;
+    let crdt;
+    let siteId;
+    let siteCounter;
+    let char1;
+    let char2;
+    let char3;
+
+    beforeEach(() => {
+      siteId = Math.floor(Math.random() * 1000);
+      siteCounter = Math.floor(Math.random() * 1000);
+      mockController = {
+        siteId: siteId,
+        broadcastInsertion: function() {},
+        updateEditor: function() {},
+      }
+      crdt = new CRDT(mockController);
+      char1 = new Char('A', siteCounter, siteId, [new Identifier(1, siteId)]);
+      char2 = new Char('B', siteCounter + 1, siteId, [new Identifier(3, siteId)]);
+      char3 = new Char('C', siteCounter + 2, siteId, [new Identifier(5, siteId)]);
+    });
+
+    it ("returns 0 if array is empty", () => {
+      expect(crdt.findInsertIndex(char1)).toBe(0);
+    });
+
+    it ("returns 0 if char position is less than first char", () => {
+      crdt.insertChar(char2);
+      expect(crdt.struct.length).toBe(1);
+      expect(crdt.findInsertIndex(char1)).toBe(0);
+    });
+
+    it ("returns length if array if char position is greater than last char", () => {
+      crdt.insertChar(char1);
+      crdt.insertChar(char2);
+      expect(crdt.struct.length).toBe(2);
+      expect(crdt.findInsertIndex(char3)).toBe(2);
+    });
+
+    it("returns the index of a char when found in crdt", () => {
+      crdt.insertChar(char1);
+      crdt.insertChar(char2);
+      const index = crdt.findInsertIndex(char2);
+      expect(index).toBe(1);
+    });
+
+    it("returns the index of where it would be located if it existed in the array", () => {
+      crdt.insertChar(char1);
+      crdt.insertChar(char3);
+      const index = crdt.findInsertIndex(char2);
+      expect(index).toBe(1);
     });
   });
 
