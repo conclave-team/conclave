@@ -74,10 +74,11 @@ function deleteEnd(crdt) {
 }
 
 function avgIdLength(crdt) {
-  const idArray = crdt.struct.map(char => {
-    return char.position.map(id => id.digit).join('');
-  });
-  return Math.floor(idArray.reduce((acc, id) => { return acc + id.length }, 0) / idArray.length);
+  const convertCharIntoDigit = (char) => char.position.map(id => id.digit).join('');
+  const idArray = crdt.struct.map(convertCharIntoDigit);
+  const digitLengthSum = idArray.reduce((acc, id) => { return acc + id.length }, 0);
+  
+  return Math.floor(digitLengthSum / idArray.length);
 }
 
 function reset(crdt) {
