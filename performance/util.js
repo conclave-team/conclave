@@ -7,7 +7,7 @@ function insertRandom(crdt, numberOfOperations) {
   const start = Date.now();
   let index;
 
-  for(let i = 1; i < numberOfOperations; i++) {
+  for(let i = 0; i < numberOfOperations; i++) {
     index = Math.floor(Math.random() * i);
     crdt.handleLocalInsert('a', index);
   }
@@ -19,7 +19,7 @@ function insertRandom(crdt, numberOfOperations) {
 function insertBeginning(crdt, numberOfOperations) {
   const start = Date.now();
 
-  for(let i = 1; i < numberOfOperations; i++) {
+  for(let i = 0; i < numberOfOperations; i++) {
     crdt.handleLocalInsert('a', 0);
   }
 
@@ -30,7 +30,7 @@ function insertBeginning(crdt, numberOfOperations) {
 function insertEnd(crdt, numberOfOperations) {
   const start = Date.now();
 
-  for(let i = 1; i < numberOfOperations; i++) {
+  for(let i = 0; i < numberOfOperations; i++) {
     crdt.handleLocalInsert('a', i);
   }
 
