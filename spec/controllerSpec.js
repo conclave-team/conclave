@@ -167,7 +167,7 @@ describe("Controller", () => {
     });
   });
 
-  describe("reviewBuffer", () => {
+  describe("processDeletionBuffer", () => {
     const controller = new Controller(targetId, host, mockPeer, mockBroadcast, mockEditor);
     controller.vector = {
       hasBeenApplied: function() {},
@@ -183,19 +183,19 @@ describe("Controller", () => {
 
     it("calls vector.hasBeenApplied for each operation in buffer", () => {
       spyOn(controller.vector, "hasBeenApplied");
-      controller.reviewBuffer();
+      controller.processDeletionBuffer();
       expect(controller.vector.hasBeenApplied).toHaveBeenCalledWith(1);
       expect(controller.vector.hasBeenApplied).toHaveBeenCalledWith(2);
       expect(controller.vector.hasBeenApplied).toHaveBeenCalledWith(3);
     });
 
     it("splices the operation from the buffer if it is ready", () => {
-      controller.reviewBuffer();
+      controller.processDeletionBuffer();
       expect(controller.buffer.length).toBe(0);
     });
   });
 
-  describe("isReady", () => {
+  describe("hasInsertionBeenApplied", () => {
     const controller = new Controller(targetId, host, mockPeer, mockBroadcast, mockEditor);
     controller.vector = {
       hasBeenApplied: function() {}
@@ -203,20 +203,20 @@ describe("Controller", () => {
 
     it("returns true for insert operations", () => {
       const dataObj = {op: "insert", char: {siteId: 0, counter: 1}};
-      expect(controller.isReady(dataObj)).toBe(true);
+      expect(controller.hasInsertionBeenApplied(dataObj)).toBe(true);
     });
 
     it("calls vector.hasBeenApplied for delete operations", () => {
       const dataObj = {op: "delete", char: {siteId: 0, counter: 1}};
       spyOn(controller.vector, "hasBeenApplied");
-      controller.isReady(dataObj);
+      controller.hasInsertionBeenApplied(dataObj);
       expect(controller.vector.hasBeenApplied).toHaveBeenCalled();
     });
 
     it("calls the vector method with the correct character version", () => {
       const dataObj = {op: "delete", char: {siteId: 0, counter: 1}};
       spyOn(controller.vector, "hasBeenApplied");
-      controller.isReady(dataObj);
+      controller.hasInsertionBeenApplied(dataObj);
       expect(controller.vector.hasBeenApplied).toHaveBeenCalledWith({siteId: 0, counter: 1});
     })
   });
