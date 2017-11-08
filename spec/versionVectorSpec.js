@@ -2,7 +2,7 @@ import VersionVector from "../lib/VersionVector";
 
 describe("VersionVector", () => {
   describe('constructor', () => {
-    const vector = new VersionVector({siteId: 10});
+    const vector = new VersionVector(10);
 
     it('initializes a local property on the object', () => {
       expect(vector.localVersion).toBeTruthy();
@@ -19,7 +19,7 @@ describe("VersionVector", () => {
 
   describe('increment', () => {
     it('increments the counter in the local property', () => {
-      const vector = new VersionVector({siteId: 10});
+      const vector = new VersionVector(10);
 
       expect(vector.localVersion.counter).toBe(0);
 
@@ -28,7 +28,7 @@ describe("VersionVector", () => {
     });
 
     it('increments the counter of the version in the Versions array', () => {
-      const vector = new VersionVector({siteId: 10});
+      const vector = new VersionVector(10);
       vector.increment();
 
       expect(vector.versions.get(0).counter).toBe(1)
@@ -37,14 +37,14 @@ describe("VersionVector", () => {
 
   describe('update', () => {
     it('increments the version if the entry exists in the all arr', () => {
-      const vector = new VersionVector({siteId: 10});
+      const vector = new VersionVector(10);
       vector.update({siteId: 10, counter: 1});
 
       expect(vector.versions.get(0).counter).toBe(1);
     });
 
     it('creates the entry if it does not exist and then increments', () => {
-      const vector = new VersionVector({siteId: 10});
+      const vector = new VersionVector(10);
 
       expect(vector.versions.get(0).siteId).toBe(10);
       vector.update({siteId: 5, counter: 1});
@@ -54,27 +54,27 @@ describe("VersionVector", () => {
     });
 
     it('creates exceptions if version counter is greater by more than 1', () => {
-      const vector = new VersionVector({ siteId: 10});
+      const vector = new VersionVector(10);
       vector.update({siteId: 10, counter: 2});
 
       expect(vector.versions.get(0).exceptions.has(1)).toBe(true);
     });
 
     it('does not update version counter if remote version counter is equal to current counter', () => {
-      const vector = new VersionVector({ siteId: 10});
+      const vector = new VersionVector(10);
       vector.update({siteId: 10, counter: 0});
 
       expect(vector.versions.get(0).counter).toBe(0);
     });
 
     it('does not update version counter if remote version counter is less than current counter', () => {
-      const vector = new VersionVector({ siteId: 10});
+      const vector = new VersionVector(10);
       vector.update({siteId: 10, counter: -1});
       expect(vector.versions.get(0).counter).toBe(0);
     });
 
     it('removes exceptions if counter exists in exceptions set', () => {
-      const vector = new VersionVector({ siteId: 10});
+      const vector = new VersionVector(10);
       vector.update({siteId: 10, counter: 2});
       expect(vector.versions.get(0).exceptions.has(1)).toBe(true);
 
@@ -108,7 +108,7 @@ describe("VersionVector", () => {
     // });
 
     it('returns true if remote counter is equal to or less than local version counter and no exceptions', () => {
-      const vector = new VersionVector({ siteId: 10});
+      const vector = new VersionVector(10);
       vector.update({siteId: 10, counter: 1});
       vector.update({siteId: 10, counter: 2});
 
@@ -117,20 +117,20 @@ describe("VersionVector", () => {
     });
 
     it('returns false if version does not exist', () => {
-      const vector = new VersionVector({ siteId: 10});
+      const vector = new VersionVector(10);
 
       expect(vector.hasBeenApplied({siteId: 5, counter: 1})).toBe(false);
     });
 
     it('returns false if version counter is greater than stored version', () => {
-      const vector = new VersionVector({ siteId: 10});
+      const vector = new VersionVector(10);
       vector.update({siteId: 10, counter: 1});
 
       expect(vector.hasBeenApplied({siteId: 10, counter: 2})).toBe(false);
     });
 
     it('returns false if version counter is in exceptions', () => {
-      const vector = new VersionVector({ siteId: 10});
+      const vector = new VersionVector(10);
       vector.update({siteId: 10, counter: 2});
 
       expect(vector.hasBeenApplied({siteId: 10, counter: 1})).toBe(false);

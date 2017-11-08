@@ -2,7 +2,7 @@ import Char from '../lib/char';
 import Identifier from "../lib/identifier";
 
 describe("Char", () => {
-  describe("comparePositionTo", () => {
+  describe("compareTo", () => {
     let char1;
     let id1;
     let id2;
@@ -20,7 +20,7 @@ describe("Char", () => {
       const id22 = new Identifier(5, 1);
       const id23 = new Identifier(3, 2);
       const char2 = new Char("b", 0, 2, [id21, id22, id23]);
-      expect(char1.comparePositionTo(char2)).toEqual(-1);
+      expect(char1.compareTo(char2)).toEqual(-1);
     });
 
     it("returns -1 if first site is 'lower' than second site", () => {
@@ -28,7 +28,7 @@ describe("Char", () => {
       const id22 = new Identifier(5, 2);
       const id23 = new Identifier(1, 2);
       const char2 = new Char("b", 0, 2, [id21, id22, id23]);
-      expect(char1.comparePositionTo(char2)).toEqual(-1);
+      expect(char1.compareTo(char2)).toEqual(-1);
     });
 
     it("returns -1 if first position is 'shorter' than second position", () => {
@@ -37,7 +37,7 @@ describe("Char", () => {
       const id23 = new Identifier(1, 2);
       const id24 = new Identifier(8, 2);
       const char2 = new Char("b", 0, 2, [id21, id22, id23, id24]);
-      expect(char1.comparePositionTo(char2)).toEqual(-1);
+      expect(char1.compareTo(char2)).toEqual(-1);
     });
 
     it("returns 1 if first position is 'higher' than second position", () => {
@@ -45,7 +45,7 @@ describe("Char", () => {
       const id22 = new Identifier(3, 1);
       const id23 = new Identifier(1, 2);
       const char2 = new Char("b", 0, 2, [id21, id22, id23]);
-      expect(char1.comparePositionTo(char2)).toEqual(1);
+      expect(char1.compareTo(char2)).toEqual(1);
     });
 
     it("returns 1 if first site is 'higher' than second site", () => {
@@ -53,14 +53,14 @@ describe("Char", () => {
       const id22 = new Identifier(5, 1);
       const id23 = new Identifier(1, 1);
       const char2 = new Char("b", 0, 1, [id21, id22, id23]);
-      expect(char1.comparePositionTo(char2)).toEqual(1);
+      expect(char1.compareTo(char2)).toEqual(1);
     });
 
     it("returns 1 if first position is 'longer' than second position", () => {
       const id21 = new Identifier(2, 1);
       const id22 = new Identifier(5, 1);
       const char2 = new Char("b", 0, 1, [id21, id22]);
-      expect(char1.comparePositionTo(char2)).toEqual(1);
+      expect(char1.compareTo(char2)).toEqual(1);
     });
 
     it("returns 0 if positions are exactly the same", () => {
@@ -68,7 +68,7 @@ describe("Char", () => {
       const id22 = new Identifier(5, 1);
       const id23 = new Identifier(1, 2);
       const char2 = new Char("b", 0, 2, [id21, id22, id23]);
-      expect(char1.comparePositionTo(char2)).toEqual(0);
+      expect(char1.compareTo(char2)).toEqual(0);
     });
   });
 });

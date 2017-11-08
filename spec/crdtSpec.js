@@ -1,11 +1,13 @@
 import CRDT from '../lib/crdt';
 import Char from '../lib/char';
 import Identifier from '../lib/identifier';
+import VersionVector from '../lib/versionVector';
 
 describe("CRDT", () => {
   const siteId = Math.floor(Math.random() * 1000);
   const mockController = {
     siteId: siteId,
+    vector: new VersionVector(siteId),
     broadcastInsertion: function() {},
     broadcastDeletion: function() {},
     updateEditor: function() {},
@@ -17,12 +19,13 @@ describe("CRDT", () => {
     beforeEach(() => {
       crdt = new CRDT(mockController);
       spyOn(crdt.controller, 'broadcastInsertion');
+      spyOn(crdt.controller, 'updateEditor');
+      spyOn(crdt.vector, 'increment');
     });
 
-    it("increments the local counter", () => {
-      expect(crdt.counter).toBe(0);
+    it("calls vector 'increment'", () => {
       crdt.handleLocalInsert('A', 0);
-      expect(crdt.counter).toBe(1);
+      expect(crdt.vector.increment).toHaveBeenCalled();
     });
 
     it("adds char to CRDT", () => {
@@ -34,6 +37,11 @@ describe("CRDT", () => {
     it("calls broadcastInsertion", function() {
       crdt.handleLocalInsert('A', 0);
       expect(crdt.controller.broadcastInsertion).toHaveBeenCalled();
+    });
+
+    it("calls updateEditor", function() {
+      crdt.handleLocalInsert('A', 0);
+      expect(crdt.controller.updateEditor).toHaveBeenCalled();
     });
   });
 
@@ -48,6 +56,7 @@ describe("CRDT", () => {
       const position = [new Identifier(1, siteId)];
       char1 = new Char('A', siteCounter, siteId, position);
       spyOn(crdt.controller, 'updateEditor');
+      spyOn(crdt.vector, 'increment');
     });
 
     it("adds char to CRDT", () => {
@@ -61,7 +70,7 @@ describe("CRDT", () => {
 
       crdt.insertChar(char1);
       crdt.insertChar(char2);
-
+      expect(crdt.struct).toEqual([char2, char1]);
       expect(crdt.text).toBe('BA');
     });
 
@@ -76,10 +85,9 @@ describe("CRDT", () => {
       expect(crdt.controller.updateEditor).toHaveBeenCalled();
     });
 
-    it('does not increment counter', () => {
-      expect(crdt.counter).toBe(0);
+    it('does not call vector "increment"', () => {
       crdt.insertChar(char1);
-      expect(crdt.counter).toBe(0);
+      expect(crdt.vector.increment).not.toHaveBeenCalled();
     });
   });
 
@@ -90,17 +98,17 @@ describe("CRDT", () => {
 
     beforeEach(() => {
       crdt = new CRDT(mockController);
-      char1 = new Char("a", 0, siteId, [new Identifier(1, 25)]);
-      char2 = new Char("b", 0, siteId, [new Identifier(2, 25)]);
+      char1 = new Char("a", 1, siteId, [new Identifier(1, 25)]);
+      char2 = new Char("b", 2, siteId, [new Identifier(2, 25)]);
       crdt.insertChar(char1);
       crdt.insertChar(char2);
       spyOn(crdt.controller, 'broadcastDeletion');
+      spyOn(crdt.vector, 'increment');
     });
 
-    it("increments the crdt's counter", () => {
-      const oldCounter = crdt.counter;
+    it("calls vector 'increment'", () => {
       crdt.handleLocalDelete(0);
-      expect(crdt.counter).toBe(oldCounter + 1);
+      expect(crdt.vector.increment).toHaveBeenCalled();
     });
 
     it("deletes the correct character", () => {
@@ -154,7 +162,7 @@ describe("CRDT", () => {
 
     beforeEach(() => {
       crdt = new CRDT(mockController);
-      crdt.counter++;
+      crdt.vector.increment();
       char = crdt.generateChar("A", 0);
     });
 
@@ -167,7 +175,8 @@ describe("CRDT", () => {
     });
 
     it("creates the Char with the correct counter", () => {
-      expect(char.counter).toBe(1);
+      let versionCounter = crdt.vector.localVersion.counter;
+      expect(char.counter).toBe(versionCounter);
     });
 
     it("creates the Char with an array of position identifiers", () => {
@@ -315,26 +324,6 @@ describe("CRDT", () => {
     });
   });
 
-  describe("sortByPosition", () => {
-    let crdt;
-    let siteCounter;
-    let char1;
-    let char2;
-
-    beforeEach(() => {
-        crdt = new CRDT(mockController);
-        char1 = new Char('A', siteCounter, siteId, [new Identifier(2, siteId)]);
-        char2 = new Char('B', siteCounter, siteId, [new Identifier(1, siteId)]);
-        crdt.insertChar(char1);
-        crdt.insertChar(char2);
-      });
-
-    it("returns chars with lower position sorted before higher position (i.e. char2 before char1)", () => {
-      const sorted = crdt.sortByPosition();
-      expect(sorted).toEqual([char2, char1]);
-    });
-  });
-
   describe("findIndexByPosition", () => {
     let mockController;
     let crdt;
@@ -373,13 +362,106 @@ describe("CRDT", () => {
     });
   });
 
-  describe('incrementCounter', () => {
-    it('increments the counter of the CRDT', () => {
-      const crdt = new CRDT({});
+  describe("findInsertIndex", () => {
+    let mockController;
+    let crdt;
+    let siteId;
+    let siteCounter;
+    let char1;
+    let char2;
+    let char3;
 
-      expect(crdt.counter).toBe(0);
-      crdt.incrementCounter();
-      expect(crdt.counter).toBe(1);
+    beforeEach(() => {
+      siteId = Math.floor(Math.random() * 1000);
+      siteCounter = Math.floor(Math.random() * 1000);
+      mockController = {
+        siteId: siteId,
+        broadcastInsertion: function() {},
+        updateEditor: function() {},
+      }
+      crdt = new CRDT(mockController);
+      char1 = new Char('A', siteCounter, siteId, [new Identifier(1, siteId)]);
+      char2 = new Char('B', siteCounter + 1, siteId, [new Identifier(3, siteId)]);
+      char3 = new Char('C', siteCounter + 2, siteId, [new Identifier(5, siteId)]);
+    });
+
+    it ("returns 0 if array is empty", () => {
+      expect(crdt.findInsertIndex(char1)).toBe(0);
+    });
+
+    it ("returns 0 if char position is less than first char", () => {
+      crdt.insertChar(char2);
+      expect(crdt.struct.length).toBe(1);
+      expect(crdt.findInsertIndex(char1)).toBe(0);
+    });
+
+    it ("returns length if array if char position is greater than last char", () => {
+      crdt.insertChar(char1);
+      crdt.insertChar(char2);
+      expect(crdt.struct.length).toBe(2);
+      expect(crdt.findInsertIndex(char3)).toBe(2);
+    });
+
+    it("returns the index of a char when found in crdt", () => {
+      crdt.insertChar(char1);
+      crdt.insertChar(char2);
+      const index = crdt.findInsertIndex(char2);
+      expect(index).toBe(1);
+    });
+
+    it("returns the index of where it would be located if it existed in the array", () => {
+      crdt.insertChar(char1);
+      crdt.insertChar(char3);
+      const index = crdt.findInsertIndex(char2);
+      expect(index).toBe(1);
+    });
+  });
+
+  describe('insertText', () => {
+    let siteId;
+    let siteCounter;
+    let mockController;
+    let crdt;
+
+    beforeEach(() => {
+      siteId = Math.floor(Math.random() * 1000);
+      siteCounter = Math.floor(Math.random() * 1000);
+      mockController = {
+        siteId: siteId,
+        broadcastInsertion: function() {},
+        updateEditor: function() {},
+      }
+      crdt = new CRDT(mockController);
+    });
+
+    it('inserts character in the correct index', () => {
+      crdt.text = 'tet';
+      crdt.insertText('s', 2);
+      expect(crdt.text).toBe('test');
+    });
+  });
+
+  describe('deleteText', () => {
+    let siteId;
+    let siteCounter;
+    let mockController;
+    let crdt;
+
+    beforeEach(() => {
+      siteId = Math.floor(Math.random() * 1000);
+      siteCounter = Math.floor(Math.random() * 1000);
+      mockController = {
+        siteId: siteId,
+        broadcastInsertion: function() {},
+        updateEditor: function() {},
+      }
+      crdt = new CRDT(mockController);
+    });
+
+    it('deletes character in the correct index', () => {
+      crdt.text = 'tester';
+      crdt.deleteText(4);
+      expect(crdt.text).toBe('testr');
     });
   });
 });
