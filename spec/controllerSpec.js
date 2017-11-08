@@ -9,84 +9,84 @@ describe("Controller", () => {
     on: function() {},
     connect: function() {},
   };
+
   const mockBroadcast = {
     bindServerEvents: function() {},
     connectToTarget: function() {},
     send: function() {}
   };
+
   const mockEditor = {
     bindChangeEvent: function() {},
     updateView: function(text) {}
   };
-  const host = "https://localhost";
-  const targetId = UUID();
+
+  const host = "https://localhost:3000";
+  const siteId = Math.floor(Math.random() * 1000);
+  const targetPeerId = '';
 
   describe("populateCRDT", () => {
-    const controller = new Controller(targetId, host, mockPeer, mockBroadcast, mockEditor);
-    const data = JSON.stringify([{
-      "position": [{"digit": "3", "siteId": "4"}],
-      "counter": "1",
-      "siteId": "5",
-      "value": "a"
-    }]);
-
-    const struct = [ new Char("a", "1", "5", [new Identifier("3", "4")]) ];
+    let controller, initialStruct, expectedStruct;
 
     beforeEach(() => {
-      controller.crdt = {
-        updateText: function() {},
-        struct: []
-      };
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+      initialStruct = [{
+        position: [ {digit: 3, siteId: 4} ],
+        counter: 1,
+        siteId: 5,
+        value: "a",
+      }];
+
+      expectedStruct = [ new Char("a", 1, 5, [new Identifier(3, 4)]) ];
+      spyOn(controller.crdt, "populateText");
+      spyOn(controller, "updateEditor");
     })
 
-    it("maps the data correctly and set the struct", () => {
-      controller.populateCRDT(data);
-      expect(controller.crdt.struct).toEqual(struct);
+    it("sets proper value to crdt.struct", () => {
+      controller.populateCRDT(initialStruct);
+      expect(controller.crdt.struct).toEqual(expectedStruct);
     });
 
-    it("calls crdt.updateText", () => {
-      spyOn(controller.crdt, "updateText");
-      controller.populateCRDT(data);
-      expect(controller.crdt.updateText).toHaveBeenCalled();
+    it("calls crdt.populateText", () => {
+      controller.populateCRDT(initialStruct);
+      expect(controller.crdt.populateText).toHaveBeenCalled();
     });
+
     it("calls updateEditor", () => {
-      spyOn(controller, "updateEditor");
-      controller.populateCRDT(data);
+      controller.populateCRDT(initialStruct);
       expect(controller.updateEditor).toHaveBeenCalled();
     });
   });
 
-// these tests need to be fixed so that they accurately emulate real i/o
-  describe("populateVersions", () => {
-    const controller = new Controller(targetId, host, mockPeer, mockBroadcast, mockEditor);
-    controller.vector = {
-      localVersion: {counter: 3, siteId: 2},
-      siteIdComparator: function() {}
-    };
-    const data = JSON.stringify({
-      "arr": [{
-        "siteId": "2",
-        "counter": "1",
-        "exceptions": new Set([6, 7])
-      }]
-    });
-    const versions = [{siteId: 2, counter: 1, exceptions: {}}];
+  describe("populateVersionVector", () => {
+    let controller, initialVersions;
 
-    it("maps the versions and sets them on this vector", () => {
-      controller.populateVersions(data);
-      expect(controller.vector.versions.arr[0].counter).toEqual("1");
+    beforeEach(() => {
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+
+      initialVersions = {
+        arr: [{
+          siteId: 2,
+          counter: 1,
+          exceptions: new Set([6, 7]),
+        }],
+      };
+    })
+
+    it("sets counter in the version vector", () => {
+      controller.populateVersionVector(initialVersions);
+      expect(controller.vector.versions.arr[0].counter).toEqual(1);
+    });
+
+    it("sets siteID in the version vector", () => {
+      controller.populateVersionVector(initialVersions);
       expect(controller.vector.versions.arr[0].siteId).toEqual(2);
     });
 
-    it("updates the local version counter", () => {
-      controller.populateVersions(data);
-      expect(controller.vector.versions.arr[0].counter).toEqual("1");
+    it("adds exceptions to this local version", () => {
+      controller.populateVersionVector(initialVersions);
+      expect(controller.vector.versions.arr[0].exceptions.size).toEqual(2);
     });
-
-    // it("adds exceptions to this local version", () => {
-    //   controller.populateVersions(data);
-    //   expect(controller.vector.versions.arr).toEqual(1);
-    // });
   });
 
   describe("updateShareLink", () => {
