@@ -7,7 +7,7 @@
     "test": "jasmine",
     "start": "node app.js",
     "build": "babel lib -d build",
-    "compile": "browserify build/controller.js -o public/js/bundle.js",
+    "compile": "browserify build/main.js -o public/js/bundle.js",
     "postinstall": "npm run build && npm run compile",
     "local": "npm run build && npm run compile && npm start",
     "perform": "babel-node performance/all.js"
