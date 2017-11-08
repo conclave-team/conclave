@@ -1,11 +1,13 @@
 import CRDT from '../lib/crdt';
 import Char from '../lib/char';
 import Identifier from '../lib/identifier';
+import VersionVector from '../lib/versionVector';
 
 describe("CRDT", () => {
   const siteId = Math.floor(Math.random() * 1000);
   const mockController = {
     siteId: siteId,
+    vector: new VersionVector(siteId),
     broadcastInsertion: function() {},
     broadcastDeletion: function() {},
     updateEditor: function() {},
@@ -18,12 +20,12 @@ describe("CRDT", () => {
       crdt = new CRDT(mockController);
       spyOn(crdt.controller, 'broadcastInsertion');
       spyOn(crdt.controller, 'updateEditor');
+      spyOn(crdt.vector, 'increment');
     });
 
-    it("increments the local counter", () => {
-      expect(crdt.counter).toBe(0);
+    it("calls vector 'increment'", () => {
       crdt.handleLocalInsert('A', 0);
-      expect(crdt.counter).toBe(1);
+      expect(crdt.vector.increment).toHaveBeenCalled();
     });
 
     it("adds char to CRDT", () => {
@@ -54,6 +56,7 @@ describe("CRDT", () => {
       const position = [new Identifier(1, siteId)];
       char1 = new Char('A', siteCounter, siteId, position);
       spyOn(crdt.controller, 'updateEditor');
+      spyOn(crdt.vector, 'increment');
     });
 
     it("adds char to CRDT", () => {
@@ -82,10 +85,9 @@ describe("CRDT", () => {
       expect(crdt.controller.updateEditor).toHaveBeenCalled();
     });
 
-    it('does not increment counter', () => {
-      expect(crdt.counter).toBe(0);
+    it('does not call vector "increment"', () => {
       crdt.insertChar(char1);
-      expect(crdt.counter).toBe(0);
+      expect(crdt.vector.increment).not.toHaveBeenCalled();
     });
   });
 
@@ -101,12 +103,12 @@ describe("CRDT", () => {
       crdt.insertChar(char1);
       crdt.insertChar(char2);
       spyOn(crdt.controller, 'broadcastDeletion');
+      spyOn(crdt.vector, 'increment');
     });
 
-    it("increments the crdt's counter", () => {
-      const oldCounter = crdt.counter;
+    it("calls vector 'increment'", () => {
       crdt.handleLocalDelete(0);
-      expect(crdt.counter).toBe(oldCounter + 1);
+      expect(crdt.vector.increment).toHaveBeenCalled();
     });
 
     it("deletes the correct character", () => {
@@ -160,7 +162,7 @@ describe("CRDT", () => {
 
     beforeEach(() => {
       crdt = new CRDT(mockController);
-      crdt.counter++;
+      crdt.vector.increment();
       char = crdt.generateChar("A", 0);
     });
 
@@ -173,7 +175,8 @@ describe("CRDT", () => {
     });
 
     it("creates the Char with the correct counter", () => {
-      expect(char.counter).toBe(1);
+      let versionCounter = crdt.vector.localVersion.counter;
+      expect(char.counter).toBe(versionCounter);
     });
 
     it("creates the Char with an array of position identifiers", () => {
@@ -411,16 +414,6 @@ describe("CRDT", () => {
       crdt.insertChar(char3);
       const index = crdt.findInsertIndex(char2);
       expect(index).toBe(1);
-    });
-  });
-
-  describe('incrementCounter', () => {
-    it('increments the counter of the CRDT', () => {
-      const crdt = new CRDT({});
-
-      expect(crdt.counter).toBe(0);
-      crdt.incrementCounter();
-      expect(crdt.counter).toBe(1);
     });
   });
 });
