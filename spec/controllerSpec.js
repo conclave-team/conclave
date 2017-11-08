@@ -1,4 +1,3 @@
-import UUID from 'uuid/v1';
 import { JSDOM } from 'jsdom';
 import Controller from '../lib/controller';
 import Char from '../lib/char';
@@ -23,7 +22,7 @@ describe("Controller", () => {
 
   const host = "https://localhost:3000";
   const siteId = Math.floor(Math.random() * 1000);
-  const targetPeerId = '';
+  const targetPeerId = Math.floor(Math.random() * 1000);
 
   describe("populateCRDT", () => {
     let controller, initialStruct, expectedStruct;
@@ -90,183 +89,239 @@ describe("Controller", () => {
   });
 
   describe("updateShareLink", () => {
-    const controller = new Controller(targetId, host, mockPeer, mockBroadcast, mockEditor);
-    const id = UUID();
-    const dom = new JSDOM(`<!DOCTYPE html><a id="myLink">`).window.document;
+    let controller, mockDocument, link;
 
-    const oldLink = dom.querySelector("#myLink").textContent;
-    controller.updateShareLink(id, dom);
-    const newLink = dom.querySelector("#myLink").textContent;
+    beforeEach(() => {
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+      mockDocument = new JSDOM(`<!DOCTYPE html><a id="myLink"></a>`).window.document;
+      link = mockDocument.querySelector("#myLink").textContent;
+    })
 
-    it("updates the link on the page", () => {
-      expect(oldLink).not.toEqual(newLink);
+    it("changes the link value", () => {
+      controller.updateShareLink(targetPeerId, mockDocument);
+      const updatedLink = mockDocument.querySelector("#myLink").textContent;
+
+      expect(link).not.toEqual(updatedLink);
     });
 
-    it("creates the share link from the id", () => {
-      expect(newLink).toEqual(host+"/?id="+id);
+    it("sets the link's text content", () => {
+      controller.updateShareLink(targetPeerId, mockDocument);
+      const updatedLink = mockDocument.querySelector("#myLink").textContent;
+      expect(updatedLink).toEqual(host+"/?id=" + targetPeerId);
+    });
+
+    it("sets the link's href attribute", () => {
+      controller.updateShareLink(targetPeerId, mockDocument);
+      const href = mockDocument.querySelector("#myLink").getAttribute('href');
+      expect(href).toEqual(host+"/?id=" + targetPeerId);
     });
   });
 
   describe("addToConnectionList", () => {
-    const controller = new Controller(targetId, host, mockPeer, mockBroadcast, mockEditor);
-    const dom = new JSDOM(`<!DOCTYPE html><p id="peerId">`).window.document;
-    const id = UUID();
+    let controller, mockDocument, connList;
 
-    const oldList = dom.querySelector("#peerId").textContent;
-    controller.addToConnectionList(id, dom);
-    const newList = dom.querySelector("#peerId").textContent;
+    beforeEach(() => {
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+      mockDocument = new JSDOM(`<!DOCTYPE html><p id="peerId"></p>`).window.document;
+      connList = mockDocument.querySelector("#peerId").textContent;
+    })
 
     it("updates the connection list on the page", () => {
-      expect(oldList).not.toEqual(newList);
+      controller.addToConnectionList(targetPeerId, mockDocument);
+      const updatedConnList = mockDocument.querySelector("#peerId").textContent;
+      expect(connList).not.toEqual(updatedConnList);
     });
 
     it("adds the id passed in to the list", () => {
-      expect(newList).toEqual(id);
+      controller.addToConnectionList(targetPeerId, mockDocument);
+      const updatedConnList = mockDocument.querySelector("#peerId").textContent;
+      expect(updatedConnList).toEqual(String(targetPeerId));
     });
   });
 
   describe("removeFromConnectionList", () => {
-    const dom = new JSDOM(`<!DOCTYPE html><p id="peerId"><li id="abcde">`).window.document;
-    const controller = new Controller(targetId, host, mockPeer, mockBroadcast, mockEditor);
-    const id = UUID();
-    controller.addToConnectionList(id, dom);
+    let controller, mockDocument;
+
+    beforeEach(() => {
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+      mockDocument = new JSDOM(`<!DOCTYPE html><p id="peerId"><li id="abcde"></li></p>`).window.document;
+      controller.addToConnectionList(targetPeerId, mockDocument);
+    })
 
     it("removes the connection list element from the list", () => {
-      const LIsBefore = dom.getElementsByTagName("LI").length;
-      controller.removeFromConnectionList(id, dom);
-      expect(dom.getElementsByTagName("LI").length).toBeLessThan(LIsBefore);
+      const numElements = mockDocument.getElementsByTagName("LI").length;
+      controller.removeFromConnectionList(targetPeerId, mockDocument);
+      const updatedNumElements = mockDocument.getElementsByTagName("LI").length;
+      expect(updatedNumElements).toEqual(numElements - 1);
     });
   });
 
   describe("handleRemoteOperation", () => {
-    const controller = new Controller(targetId, host, mockPeer, mockBroadcast, mockEditor);
-    controller.vector = {
-      hasBeenApplied: function() {},
-      update: function() {}
-    }
-    const data = JSON.stringify({
-      version: [],
-      char: { siteId: 0, counter: 0, position: []}
-    });
+    let controller, mockOperation;
+
+    beforeEach(() => {
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+      mockOperation = {};
+
+      spyOn(controller.vector, "hasBeenApplied");
+      spyOn(controller, "applyOperation");
+      spyOn(controller, "processDeletionBuffer");
+      spyOn(controller.broadcast, "send");
+    })
 
     it("calls vector.hasBeenApplied", () => {
-      spyOn(controller.vector, "hasBeenApplied");
-      controller.handleRemoteOperation(data);
+      controller.handleRemoteOperation(mockOperation);
       expect(controller.vector.hasBeenApplied).toHaveBeenCalled();
     });
 
-    it("adds and removes the new operation from the buffer", () => {
-      controller.handleRemoteOperation(data);
+    it("calls applyOperation for an insert", () => {
+      const insertOperation = {
+        type: 'insert',
+        char: { siteId: 0, counter: 0, position: []},
+        version: [],
+      };
+
+      controller.handleRemoteOperation(insertOperation);
+      expect(controller.applyOperation).toHaveBeenCalled();
+    });
+
+    it("pushes operation to buffer for a delete", () => {
+      const deleteOperation = {
+        type: 'delete',
+        char: { siteId: 0, counter: 0, position: []},
+        version: [],
+      };
+
       expect(controller.buffer.length).toBe(0);
+      controller.handleRemoteOperation(deleteOperation);
+      expect(controller.buffer.length).toBe(1);
+    });
+
+    it("calls processDeletionBuffer", () => {
+      controller.handleRemoteOperation(mockOperation);
+      expect(controller.processDeletionBuffer).toHaveBeenCalled();
     });
 
     it("calls broadcast.send", () => {
-      spyOn(controller.broadcast, "send");
-      controller.handleRemoteOperation(data);
+      controller.handleRemoteOperation(mockOperation);
       expect(controller.broadcast.send).toHaveBeenCalled();
     });
   });
 
   describe("processDeletionBuffer", () => {
-    const controller = new Controller(targetId, host, mockPeer, mockBroadcast, mockEditor);
-    controller.vector = {
-      hasBeenApplied: function() {},
-      update: function() {}
-    };
+    let controller, op1, op2, version1, version2;
+
     beforeEach(() => {
-      controller.buffer = [
-        {version: 1, char: { siteId: 0, counter: 0, position: []}},
-        {version: 2, char: { siteId: 0, counter: 0, position: []}},
-        {version: 3, char: { siteId: 0, counter: 0, position: []}}
-      ];
-    });
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+
+      op1 = {type: 'delete', char: { siteId: 1, counter: 1 }};
+      op2 = {type: 'delete', char: { siteId: 3, counter: 5 }};
+      controller.buffer = [op1, op2];
+
+      // version1 = { siteId: 1, counter: 3 };
+      // version2 = { siteId: 3, counter: 3 };
+      // controller.vector.versions = [version1, version2];
+
+      spyOn(controller, "hasInsertionBeenApplied");
+      spyOn(controller, "applyOperation");
+    })
 
     it("calls vector.hasBeenApplied for each operation in buffer", () => {
-      spyOn(controller.vector, "hasBeenApplied");
       controller.processDeletionBuffer();
-      expect(controller.vector.hasBeenApplied).toHaveBeenCalledWith(1);
-      expect(controller.vector.hasBeenApplied).toHaveBeenCalledWith(2);
-      expect(controller.vector.hasBeenApplied).toHaveBeenCalledWith(3);
+      expect(controller.hasInsertionBeenApplied).toHaveBeenCalledWith(op1);
+      expect(controller.hasInsertionBeenApplied).toHaveBeenCalledWith(op2);
     });
 
-    it("splices the operation from the buffer if it is ready", () => {
+    it("calls applyOperation if hasInsertionBeenApplied is true", () => {
+      controller.hasInsertionBeenApplied = function() {
+        return true;
+      }
+
+      controller.processDeletionBuffer();
+      expect(controller.applyOperation).toHaveBeenCalledWith(op1);
+    });
+
+    it("doesn't call applyOperation if hasInsertionBeenApplied is false", () => {
+      controller.hasInsertionBeenApplied = function() {
+        return false;
+      }
+
+      controller.processDeletionBuffer();
+      expect(controller.applyOperation).not.toHaveBeenCalledWith(op1);
+    });
+
+    it("clears buffer if hasInsertionBeenApplied is true", () => {
+      controller.hasInsertionBeenApplied = function() {
+        return true;
+      }
+      expect(controller.buffer.length).toBe(2);
       controller.processDeletionBuffer();
       expect(controller.buffer.length).toBe(0);
     });
   });
 
   describe("hasInsertionBeenApplied", () => {
-    const controller = new Controller(targetId, host, mockPeer, mockBroadcast, mockEditor);
-    controller.vector = {
-      hasBeenApplied: function() {}
-    };
+    let controller, operation;
 
-    it("returns true for insert operations", () => {
-      const dataObj = {op: "insert", char: {siteId: 0, counter: 1}};
-      expect(controller.hasInsertionBeenApplied(dataObj)).toBe(true);
-    });
+    beforeEach(() => {
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+      operation = {type: "delete", char: {siteId: 1, counter: 1}};
 
-    it("calls vector.hasBeenApplied for delete operations", () => {
-      const dataObj = {op: "delete", char: {siteId: 0, counter: 1}};
       spyOn(controller.vector, "hasBeenApplied");
-      controller.hasInsertionBeenApplied(dataObj);
+    })
+
+    it("calls vector.hasBeenApplied for operation", () => {
+      controller.hasInsertionBeenApplied(operation);
       expect(controller.vector.hasBeenApplied).toHaveBeenCalled();
     });
 
     it("calls the vector method with the correct character version", () => {
-      const dataObj = {op: "delete", char: {siteId: 0, counter: 1}};
-      spyOn(controller.vector, "hasBeenApplied");
-      controller.hasInsertionBeenApplied(dataObj);
-      expect(controller.vector.hasBeenApplied).toHaveBeenCalledWith({siteId: 0, counter: 1});
+      controller.hasInsertionBeenApplied(operation);
+      expect(controller.vector.hasBeenApplied).toHaveBeenCalledWith({siteId: 1, counter: 1});
     })
   });
 
   describe("applyOperation", () => {
-    const controller = new Controller(targetId, host, mockPeer, mockBroadcast, mockEditor);
-    controller.crdt = {
-      insertChar: function() {},
-      deleteChar: function() {}
-    };
-    controller.vector = {
-      update: function() {}
-    };
+    let controller, operation;
 
-    it("calls crdt.insertChar if it is an insertion operation", () => {
-      const dataObj = {
-        op: "insert",
+    beforeEach(() => {
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+
+      spyOn(controller.crdt, "insertChar");
+      spyOn(controller.crdt, "deleteChar");
+      spyOn(controller.vector, "update");
+    })
+
+    it("calls crdt.insertChar if it's an insert", () => {
+      const operation = {
+        type: "insert",
         char: { siteId: 0, counter: 0, position: []},
         version: {siteId: 8, counter: 9}
       };
-      spyOn(controller.crdt, "insertChar");
-      controller.applyOperation(dataObj);
+      controller.applyOperation(operation);
       expect(controller.crdt.insertChar).toHaveBeenCalled();
     });
 
-    it("creates the character and identifier objects properly", () => {
-      const dataObj = {
-        op: "insert",
-        char: {
-          siteId: 4, counter: 5, value: "a",
-          position: [{digit: 6, siteId: 7}]
-        },
+    it("calls crdt.deleteChar if it's a delete", () => {
+      const operation = {
+        type: "delete",
+        char: { siteId: 0, counter: 0, position: []},
+        version: {siteId: 8, counter: 9}
+      };
+      controller.applyOperation(operation);
+      expect(controller.crdt.deleteChar).toHaveBeenCalled();
+    });
+
+    it("calls creates the proper char and identifier objects to pass to insertChar/deleteChar", () => {
+      const operation = {
+        type: "insert",
+        char: { siteId: 4, counter: 5, value: "a", position: [{digit: 6, siteId: 7}] },
         version: {siteId: 8, counter: 9}
       };
       const newChar = new Char("a", 5, 4, [new Identifier(6, 7)]);
 
-      spyOn(controller.crdt, "insertChar");
-      controller.applyOperation(dataObj);
+      controller.applyOperation(operation);
       expect(controller.crdt.insertChar).toHaveBeenCalledWith(newChar);
-    });
-
-    it("calls crdt.deleteChar if it is a deletion operation", () => {
-      const dataObj = {
-        op: "delete",
-        char: { siteId: 0, counter: 0, position: []},
-        version: {siteId: 8, counter: 9}
-      };
-      spyOn(controller.crdt, "deleteChar");
-      controller.applyOperation(dataObj);
-      expect(controller.crdt.deleteChar).toHaveBeenCalled();
     });
 
     it("calls vector.update with the operation's version", () => {
@@ -275,117 +330,117 @@ describe("Controller", () => {
         char: { siteId: 0, counter: 0, position: []},
         version: {siteId: 8, counter: 9}
       };
-      spyOn(controller.vector, "update");
+
       controller.applyOperation(dataObj);
       expect(controller.vector.update).toHaveBeenCalledWith({siteId: 8, counter: 9});
     });
   });
 
-  describe("handleDelete", () => {
-    const controller = new Controller(targetId, host, mockPeer, mockBroadcast, mockEditor);
-    controller.crdt = {
-      handleLocalDelete: function(idx) {}
-    };
+  describe("localDelete", () => {
+    let controller;
 
-    it("calls crdt.handleLocalDelete with the index passed in", () => {
+    beforeEach(() => {
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
       spyOn(controller.crdt, "handleLocalDelete");
-      controller.handleDelete(3);
-      expect(controller.crdt.handleLocalDelete).toHaveBeenCalledWith(3, undefined);
+    })
+
+    it("calls crdt.handleLocalDelete as many times as the difference between startIdx and endIdx", () => {
+      const startIdx = 3;
+      const endIdx = 5;
+      controller.localDelete(startIdx, endIdx);
+      expect(controller.crdt.handleLocalDelete).toHaveBeenCalledWith(startIdx);
+      expect(controller.crdt.handleLocalDelete).toHaveBeenCalledWith(startIdx);
     });
   });
 
-  describe("handleInsert", () => {
-    const controller = new Controller(targetId, host, mockPeer, mockBroadcast, mockEditor);
-    controller.crdt = {
-      handleLocalInsert: function(char, idx) {}
-    };
+  describe("localInsert", () => {
+    let controller;
+
+    beforeEach(() => {
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+      spyOn(controller.crdt, "handleLocalInsert");
+    })
 
     it("calls crdt.handleLocalInsert with the character object and index passed in", () => {
-      spyOn(controller.crdt, "handleLocalInsert");
       const identifier1 = new Identifier(4, 5);
       const identifier2 = new Identifier(6, 7);
       const newChar = new Char("a", 1, 0, [identifier1, identifier2]);
-      controller.handleInsert(newChar, 5);
+      controller.localInsert(newChar, 5);
+
       expect(controller.crdt.handleLocalInsert).toHaveBeenCalledWith(newChar, 5);
     });
   });
 
   describe("broadcastInsertion", () => {
-    const controller = new Controller(targetId, host, mockPeer, mockBroadcast, mockEditor);
-    controller.vector = {
-      increment: function() {},
-      getLocalVersion: function() { return 5 }
-    };
+    let controller, newChar;
 
-    const identifier1 = new Identifier(4, 5);
-    const identifier2 = new Identifier(6, 7);
-    const newChar = new Char("a", 1, 0, [identifier1, identifier2]);
+    beforeEach(() => {
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
 
-    it("calls vector.increment", () => {
-      spyOn(controller.vector, "increment");
-      controller.broadcastInsertion(newChar);
-      expect(controller.vector.increment).toHaveBeenCalled();
-    });
+      const identifier1 = new Identifier(4, 5);
+      const identifier2 = new Identifier(6, 7);
+      newChar = new Char("a", 1, 0, [identifier1, identifier2]);
+
+      spyOn(controller.vector, "getLocalVersion");
+      spyOn(controller.broadcast, "send");
+    })
 
     it("calls vector.getLocalVersion", () => {
-      spyOn(controller.vector, "getLocalVersion");
       controller.broadcastInsertion(newChar);
       expect(controller.vector.getLocalVersion).toHaveBeenCalled();
     });
 
-    it("calls broadcast.send with the correct message", () => {
-      spyOn(controller.broadcast, "send");
+    it("calls broadcast.send with the correct operation", () => {
       controller.broadcastInsertion(newChar);
-      const newMessage = {
-        op: 'insert',
+      const operation = {
+        type: 'insert',
         char: newChar,
-        version: 5
+        version: undefined,
       }
-      expect(controller.broadcast.send).toHaveBeenCalledWith(newMessage);
+      expect(controller.broadcast.send).toHaveBeenCalledWith(operation);
     });
   });
 
   describe("broadcastDeletion", () => {
-    const controller = new Controller(targetId, host, mockPeer, mockBroadcast, mockEditor);
-    controller.vector = {
-      increment: function() {},
-      getLocalVersion: function() { return 5 }
-    };
+    let controller, newChar;
 
-    const identifier1 = new Identifier(4, 5);
-    const identifier2 = new Identifier(6, 7);
-    const newChar = new Char("a", 1, 0, [identifier1, identifier2]);
+    beforeEach(() => {
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
 
-    it("calls vector.increment", () => {
-      spyOn(controller.vector, "increment");
-      controller.broadcastDeletion(newChar);
-      expect(controller.vector.increment).toHaveBeenCalled();
-    });
+      const identifier1 = new Identifier(4, 5);
+      const identifier2 = new Identifier(6, 7);
+      newChar = new Char("a", 1, 0, [identifier1, identifier2]);
+
+      spyOn(controller.vector, "getLocalVersion");
+      spyOn(controller.broadcast, "send");
+    })
 
     it("calls vector.getLocalVersion", () => {
-      spyOn(controller.vector, "getLocalVersion");
       controller.broadcastDeletion(newChar);
       expect(controller.vector.getLocalVersion).toHaveBeenCalled();
     });
 
-    it("calls broadcast.send with the correct message", () => {
-      spyOn(controller.broadcast, "send");
+    it("calls broadcast.send with the correct operation", () => {
       controller.broadcastDeletion(newChar);
-      const newMessage = {
-        op: 'delete',
+      const operation = {
+        type: 'delete',
         char: newChar,
-        version: 5
+        version: undefined,
       }
-      expect(controller.broadcast.send).toHaveBeenCalledWith(newMessage);
+      expect(controller.broadcast.send).toHaveBeenCalledWith(operation);
     });
   });
 
   describe("updateEditor", () => {
-    const controller = new Controller(targetId, host, mockPeer, mockBroadcast, mockEditor);
-    controller.crdt.text = "blah";
+    let controller;
+
+    beforeEach(() => {
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+      controller.crdt.text = "blah";
+      spyOn(controller.editor, "updateView");
+    })
 
     it("calls editor.updateView with the crdt's text", () => {
-      spyOn(controller.editor, "updateView");
       controller.updateEditor(controller.crdt.text);
       expect(controller.editor.updateView).toHaveBeenCalledWith("blah");
     });
