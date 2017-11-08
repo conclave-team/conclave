@@ -1,10 +1,16 @@
 import { JSDOM } from 'jsdom';
 
-//import Editor from '../lib/editor';
-//import CRDT from '../lib/crdt';
-//import SimpleMDE from 'simplemde';
+import Editor from '../lib/editor';
 
 describe("Editor", () => {
+  const mockMDE = {
+
+  };
+  const editor = new Editor(mockMDE);
+  editor.controller = {
+    crdt: { text: '' }
+  };
+
   describe("bindChangeEvent", () => {
     it("is triggered by a change in the codemirror", () => {
 
@@ -47,8 +53,39 @@ describe("Editor", () => {
   });
 
   describe("findLinearIdx", () => {
-    it("splits the editor contents by line", () => {
+    it("returns 0 if lines of text is empty", () => {
+      editor.controller.crdt.text = "";
+      expect(editor.findLinearIdx(0, 0)).toEqual(0);
+    });
 
+    it("returns -1 if line index not found in lines of text", () => {
+      editor.controller.crdt.text = "a";
+      expect(editor.findLinearIdx(1, 0)).toEqual(-1);
+    });
+
+    it("returns -1 if ch index not found in lines of text", () => {
+      editor.controller.crdt.text = "ab";
+      expect(editor.findLinearIdx(0, 3)).toEqual(-1);
+    })
+
+    it("calculates linear index from a single line of text", () => {
+      editor.controller.crdt.text = "abcdefghijklmnop";
+      expect(editor.findLinearIdx(0, 7)).toEqual(7);
+    });
+
+    it("calculates linear index from multiple lines of text", () => {
+      editor.controller.crdt.text = "abc\ndefgh\nijk\nlmnop";
+      expect(editor.findLinearIdx(1, 2)).toEqual(6);
+    });
+
+    it("can find the linear index on the last line of text", () => {
+      editor.controller.crdt.text = "abc\ndefgh\nijk\nlmnop";
+      expect(editor.findLinearIdx(3, 2)).toEqual(16);
+    });
+
+    it("can find the linear index at the end of a line of text", () => {
+      editor.controller.crdt.text = "abc\ndefgh\nijk\nlmnop";
+      expect(editor.findLinearIdx(1, 5)).toEqual(9);
     });
   });
 });
