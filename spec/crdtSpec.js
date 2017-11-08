@@ -252,7 +252,7 @@ describe("CRDT", () => {
     });
   });
 
-  describe("allocateId", () => {
+  describe("generateIdBetween", () => {
     let crdt;
 
     beforeEach(() => {
@@ -262,22 +262,22 @@ describe("CRDT", () => {
     });
 
     it("returns digit within min + boundary when strategy is + and boundary < distance", () => {
-      const digit = crdt.allocateId(1, 9, true);
+      const digit = crdt.generateIdBetween(1, 9, '+');
       expect(digit > 1 && digit <= 6).toBeTruthy();
     });
 
     it("returns digit between min and max when strategy is + and boundary > distance", () => {
-      const digit = crdt.allocateId(1, 4, true);
+      const digit = crdt.generateIdBetween(1, 4, '+');
       expect(digit > 1 && digit < 4).toBeTruthy();
     });
 
     it("returns digit within max - boundary when strategy is - and boundary < distance", () => {
-      const digit = crdt.allocateId(1, 9, false);
+      const digit = crdt.generateIdBetween(1, 9, '-');
       expect(digit >= 4 && digit < 9).toBeTruthy();
     });
 
     it("returns digit between min and max when strategy is - and boundary > distance", () => {
-      const digit = crdt.allocateId(1, 4, false);
+      const digit = crdt.generateIdBetween(1, 4, '-');
       expect(digit > 1 && digit < 4).toBeTruthy();
     });
   });
