@@ -11,6 +11,12 @@ describe("Editor", () => {
     crdt: { text: '' }
   };
 
+  describe("constructor", () => {
+    it("sets the mde passed in to the.mde", () => {
+      expect(editor.mde).toEqual(mockMDE);
+    });
+  });
+
   describe("bindChangeEvent", () => {
     it("is triggered by a change in the codemirror", () => {
 
