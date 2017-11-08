@@ -416,4 +416,52 @@ describe("CRDT", () => {
       expect(index).toBe(1);
     });
   });
+
+  describe('insertText', () => {
+    let siteId;
+    let siteCounter;
+    let mockController;
+    let crdt;
+
+    beforeEach(() => {
+      siteId = Math.floor(Math.random() * 1000);
+      siteCounter = Math.floor(Math.random() * 1000);
+      mockController = {
+        siteId: siteId,
+        broadcastInsertion: function() {},
+        updateEditor: function() {},
+      }
+      crdt = new CRDT(mockController);
+    });
+
+    it('inserts character in the correct index', () => {
+      crdt.text = 'tet';
+      crdt.insertText('s', 2);
+      expect(crdt.text).toBe('test');
+    });
+  });
+
+  describe('deleteText', () => {
+    let siteId;
+    let siteCounter;
+    let mockController;
+    let crdt;
+
+    beforeEach(() => {
+      siteId = Math.floor(Math.random() * 1000);
+      siteCounter = Math.floor(Math.random() * 1000);
+      mockController = {
+        siteId: siteId,
+        broadcastInsertion: function() {},
+        updateEditor: function() {},
+      }
+      crdt = new CRDT(mockController);
+    });
+
+    it('deletes character in the correct index', () => {
+      crdt.text = 'tester';
+      crdt.deleteText(4);
+      expect(crdt.text).toBe('testr');
+    });
+  });
 });
