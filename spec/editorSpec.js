@@ -4,29 +4,39 @@ import Editor from '../lib/editor';
 
 describe("Editor", () => {
   const mockMDE = {
-
+    // codemirror: {
+    //   on: function() {}
+    // }
   };
   const editor = new Editor(mockMDE);
   editor.controller = {
     crdt: { text: '' }
   };
 
+  describe("constructor", () => {
+    it("sets the mde passed in to the.mde", () => {
+      expect(editor.mde).toEqual(mockMDE);
+    });
+  });
+
   describe("bindChangeEvent", () => {
-    it("is triggered by a change in the codemirror", () => {
-
-    });
-
-    it("changes the character text to a new line", () => {
-
-    });
-
-    it("calls controller.handleInsert when change was an insert", () => {
-
-    });
-
-    it("calls controller.handleDelete when change was a deletion", () => {
-
-    });
+    // it("is triggered by a change in the codemirror", () => {
+    //   spyOn(editor.mde.codemirror, "on");
+    //   editor.mde.codemirror.trigger("change");
+    //   expect(editor.mde.codemirror.on).toHaveBeenCalled();
+    // });
+    //
+    // it("changes the character text to a new line", () => {
+    //
+    // });
+    //
+    // it("calls controller.handleInsert when change was an insert", () => {
+    //
+    // });
+    //
+    // it("calls controller.handleDelete when change was a deletion", () => {
+    //
+    // });
   });
 
   describe("updateView", () => {
@@ -34,22 +44,21 @@ describe("Editor", () => {
       const dom = new JSDOM(`<!DOCTYPE html><textarea></textarea>`);
     });
 
-    it("adds text to the view", () => {
-      // document.createElement("textarea");
-      // const editor = new Editor(null);
-      // const newText = "I am here."
-      // editor.updateView(newText);
-      //
-      // expect(editor.mde.value()).toEqual(newText);
-    });
-
-    it("removes text from the view", () => {
-
-    });
-
-    it("retains the cursor position", () => {
-
-    });
+    // it("adds text to the view", () => {
+    //   const editor = new Editor(null);
+    //   const newText = "I am here."
+    //   editor.updateView(newText);
+    //
+    //   expect(editor.mde.value()).toEqual(newText);
+    // });
+    //
+    // it("removes text from the view", () => {
+    //
+    // });
+    //
+    // it("retains the cursor position", () => {
+    //
+    // });
   });
 
   describe("findLinearIdx", () => {
