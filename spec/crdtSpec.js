@@ -190,67 +190,106 @@ describe("CRDT", () => {
 
   describe('generatePosBetween', () => {
     let crdt;
+    let boundary;
+    let base;
 
     beforeEach(() => {
-      const boundary = 5;
-      const base = 16;
+      boundary = 5;
+      base = 16;
       crdt = new CRDT(mockController, base, boundary);
     });
 
-    it('returns position with digit in (1...boundary) when both arrays are empty', () => {
-      const digit = crdt.generatePosBetween([], [])[0].digit;
+    it('returns (0 < newDigit < boundary) when both positions are empty', () => {
+      const newDigit = crdt.generatePosBetween([], [])[0].digit;
 
-      expect(digit > 0 && digit <= crdt.boundary).toBeTruthy();
+      expect(0 < newDigit && newDigit < boundary).toBeTruthy();
     });
 
-    it('returns position with digit in (3..7) when first position digit is 2', () => {
-      const pos1 = [new Identifier(2, siteId)];
-      const digit = crdt.generatePosBetween(pos1, [])[0].digit
+    it('returns (0 < newDigit <= digit2) when 1st position is empty', () => {
+      const digit2 = 3;
+      const pos2 = [new Identifier(digit2, siteId)];
+      const newDigit = crdt.generatePosBetween([], pos2)[0].digit;
 
-      expect(digit > 2 && digit <= (2 + crdt.boundary)).toBeTruthy();
+      expect(0 < newDigit && newDigit < digit2).toBeTruthy();
     });
 
-    it('returns position with digit in (1..2) when second position digit is 3', () => {
-      const pos2 = [new Identifier(3, siteId)];
-      const digit = crdt.generatePosBetween([], pos2)[0].digit;
+    it('returns (digit1 < newDigit < digit1 + boundary) when 2nd position is empty', () => {
+      const digit1 = 2;
+      const pos1 = [new Identifier(digit1, siteId)];
+      const newDigit = crdt.generatePosBetween(pos1, [])[0].digit
 
-      expect(digit > 0 && digit < 3).toBeTruthy();
+      expect(digit1 < newDigit && newDigit < (digit1 + boundary)).toBeTruthy();
     });
 
-    it('returns position with second digit in (27..31) when two positions have a difference of 1', () => {
-      const pos1 = [new Identifier(2, siteId)];
-      const pos2 = [new Identifier(3, siteId)];
+    it('returns (digit1 < newDigit < digit2) when difference is greater than 1 and less than boundary', () => {
+      const digit1 = 1;
+      const digit2 = 4;
+      const pos1 = [new Identifier(digit1, siteId)];
+      const pos2 = [new Identifier(digit2, siteId)];
+      const newDigit = crdt.generatePosBetween(pos1, pos2)[0].digit
+
+      expect(digit1 < newDigit && newDigit < digit2).toBeTruthy();
+    });
+
+    it('returns (digit1 < newDigit < boundary) when difference is greater than 1 and greater than boundary', () => {
+      const digit1 = 1;
+      const digit2 = 10;
+      const pos1 = [new Identifier(digit1, siteId)];
+      const pos2 = [new Identifier(digit2, siteId)];
+      const newDigit = crdt.generatePosBetween(pos1, pos2)[0].digit
+
+      expect(digit1 < newDigit && newDigit < boundary).toBeTruthy();
+    });
+
+    it('returns (226 (base - boundary) < newCombinedDigit < 2.32 (base)) when two positions have a difference of 1 and 2nd level is empty', () => {
+      const digit1 = 2;
+      const digit2 = 3;
+      const pos1 = [new Identifier(digit1, siteId)];
+      const pos2 = [new Identifier(digit2, siteId)];
       const newPos = crdt.generatePosBetween(pos1, pos2);
-      const combinedPositionDigits = +newPos.map(id => id.digit).join('');
+      const newCombinedDigit = +newPos.map(id => id.digit).join('');
 
-      expect(combinedPositionDigits > 226 && combinedPositionDigits < 232).toBeTruthy();
+      expect(226 < newCombinedDigit && newCombinedDigit < 232).toBeTruthy();
     });
 
-    it('returns position with second digit in (27) when same positions but different siteIds', () => {
-      const pos1 = [new Identifier(2, siteId)];
-      const pos2 = [new Identifier(2, siteId + 1)];
+    it('returns (228 (base - digit1b) < newCombinedDigit < 2.32 (base)) when two positions have a difference of 1 and 2nd level is not empty', () => {
+      const digit1a = 2;
+      const digit1b = 28;
+      const digit2 = 3;
+      const pos1 = [new Identifier(digit1a, siteId), new Identifier(digit1b, siteId)];
+      const pos2 = [new Identifier(digit2, siteId)];
       const newPos = crdt.generatePosBetween(pos1, pos2);
-      const combinedPositionDigits = newPos.map(id => id.digit).join('');
+      const newCombinedDigit = +newPos.map(id => id.digit).join('');
 
-      expect(combinedPositionDigits > 226 && combinedPositionDigits < 232).toBeTruthy();
+      expect(228 < newCombinedDigit && newCombinedDigit < 232).toBeTruthy();
     });
 
-    it('returns position between two positions with multiple ids', () => {
+    it('returns (226 (base - boundary) < newCombinedDigit < 2.32 (base)) when same positions and pos1.siteID < pos2.siteId', () => {
+      const digit = 2;
+      const pos1 = [new Identifier(digit, siteId)];
+      const pos2 = [new Identifier(digit, siteId + 1)];
+      const newPos = crdt.generatePosBetween(pos1, pos2);
+      const newCombinedDigit = newPos.map(id => id.digit).join('');
+
+      expect(226 < newCombinedDigit && newCombinedDigit < 232).toBeTruthy();
+    });
+
+    it('returns (24 < newCombinedDigit < 28) with same 1st level ids and 2nd level ids diff greater than 1', () => {
       const pos1 = [new Identifier(2, siteId), new Identifier(4, siteId)];
       const pos2 = [new Identifier(2, siteId), new Identifier(8, siteId)];
       const newPos = crdt.generatePosBetween(pos1, pos2);
-      const combinedPositionDigits = +newPos.map(id => id.digit).join('');
+      const newCombinedDigit = +newPos.map(id => id.digit).join('');
 
-      expect(combinedPositionDigits > 24 && combinedPositionDigits < 28).toBeTruthy();
+      expect(24 < newCombinedDigit && newCombinedDigit < 28).toBeTruthy();
     });
 
     it('generates a position even when position arrays are different lengths', () => {
       const pos1 = [new Identifier(2, siteId), new Identifier(2, siteId), new Identifier(4, siteId)];
       const pos2 = [new Identifier(2, siteId), new Identifier(8, siteId)];
       const newPos = crdt.generatePosBetween(pos1, pos2);
-      const combinedPositionDigits = +newPos.map(id => id.digit).join('');
+      const newCombinedDigit = +newPos.map(id => id.digit).join('');
 
-      expect(combinedPositionDigits > 22 && combinedPositionDigits < 28).toBeTruthy();
+      expect(22 < newCombinedDigit && newCombinedDigit < 28).toBeTruthy();
     });
 
     it('throws a sorting error if positions are sorted incorrectly', () => {
@@ -261,7 +300,7 @@ describe("CRDT", () => {
     });
   });
 
-  describe("allocateId", () => {
+  describe("generateIdBetween", () => {
     let crdt;
 
     beforeEach(() => {
@@ -271,22 +310,22 @@ describe("CRDT", () => {
     });
 
     it("returns digit within min + boundary when strategy is + and boundary < distance", () => {
-      const digit = crdt.allocateId(1, 9, true);
+      const digit = crdt.generateIdBetween(1, 9, '+');
       expect(digit > 1 && digit <= 6).toBeTruthy();
     });
 
     it("returns digit between min and max when strategy is + and boundary > distance", () => {
-      const digit = crdt.allocateId(1, 4, true);
+      const digit = crdt.generateIdBetween(1, 4, '+');
       expect(digit > 1 && digit < 4).toBeTruthy();
     });
 
     it("returns digit within max - boundary when strategy is - and boundary < distance", () => {
-      const digit = crdt.allocateId(1, 9, false);
+      const digit = crdt.generateIdBetween(1, 9, '-');
       expect(digit >= 4 && digit < 9).toBeTruthy();
     });
 
     it("returns digit between min and max when strategy is - and boundary > distance", () => {
-      const digit = crdt.allocateId(1, 4, false);
+      const digit = crdt.generateIdBetween(1, 4, '-');
       expect(digit > 1 && digit < 4).toBeTruthy();
     });
   });
