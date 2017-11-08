@@ -3,3 +3,4 @@
 /build
 debug.js
 .DS_Store
+/performance/logs
