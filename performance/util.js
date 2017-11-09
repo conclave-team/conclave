@@ -1,3 +1,7 @@
+import Char from '../lib/char';
+import CRDT from '../lib/crdt';
+import { mockController } from './all';
+
 const CELL_1_SIZE = 19;
 const CELL_2_SIZE = 23;
 const CELL_3_SIZE = 22;
@@ -16,6 +20,13 @@ function insertRandom(crdt, numberOfOperations) {
   return end - start;
 }
 
+function remoteInsertRandom(crdt, numberOfOperations) {
+  const chars = generateChars(numberOfOperations);
+  const randomChars = shuffle(chars);
+
+  return remoteInsert(crdt, randomChars);
+}
+
 function insertBeginning(crdt, numberOfOperations) {
   const start = Date.now();
 
@@ -27,12 +38,34 @@ function insertBeginning(crdt, numberOfOperations) {
   return end - start;
 }
 
+function remoteInsertBeginning(crdt, numberOfOperations) {
+  const chars = generateChars(numberOfOperations);
+  const descChars = chars.reverse();
+
+  return remoteInsert(crdt, descChars);
+}
+
 function insertEnd(crdt, numberOfOperations) {
   const start = Date.now();
 
   for(let i = 0; i < numberOfOperations; i++) {
     crdt.handleLocalInsert('a', i);
   }
+
+  const end = Date.now();
+  return end - start;
+}
+
+function remoteInsertEnd(crdt, numberOfOperations) {
+  const ascChars = generateChars(numberOfOperations);
+
+  return remoteInsert(crdt, ascChars);
+}
+
+function remoteInsert(crdt, chars) {
+  const start = Date.now();
+
+  chars.forEach(char => crdt.insertChar(char));
 
   const end = Date.now();
   return end - start;
@@ -51,6 +84,13 @@ function deleteRandom(crdt) {
   return end - start;
 }
 
+function remoteDeleteRandom(crdt) {
+  let toDel = [];
+  crdt.struct.forEach(char => toDel.push(char));
+  const randomToDel = shuffle(toDel);
+  return remoteDelete(crdt, randomToDel);
+}
+
 function deleteBeginning(crdt) {
   const start = Date.now();
 
@@ -60,6 +100,12 @@ function deleteBeginning(crdt) {
 
   const end = Date.now();
   return end - start;
+}
+
+function remoteDeleteBeginning(crdt) {
+  let toDel = [];
+  crdt.struct.forEach(char => toDel.push(char));
+  return remoteDelete(crdt, toDel);
 }
 
 function deleteEnd(crdt) {
@@ -73,18 +119,66 @@ function deleteEnd(crdt) {
   return end - start;
 }
 
+function remoteDeleteEnd(crdt) {
+  let toDel = [];
+  crdt.struct.forEach(char => toDel.push(char));
+  const reverseToDel = toDel.reverse();
+  return remoteDelete(crdt, reverseToDel);
+}
+
+function remoteDelete(crdt, chars) {
+  const start = Date.now();
+
+  chars.forEach(char => crdt.deleteChar(char));
+
+  const end = Date.now();
+  return end - start;
+}
+
+function generateChars(numberOfOperations) {
+  const structs = generateRemoteStructs(numberOfOperations);
+  const charObjects = [];
+  for (let i = 0; i < structs[0].length; i++) {
+    structs.forEach(struct => charObjects.push(struct[i]));
+  }
+  return charObjects;
+}
+
+function generateRemoteStructs(numberOfOperations) {
+  const remoteCRDTs = generateRemoteCRDTs(numberOfOperations / 5);
+
+  const numOfOps = numberOfOperations / remoteCRDTs.length;
+
+  remoteCRDTs.forEach(crdt => insertEnd(crdt, numOfOps));
+
+  return remoteCRDTs.map(crdt => crdt.struct);
+}
+
+function generateRemoteCRDTs(num) {
+  let CRDTs = [];
+  let crdt;
+  for (let i = 0; i < num; i++) {
+    crdt = new CRDT(mockController());
+    CRDTs.push(crdt);
+  }
+  return CRDTs;
+}
+
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function avgIdLength(crdt) {
-  const convertCharIntoDigit = (char) => char.position.map(id => id.digit).join('');
+  const convertCharIntoDigit = (char) => char.position.map(id => id.digit).join(''); //this isn't working?
   const idArray = crdt.struct.map(convertCharIntoDigit);
+  // const idArray = crdt.struct.map(char => char.position.map(id => id.digit).join(''));
   const digitLengthSum = idArray.reduce((acc, id) => { return acc + id.length }, 0);
 
   return Math.floor(digitLengthSum / idArray.length);
-}
-
-function reset(crdt) {
-  crdt.struct = [];
-  crdt.counter = 0;
-  crdt.text = '';
 }
 
 function average(time, operations) {
@@ -102,7 +196,7 @@ function addPadding(value, cellSize) {
   return (' ').repeat(Math.floor(padding)) + value + (' ').repeat(Math.ceil(padding));
 }
 
-function addInsertRow(operations, crdt, func) {
+function addRowWithId(operations, crdt, func) {
   const totalTime = func(crdt, operations);
   const cell1 = addPadding(operations, CELL_1_SIZE);
   const cell2 = addPadding(totalTime, CELL_2_SIZE);
@@ -113,7 +207,7 @@ function addInsertRow(operations, crdt, func) {
 ${'-'.repeat(87)}`
 }
 
-function addDeleteRow(operations, crdt, func) {
+function addRow(operations, crdt, func) {
   const totalTime = func(crdt, operations);
   const cell1 = addPadding(operations, CELL_1_SIZE);
   const cell2 = addPadding(totalTime, CELL_2_SIZE);
@@ -136,13 +230,19 @@ function getTimestamp() {
 }
 
 export {
-  addInsertRow,
-  addDeleteRow,
+  addRow,
+  addRowWithId,
   insertRandom,
+  remoteInsertRandom,
   insertEnd,
+  remoteInsertEnd,
   insertBeginning,
+  remoteInsertBeginning,
   deleteRandom,
+  remoteDeleteRandom,
   deleteEnd,
+  remoteDeleteEnd,
   deleteBeginning,
+  remoteDeleteBeginning,
   getTimestamp,
 };
