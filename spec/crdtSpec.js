@@ -184,22 +184,18 @@ describe("CRDT", () => {
 
   describe('generatePosBetween', () => {
     let crdt;
-    let boundary;
-    let base;
 
     beforeEach(() => {
-      boundary = 5;
-      base = 16;
-      crdt = new CRDT(mockController, base, boundary);
+      crdt = new CRDT(mockController);
     });
 
-    it('returns (0 < newDigit < boundary) when both positions are empty', () => {
+    it('returns (0 < newDigit <= boundary) when both positions are empty', () => {
       const newDigit = crdt.generatePosBetween([], [])[0].digit;
 
-      expect(0 < newDigit && newDigit < boundary).toBeTruthy();
+      expect(0 < newDigit && newDigit <= crdt.boundary).toBeTruthy();
     });
 
-    it('returns (0 < newDigit <= digit2) when 1st position is empty', () => {
+    it('returns (0 < newDigit < digit2) when 1st position is empty', () => {
       const digit2 = 3;
       const pos2 = [new Identifier(digit2, siteId)];
       const newDigit = crdt.generatePosBetween([], pos2)[0].digit;
@@ -207,12 +203,12 @@ describe("CRDT", () => {
       expect(0 < newDigit && newDigit < digit2).toBeTruthy();
     });
 
-    it('returns (digit1 < newDigit < digit1 + boundary) when 2nd position is empty', () => {
+    it('returns (digit1 < newDigit <= digit1 + boundary) when 2nd position is empty', () => {
       const digit1 = 2;
       const pos1 = [new Identifier(digit1, siteId)];
       const newDigit = crdt.generatePosBetween(pos1, [])[0].digit
 
-      expect(digit1 < newDigit && newDigit < (digit1 + boundary)).toBeTruthy();
+      expect(digit1 < newDigit && newDigit <= (digit1 + crdt.boundary)).toBeTruthy();
     });
 
     it('returns (digit1 < newDigit < digit2) when difference is greater than 1 and less than boundary', () => {
@@ -225,14 +221,14 @@ describe("CRDT", () => {
       expect(digit1 < newDigit && newDigit < digit2).toBeTruthy();
     });
 
-    it('returns (digit1 < newDigit < boundary) when difference is greater than 1 and greater than boundary', () => {
+    it('returns (digit1 < newDigit <= digit1 + boundary) when difference is greater than 1 and greater than boundary', () => {
       const digit1 = 1;
       const digit2 = 10;
       const pos1 = [new Identifier(digit1, siteId)];
       const pos2 = [new Identifier(digit2, siteId)];
       const newDigit = crdt.generatePosBetween(pos1, pos2)[0].digit
 
-      expect(digit1 < newDigit && newDigit < boundary).toBeTruthy();
+      expect(digit1 < newDigit && newDigit <= (digit1 + crdt.boundary)).toBeTruthy();
     });
 
     it('returns (226 (base - boundary) < newCombinedDigit < 2.32 (base)) when two positions have a difference of 1 and 2nd level is empty', () => {
@@ -298,9 +294,7 @@ describe("CRDT", () => {
     let crdt;
 
     beforeEach(() => {
-      const boundary = 5;
-      const base = 16;
-      crdt = new CRDT(mockController, base, boundary);
+      crdt = new CRDT(mockController);
     });
 
     it("returns digit within min + boundary when strategy is + and boundary < distance", () => {
