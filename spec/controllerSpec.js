@@ -365,7 +365,7 @@ describe("Controller", () => {
       const identifier1 = new Identifier(4, 5);
       const identifier2 = new Identifier(6, 7);
       const newChar = new Char("a", 1, 0, [identifier1, identifier2]);
-      controller.localInsert(newChar, 5);
+      controller.localInsert([newChar], 5);
 
       expect(controller.crdt.handleLocalInsert).toHaveBeenCalledWith(newChar, 5);
     });
