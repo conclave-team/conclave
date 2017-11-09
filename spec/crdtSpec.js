@@ -19,7 +19,6 @@ describe("CRDT", () => {
     beforeEach(() => {
       crdt = new CRDT(mockController);
       spyOn(crdt.controller, 'broadcastInsertion');
-      spyOn(crdt.controller, 'updateEditor');
       spyOn(crdt.vector, 'increment');
     });
 
@@ -37,11 +36,6 @@ describe("CRDT", () => {
     it("calls broadcastInsertion", function() {
       crdt.handleLocalInsert('A', 0);
       expect(crdt.controller.broadcastInsertion).toHaveBeenCalled();
-    });
-
-    it("calls updateEditor", function() {
-      crdt.handleLocalInsert('A', 0);
-      expect(crdt.controller.updateEditor).toHaveBeenCalled();
     });
   });
 

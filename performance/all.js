@@ -2,20 +2,30 @@ import CRDT from '../lib/crdt';
 import * as Util from './util';
 import fs from 'fs';
 
-const logPath = 'performance/logs'
-const siteId = Math.floor(Math.random() * 1000);
-const mockController = {
-  siteId: siteId,
-  broadcastInsertion: function() {},
-  broadcastDeletion: function() {},
-  updateEditor: function() {},
+const logPath = 'performance/logs';
+
+export function mockController() {
+  return {
+    siteId: Math.floor(Math.random() * 1000),
+    broadcastInsertion: function() {},
+    broadcastDeletion: function() {},
+    updateEditor: function() {},
+    vector: {
+      localVersion: {
+        counter: 0
+      },
+      increment: function() {
+        this.localVersion.counter++;
+      }
+    }
+  }
 }
 
-const crdt1 = new CRDT(mockController);
-const crdt2 = new CRDT(mockController);
-const crdt3 = new CRDT(mockController);
-const crdt4 = new CRDT(mockController);
-const crdt5 = new CRDT(mockController);
+const crdt1 = new CRDT(mockController());
+const crdt2 = new CRDT(mockController());
+const crdt3 = new CRDT(mockController());
+const crdt4 = new CRDT(mockController());
+const crdt5 = new CRDT(mockController());
 
 let table = `
 #### PERFORMANCE METRICS
@@ -24,81 +34,145 @@ let table = `
 ## RANDOM
 ---------
 
-# INSERTIONS
+# LOCAL INSERTIONS
 ---------------------------------------------------------------------------------------
 |  # of Operations  |  Total Execute Time   | Avg. Operation Time  |  Avg. ID Length  |
 |                   |   (in milliseconds)   |  (in milliseconds)   |                  |
 ---------------------------------------------------------------------------------------
-${Util.addInsertRow(10, crdt1, Util.insertRandom)}
-${Util.addInsertRow(100, crdt2, Util.insertRandom)}
-${Util.addInsertRow(1000, crdt3, Util.insertRandom)}
-${Util.addInsertRow(10000, crdt4, Util.insertRandom)}
-${Util.addInsertRow(100000, crdt5, Util.insertRandom)}
+${Util.addRowWithId(10, crdt1, Util.insertRandom)}
+${Util.addRowWithId(100, crdt2, Util.insertRandom)}
+${Util.addRowWithId(1000, crdt3, Util.insertRandom)}
+${Util.addRowWithId(10000, crdt4, Util.insertRandom)}
+${Util.addRowWithId(100000, crdt5, Util.insertRandom)}
 
-
-# DELETIONS
+# LOCAL DELETIONS
 --------------------------------------------------------------------
 |  # of Operations  |  Total Execute Time   | Avg. Operation Time  |
 |                   |   (in milliseconds)   |  (in milliseconds)   |
 --------------------------------------------------------------------
-${Util.addDeleteRow(10, crdt1, Util.deleteRandom)}
-${Util.addDeleteRow(100, crdt2, Util.deleteRandom)}
-${Util.addDeleteRow(1000, crdt3, Util.deleteRandom)}
-${Util.addDeleteRow(10000, crdt4, Util.deleteRandom)}
-${Util.addDeleteRow(100000, crdt5, Util.deleteRandom)}
+${Util.addRow(10, crdt1, Util.deleteRandom)}
+${Util.addRow(100, crdt2, Util.deleteRandom)}
+${Util.addRow(1000, crdt3, Util.deleteRandom)}
+${Util.addRow(10000, crdt4, Util.deleteRandom)}
+${Util.addRow(100000, crdt5, Util.deleteRandom)}
+
+# REMOTE INSERTIONS
+--------------------------------------------------------------------
+|  # of Operations  |  Total Execute Time   | Avg. Operation Time  |
+|                   |   (in milliseconds)   |  (in milliseconds)   |
+--------------------------------------------------------------------
+${Util.addRow(10, crdt1, Util.remoteInsertRandom)}
+${Util.addRow(100, crdt2, Util.remoteInsertRandom)}
+${Util.addRow(1000, crdt3, Util.remoteInsertRandom)}
+${Util.addRow(10000, crdt4, Util.remoteInsertRandom)}
+${Util.addRow(100000, crdt5, Util.remoteInsertRandom)}
+
+# REMOTE DELETIONS
+--------------------------------------------------------------------
+|  # of Operations  |  Total Execute Time   | Avg. Operation Time  |
+|                   |   (in milliseconds)   |  (in milliseconds)   |
+--------------------------------------------------------------------
+${Util.addRow(10, crdt1, Util.remoteDeleteRandom)}
+${Util.addRow(100, crdt2, Util.remoteDeleteRandom)}
+${Util.addRow(1000, crdt3, Util.remoteDeleteRandom)}
+${Util.addRow(10000, crdt4, Util.remoteDeleteRandom)}
+${Util.addRow(100000, crdt5, Util.remoteDeleteRandom)}
 
 
 ## AT THE BEGINNING
 -------------------
 
-
-# INSERTIONS
+# LOCAL INSERTIONS
 ---------------------------------------------------------------------------------------
 |  # of Operations  |  Total Execute Time   | Avg. Operation Time  |  Avg. ID Length  |
 |                   |   (in milliseconds)   |  (in milliseconds)   |                  |
 ---------------------------------------------------------------------------------------
-${Util.addInsertRow(10, crdt1, Util.insertBeginning)}
-${Util.addInsertRow(100, crdt2, Util.insertBeginning)}
-${Util.addInsertRow(1000, crdt3, Util.insertBeginning)}
-${Util.addInsertRow(10000, crdt4, Util.insertBeginning)}
-${Util.addInsertRow(100000, crdt5, Util.insertBeginning)}
+${Util.addRowWithId(10, crdt1, Util.insertBeginning)}
+${Util.addRowWithId(100, crdt2, Util.insertBeginning)}
+${Util.addRowWithId(1000, crdt3, Util.insertBeginning)}
+${Util.addRowWithId(10000, crdt4, Util.insertBeginning)}
+${Util.addRowWithId(100000, crdt5, Util.insertBeginning)}
 
-# DELETIONS
+# LOCAL DELETIONS
 --------------------------------------------------------------------
 |  # of Operations  |  Total Execute Time   | Avg. Operation Time  |
 |                   |   (in milliseconds)   |  (in milliseconds)   |
 --------------------------------------------------------------------
-${Util.addDeleteRow(10, crdt1, Util.deleteBeginning)}
-${Util.addDeleteRow(100, crdt2, Util.deleteBeginning)}
-${Util.addDeleteRow(1000, crdt3, Util.deleteBeginning)}
-${Util.addDeleteRow(10000, crdt4, Util.deleteBeginning)}
-${Util.addDeleteRow(100000, crdt5, Util.deleteBeginning)}
+${Util.addRow(10, crdt1, Util.deleteBeginning)}
+${Util.addRow(100, crdt2, Util.deleteBeginning)}
+${Util.addRow(1000, crdt3, Util.deleteBeginning)}
+${Util.addRow(10000, crdt4, Util.deleteBeginning)}
+${Util.addRow(100000, crdt5, Util.deleteBeginning)}
+
+# REMOTE INSERTIONS
+--------------------------------------------------------------------
+|  # of Operations  |  Total Execute Time   | Avg. Operation Time  |
+|                   |   (in milliseconds)   |  (in milliseconds)   |
+--------------------------------------------------------------------
+${Util.addRow(10, crdt1, Util.remoteInsertBeginning)}
+${Util.addRow(100, crdt2, Util.remoteInsertBeginning)}
+${Util.addRow(1000, crdt3, Util.remoteInsertBeginning)}
+${Util.addRow(10000, crdt4, Util.remoteInsertBeginning)}
+${Util.addRow(100000, crdt5, Util.remoteInsertBeginning)}
+
+# REMOTE DELETIONS
+--------------------------------------------------------------------
+|  # of Operations  |  Total Execute Time   | Avg. Operation Time  |
+|                   |   (in milliseconds)   |  (in milliseconds)   |
+--------------------------------------------------------------------
+${Util.addRow(10, crdt1, Util.remoteDeleteBeginning)}
+${Util.addRow(100, crdt2, Util.remoteDeleteBeginning)}
+${Util.addRow(1000, crdt3, Util.remoteDeleteBeginning)}
+${Util.addRow(10000, crdt4, Util.remoteDeleteBeginning)}
+${Util.addRow(100000, crdt5, Util.remoteDeleteBeginning)}
 
 
 ## AT THE END
 -------------
 
-# INSERTIONS
+# LOCAL INSERTIONS
 ---------------------------------------------------------------------------------------
 |  # of Operations  |  Total Execute Time   | Avg. Operation Time  |  Avg. ID Length  |
 |                   |   (in milliseconds)   |  (in milliseconds)   |                  |
 ---------------------------------------------------------------------------------------
-${Util.addInsertRow(10, crdt1, Util.insertEnd)}
-${Util.addInsertRow(100, crdt2, Util.insertEnd)}
-${Util.addInsertRow(1000, crdt3, Util.insertEnd)}
-${Util.addInsertRow(10000, crdt4, Util.insertEnd)}
-${Util.addInsertRow(100000, crdt5, Util.insertEnd)}
+${Util.addRowWithId(10, crdt1, Util.insertEnd)}
+${Util.addRowWithId(100, crdt2, Util.insertEnd)}
+${Util.addRowWithId(1000, crdt3, Util.insertEnd)}
+${Util.addRowWithId(10000, crdt4, Util.insertEnd)}
+${Util.addRowWithId(100000, crdt5, Util.insertEnd)}
 
-# DELETIONS
+# LOCAL DELETIONS
 --------------------------------------------------------------------
 |  # of Operations  |  Total Execute Time   | Avg. Operation Time  |
 |                   |   (in milliseconds)   |  (in milliseconds)   |
 --------------------------------------------------------------------
-${Util.addDeleteRow(10, crdt1, Util.deleteEnd)}
-${Util.addDeleteRow(100, crdt2, Util.deleteEnd)}
-${Util.addDeleteRow(1000, crdt3, Util.deleteEnd)}
-${Util.addDeleteRow(10000, crdt4, Util.deleteEnd)}
-${Util.addDeleteRow(100000, crdt5, Util.deleteEnd)}
+${Util.addRow(10, crdt1, Util.deleteEnd)}
+${Util.addRow(100, crdt2, Util.deleteEnd)}
+${Util.addRow(1000, crdt3, Util.deleteEnd)}
+${Util.addRow(10000, crdt4, Util.deleteEnd)}
+${Util.addRow(100000, crdt5, Util.deleteEnd)}
+
+# REMOTE INSERTIONS
+--------------------------------------------------------------------
+|  # of Operations  |  Total Execute Time   | Avg. Operation Time  |
+|                   |   (in milliseconds)   |  (in milliseconds)   |
+--------------------------------------------------------------------
+${Util.addRow(10, crdt1, Util.remoteInsertEnd)}
+${Util.addRow(100, crdt2, Util.remoteInsertEnd)}
+${Util.addRow(1000, crdt3, Util.remoteInsertEnd)}
+${Util.addRow(10000, crdt4, Util.remoteInsertEnd)}
+${Util.addRow(100000, crdt5, Util.remoteInsertEnd)}
+
+# REMOTE DELETIONS
+--------------------------------------------------------------------
+|  # of Operations  |  Total Execute Time   | Avg. Operation Time  |
+|                   |   (in milliseconds)   |  (in milliseconds)   |
+--------------------------------------------------------------------
+${Util.addRow(10, crdt1, Util.remoteDeleteEnd)}
+${Util.addRow(100, crdt2, Util.remoteDeleteEnd)}
+${Util.addRow(1000, crdt3, Util.remoteDeleteEnd)}
+${Util.addRow(10000, crdt4, Util.remoteDeleteEnd)}
+${Util.addRow(100000, crdt5, Util.remoteDeleteEnd)}
 `;
 
 fs.writeFile(`${logPath}/${Util.getTimestamp()}.log`, table, function(err) {
