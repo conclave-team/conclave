@@ -9,6 +9,14 @@ const mockController = {
   broadcastInsertion: function() {},
   broadcastDeletion: function() {},
   updateEditor: function() {},
+  vector: {
+    localVersion: {
+      counter: 0
+    },
+    increment: function() {
+      this.localVersion.counter++;
+    }
+  }
 }
 
 const crdt1 = new CRDT(mockController);
