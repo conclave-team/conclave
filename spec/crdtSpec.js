@@ -19,7 +19,6 @@ describe("CRDT", () => {
     beforeEach(() => {
       crdt = new CRDT(mockController);
       spyOn(crdt.controller, 'broadcastInsertion');
-      spyOn(crdt.controller, 'updateEditor');
       spyOn(crdt.vector, 'increment');
     });
 
@@ -38,14 +37,9 @@ describe("CRDT", () => {
       crdt.handleLocalInsert('A', 0);
       expect(crdt.controller.broadcastInsertion).toHaveBeenCalled();
     });
-
-    it("calls updateEditor", function() {
-      crdt.handleLocalInsert('A', 0);
-      expect(crdt.controller.updateEditor).toHaveBeenCalled();
-    });
   });
 
-  describe("insertChar", () => {
+  describe("handleRemoteInsert", () => {
     let crdt;
     let char1;
     let siteCounter;
@@ -61,32 +55,32 @@ describe("CRDT", () => {
 
     it("adds char to CRDT", () => {
       expect(crdt.struct.length).toBe(0)
-      crdt.insertChar(char1);
+      crdt.handleRemoteInsert(char1);
       expect(crdt.struct.length).toBe(1);
     });
 
     it("sorts chars based on position", () => {
       const char2 = new Char('B', siteCounter + 1, siteId, [new Identifier(0, 0), new Identifier(5, 0)]);
 
-      crdt.insertChar(char1);
-      crdt.insertChar(char2);
+      crdt.handleRemoteInsert(char1);
+      crdt.handleRemoteInsert(char2);
       expect(crdt.struct).toEqual([char2, char1]);
       expect(crdt.text).toBe('BA');
     });
 
     it("inserts the char value into the text property", () => {
       expect(crdt.text).toBe('');
-      crdt.insertChar(char1);
+      crdt.handleRemoteInsert(char1);
       expect(crdt.text).toBe('A');
     });
 
     it("calls updateEditor", function() {
-      crdt.insertChar(char1);
+      crdt.handleRemoteInsert(char1);
       expect(crdt.controller.updateEditor).toHaveBeenCalled();
     });
 
     it('does not call vector "increment"', () => {
-      crdt.insertChar(char1);
+      crdt.handleRemoteInsert(char1);
       expect(crdt.vector.increment).not.toHaveBeenCalled();
     });
   });
@@ -100,8 +94,8 @@ describe("CRDT", () => {
       crdt = new CRDT(mockController);
       char1 = new Char("a", 1, siteId, [new Identifier(1, 25)]);
       char2 = new Char("b", 2, siteId, [new Identifier(2, 25)]);
-      crdt.insertChar(char1);
-      crdt.insertChar(char2);
+      crdt.handleRemoteInsert(char1);
+      crdt.handleRemoteInsert(char2);
       spyOn(crdt.controller, 'broadcastDeletion');
       spyOn(crdt.vector, 'increment');
     });
@@ -123,7 +117,7 @@ describe("CRDT", () => {
     });
   });
 
-  describe('deleteChar', () => {
+  describe('handleRemoteDelete', () => {
     let crdt;
     let char;
     let position;
@@ -134,24 +128,24 @@ describe("CRDT", () => {
       siteCounter = Math.floor(Math.random() * 1000);
       position = [new Identifier(1, siteId)];
       char = new Char('A', siteCounter, siteId, position);
-      crdt.insertChar(char);
+      crdt.handleRemoteInsert(char);
       spyOn(crdt.controller, 'updateEditor');
     });
 
     it('removes a char from the crdt', () => {
       expect(crdt.struct.length).toBe(1);
-      crdt.deleteChar(char);
+      crdt.handleRemoteDelete(char);
       expect(crdt.struct.length).toBe(0);
     });
 
     it("updates the crdt's text", () => {
       expect(crdt.text).toBe('A');
-      crdt.deleteChar(char);
+      crdt.handleRemoteDelete(char);
       expect(crdt.text).toBe('');
     });
 
     it("calls updateEditor", function() {
-      crdt.deleteChar(char);
+      crdt.handleRemoteDelete(char);
       expect(crdt.controller.updateEditor).toHaveBeenCalled();
     });
   });
@@ -190,22 +184,18 @@ describe("CRDT", () => {
 
   describe('generatePosBetween', () => {
     let crdt;
-    let boundary;
-    let base;
 
     beforeEach(() => {
-      boundary = 5;
-      base = 16;
-      crdt = new CRDT(mockController, base, boundary);
+      crdt = new CRDT(mockController);
     });
 
-    it('returns (0 < newDigit < boundary) when both positions are empty', () => {
+    it('returns (0 < newDigit <= boundary) when both positions are empty', () => {
       const newDigit = crdt.generatePosBetween([], [])[0].digit;
 
-      expect(0 < newDigit && newDigit < boundary).toBeTruthy();
+      expect(0 < newDigit && newDigit <= crdt.boundary).toBeTruthy();
     });
 
-    it('returns (0 < newDigit <= digit2) when 1st position is empty', () => {
+    it('returns (0 < newDigit < digit2) when 1st position is empty', () => {
       const digit2 = 3;
       const pos2 = [new Identifier(digit2, siteId)];
       const newDigit = crdt.generatePosBetween([], pos2)[0].digit;
@@ -213,12 +203,12 @@ describe("CRDT", () => {
       expect(0 < newDigit && newDigit < digit2).toBeTruthy();
     });
 
-    it('returns (digit1 < newDigit < digit1 + boundary) when 2nd position is empty', () => {
+    it('returns (digit1 < newDigit <= digit1 + boundary) when 2nd position is empty', () => {
       const digit1 = 2;
       const pos1 = [new Identifier(digit1, siteId)];
       const newDigit = crdt.generatePosBetween(pos1, [])[0].digit
 
-      expect(digit1 < newDigit && newDigit < (digit1 + boundary)).toBeTruthy();
+      expect(digit1 < newDigit && newDigit <= (digit1 + crdt.boundary)).toBeTruthy();
     });
 
     it('returns (digit1 < newDigit < digit2) when difference is greater than 1 and less than boundary', () => {
@@ -231,14 +221,14 @@ describe("CRDT", () => {
       expect(digit1 < newDigit && newDigit < digit2).toBeTruthy();
     });
 
-    it('returns (digit1 < newDigit < boundary) when difference is greater than 1 and greater than boundary', () => {
+    it('returns (digit1 < newDigit <= digit1 + boundary) when difference is greater than 1 and greater than boundary', () => {
       const digit1 = 1;
       const digit2 = 10;
       const pos1 = [new Identifier(digit1, siteId)];
       const pos2 = [new Identifier(digit2, siteId)];
       const newDigit = crdt.generatePosBetween(pos1, pos2)[0].digit
 
-      expect(digit1 < newDigit && newDigit < boundary).toBeTruthy();
+      expect(digit1 < newDigit && newDigit <= (digit1 + crdt.boundary)).toBeTruthy();
     });
 
     it('returns (226 (base - boundary) < newCombinedDigit < 2.32 (base)) when two positions have a difference of 1 and 2nd level is empty', () => {
@@ -304,9 +294,7 @@ describe("CRDT", () => {
     let crdt;
 
     beforeEach(() => {
-      const boundary = 5;
-      const base = 16;
-      crdt = new CRDT(mockController, base, boundary);
+      crdt = new CRDT(mockController);
     });
 
     it("returns digit within min + boundary when strategy is + and boundary < distance", () => {
@@ -347,7 +335,7 @@ describe("CRDT", () => {
       const position = [new Identifier(1, siteId)];
       const char1 = new Char('A', siteCounter, siteId, position);
 
-      crdt.insertChar(char1);
+      crdt.handleRemoteInsert(char1);
       expect(crdt.text).toBe("A")
     });
 
@@ -355,10 +343,10 @@ describe("CRDT", () => {
       const position = [new Identifier(1, siteId)];
       const char1 = new Char('A', siteCounter, siteId, position);
 
-      crdt.insertChar(char1);
+      crdt.handleRemoteInsert(char1);
       expect(crdt.text).toBe("A");
 
-      crdt.deleteChar(char1);
+      crdt.handleRemoteDelete(char1);
       expect(crdt.text).toBe("");
     });
   });
@@ -389,15 +377,15 @@ describe("CRDT", () => {
     });
 
     it("returns the index of a char when found in crdt", () => {
-      crdt.insertChar(char1);
-      crdt.insertChar(char2);
+      crdt.handleRemoteInsert(char1);
+      crdt.handleRemoteInsert(char2);
       const index = crdt.findIndexByPosition(char2);
       expect(index).toBe(1);
     });
 
     it("throws error if char doesn't exist in crdt", () => {
-      crdt.insertChar(char1);
-      expect(() => crdt.deleteChar(char2)).toThrow(new Error("Character does not exist in CRDT."));
+      crdt.handleRemoteInsert(char1);
+      expect(() => crdt.handleRemoteDelete(char2)).toThrow(new Error("Character does not exist in CRDT."));
     });
   });
 
@@ -429,28 +417,28 @@ describe("CRDT", () => {
     });
 
     it ("returns 0 if char position is less than first char", () => {
-      crdt.insertChar(char2);
+      crdt.handleRemoteInsert(char2);
       expect(crdt.struct.length).toBe(1);
       expect(crdt.findInsertIndex(char1)).toBe(0);
     });
 
     it ("returns length if array if char position is greater than last char", () => {
-      crdt.insertChar(char1);
-      crdt.insertChar(char2);
+      crdt.handleRemoteInsert(char1);
+      crdt.handleRemoteInsert(char2);
       expect(crdt.struct.length).toBe(2);
       expect(crdt.findInsertIndex(char3)).toBe(2);
     });
 
     it("returns the index of a char when found in crdt", () => {
-      crdt.insertChar(char1);
-      crdt.insertChar(char2);
+      crdt.handleRemoteInsert(char1);
+      crdt.handleRemoteInsert(char2);
       const index = crdt.findInsertIndex(char2);
       expect(index).toBe(1);
     });
 
     it("returns the index of where it would be located if it existed in the array", () => {
-      crdt.insertChar(char1);
-      crdt.insertChar(char3);
+      crdt.handleRemoteInsert(char1);
+      crdt.handleRemoteInsert(char3);
       const index = crdt.findInsertIndex(char2);
       expect(index).toBe(1);
     });

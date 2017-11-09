@@ -57,7 +57,7 @@ describe("VersionVector", () => {
       const vector = new VersionVector(10);
       vector.update({siteId: 10, counter: 2});
 
-      expect(vector.versions.get(0).exceptions.has(1)).toBe(true);
+      expect(vector.versions.get(0).exceptions.includes(1)).toBe(true);
     });
 
     it('does not update version counter if remote version counter is equal to current counter', () => {
@@ -76,10 +76,10 @@ describe("VersionVector", () => {
     it('removes exceptions if counter exists in exceptions set', () => {
       const vector = new VersionVector(10);
       vector.update({siteId: 10, counter: 2});
-      expect(vector.versions.get(0).exceptions.has(1)).toBe(true);
+      expect(vector.versions.get(0).exceptions.includes(1)).toBe(true);
 
       vector.update({siteId: 10, counter: 1});
-      expect(vector.versions.get(0).exceptions.has(1)).toBe(false);
+      expect(vector.versions.get(0).exceptions.includes(1)).toBe(false);
     });
   });
 
@@ -102,11 +102,6 @@ describe("VersionVector", () => {
   });
 
   describe('hasBeenApplied', () => {
-    // it('returns false if version is undefined or null', () => {
-    //   expect(vector.hasBeenApplied(null)).toBe(false);
-    //   expect(vector.hasBeenApplied(undefined)).toBe(false);
-    // });
-
     it('returns true if remote counter is equal to or less than local version counter and no exceptions', () => {
       const vector = new VersionVector(10);
       vector.update({siteId: 10, counter: 1});

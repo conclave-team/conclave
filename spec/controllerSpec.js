@@ -67,7 +67,7 @@ describe("Controller", () => {
         arr: [{
           siteId: 2,
           counter: 1,
-          exceptions: new Set([6, 7]),
+          exceptions: [6, 7],
         }],
       };
     })
@@ -84,7 +84,7 @@ describe("Controller", () => {
 
     it("adds exceptions to this local version", () => {
       controller.populateVersionVector(initialVersions);
-      expect(controller.vector.versions.arr[0].exceptions.size).toEqual(2);
+      expect(controller.vector.versions.arr[0].exceptions.length).toEqual(2);
     });
   });
 
@@ -287,32 +287,32 @@ describe("Controller", () => {
     beforeEach(() => {
       controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
 
-      spyOn(controller.crdt, "insertChar");
-      spyOn(controller.crdt, "deleteChar");
+      spyOn(controller.crdt, "handleRemoteInsert");
+      spyOn(controller.crdt, "handleRemoteDelete");
       spyOn(controller.vector, "update");
     })
 
-    it("calls crdt.insertChar if it's an insert", () => {
+    it("calls crdt.handleRemoteInsert if it's an insert", () => {
       const operation = {
         type: "insert",
         char: { siteId: 0, counter: 0, position: []},
         version: {siteId: 8, counter: 9}
       };
       controller.applyOperation(operation);
-      expect(controller.crdt.insertChar).toHaveBeenCalled();
+      expect(controller.crdt.handleRemoteInsert).toHaveBeenCalled();
     });
 
-    it("calls crdt.deleteChar if it's a delete", () => {
+    it("calls crdt.handleRemoteDelete if it's a delete", () => {
       const operation = {
         type: "delete",
         char: { siteId: 0, counter: 0, position: []},
         version: {siteId: 8, counter: 9}
       };
       controller.applyOperation(operation);
-      expect(controller.crdt.deleteChar).toHaveBeenCalled();
+      expect(controller.crdt.handleRemoteDelete).toHaveBeenCalled();
     });
 
-    it("calls creates the proper char and identifier objects to pass to insertChar/deleteChar", () => {
+    it("calls creates the proper char and identifier objects to pass to handleRemoteInsert/handleRemoteDelete", () => {
       const operation = {
         type: "insert",
         char: { siteId: 4, counter: 5, value: "a", position: [{digit: 6, siteId: 7}] },
@@ -321,7 +321,7 @@ describe("Controller", () => {
       const newChar = new Char("a", 5, 4, [new Identifier(6, 7)]);
 
       controller.applyOperation(operation);
-      expect(controller.crdt.insertChar).toHaveBeenCalledWith(newChar);
+      expect(controller.crdt.handleRemoteInsert).toHaveBeenCalledWith(newChar);
     });
 
     it("calls vector.update with the operation's version", () => {
