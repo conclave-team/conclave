@@ -81,6 +81,7 @@ function deleteRandom(crdt) {
   }
 
   const end = Date.now();
+  resetCounter(crdt);
   return end - start;
 }
 
@@ -99,6 +100,7 @@ function deleteBeginning(crdt) {
   }
 
   const end = Date.now();
+  resetCounter(crdt);
   return end - start;
 }
 
@@ -116,6 +118,7 @@ function deleteEnd(crdt) {
   }
 
   const end = Date.now();
+  resetCounter(crdt);
   return end - start;
 }
 
@@ -132,6 +135,7 @@ function remoteDelete(crdt, chars) {
   chars.forEach(char => crdt.deleteChar(char));
 
   const end = Date.now();
+  resetCounter(crdt);
   return end - start;
 }
 
@@ -183,6 +187,10 @@ function avgIdLength(crdt) {
 
 function average(time, operations) {
   return time / operations;
+}
+
+function resetCounter(crdt) {
+  crdt.controller.vector.localVersion.counter = 0;
 }
 
 function addPadding(value, cellSize) {
@@ -244,5 +252,5 @@ export {
   remoteDeleteEnd,
   deleteBeginning,
   remoteDeleteBeginning,
-  getTimestamp,
+  getTimestamp
 };
