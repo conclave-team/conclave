@@ -173,8 +173,9 @@ function shuffle(a) {
 }
 
 function avgIdLength(crdt) {
-  const convertCharIntoDigit = (char) => char.position.map(id => id.digit).join('');
+  const convertCharIntoDigit = (char) => char.position.map(id => id.digit).join(''); //this isn't working?
   const idArray = crdt.struct.map(convertCharIntoDigit);
+  // const idArray = crdt.struct.map(char => char.position.map(id => id.digit).join(''));
   const digitLengthSum = idArray.reduce((acc, id) => { return acc + id.length }, 0);
 
   return Math.floor(digitLengthSum / idArray.length);
