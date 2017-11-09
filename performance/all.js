@@ -1,12 +1,13 @@
 import CRDT from '../lib/crdt';
 import * as Util from './util';
 import fs from 'fs';
+import UUID from 'uuid/v1';
 
 const logPath = 'performance/logs';
 
 export function mockController() {
   return {
-    siteId: Math.floor(Math.random() * 1000),
+    siteId: UUID(),
     broadcastInsertion: function() {},
     broadcastDeletion: function() {},
     updateEditor: function() {},
@@ -14,9 +15,7 @@ export function mockController() {
       localVersion: {
         counter: 0
       },
-      increment: function() {
-        this.localVersion.counter++;
-      }
+      increment: function() {}
     }
   }
 }

@@ -81,7 +81,7 @@ function deleteRandom(crdt) {
   }
 
   const end = Date.now();
-  resetCounter(crdt);
+console.log(crdt.struct);
   return end - start;
 }
 
@@ -100,7 +100,6 @@ function deleteBeginning(crdt) {
   }
 
   const end = Date.now();
-  resetCounter(crdt);
   return end - start;
 }
 
@@ -118,7 +117,6 @@ function deleteEnd(crdt) {
   }
 
   const end = Date.now();
-  resetCounter(crdt);
   return end - start;
 }
 
@@ -135,7 +133,6 @@ function remoteDelete(crdt, chars) {
   chars.forEach(char => crdt.deleteChar(char));
 
   const end = Date.now();
-  resetCounter(crdt);
   return end - start;
 }
 
@@ -177,9 +174,14 @@ function shuffle(a) {
 }
 
 function avgIdLength(crdt) {
-  const convertCharIntoDigit = (char) => char.position.map(id => id.digit).join(''); //this isn't working?
-  const idArray = crdt.struct.map(convertCharIntoDigit);
-  // const idArray = crdt.struct.map(char => char.position.map(id => id.digit).join(''));
+  // const convertCharIntoDigit = (char) => char.position.map(id => id.digit).join(''); //this isn't working?
+  // const idArray = crdt.struct.map(convertCharIntoDigit);
+  crdt.struct.forEach(char => {
+    if (!char.position) {
+      console.log(char);
+    }
+  });
+  const idArray = crdt.struct.map(char => char.position.map(id => id.digit).join(''));
   const digitLengthSum = idArray.reduce((acc, id) => { return acc + id.length }, 0);
 
   return Math.floor(digitLengthSum / idArray.length);
@@ -187,10 +189,6 @@ function avgIdLength(crdt) {
 
 function average(time, operations) {
   return time / operations;
-}
-
-function resetCounter(crdt) {
-  crdt.controller.vector.localVersion.counter = 0;
 }
 
 function addPadding(value, cellSize) {
