@@ -67,7 +67,7 @@ describe("Controller", () => {
         arr: [{
           siteId: 2,
           counter: 1,
-          exceptions: new Set([6, 7]),
+          exceptions: [6, 7],
         }],
       };
     })
@@ -84,7 +84,7 @@ describe("Controller", () => {
 
     it("adds exceptions to this local version", () => {
       controller.populateVersionVector(initialVersions);
-      expect(controller.vector.versions.arr[0].exceptions.size).toEqual(2);
+      expect(controller.vector.versions.arr[0].exceptions.length).toEqual(2);
     });
   });
 
