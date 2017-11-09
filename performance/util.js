@@ -65,7 +65,7 @@ function remoteInsertEnd(crdt, numberOfOperations) {
 function remoteInsert(crdt, chars) {
   const start = Date.now();
 
-  chars.forEach(char => crdt.insertChar(char));
+  chars.forEach(char => crdt.handleRemoteInsert(char));
 
   const end = Date.now();
   return end - start;
@@ -129,7 +129,7 @@ function remoteDeleteEnd(crdt) {
 function remoteDelete(crdt, chars) {
   const start = Date.now();
 
-  chars.forEach(char => crdt.deleteChar(char));
+  chars.forEach(char => crdt.handleRemoteDelete(char));
 
   const end = Date.now();
   return end - start;
