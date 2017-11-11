@@ -13,10 +13,6 @@ app.get('/', function (req, res) {
   res.render('index', { id: id, host: host });
 });
 
-app.get('/.well-known/acme-challenge/:content', function(req, res) {
-  res.send('xxxxxxxxxxxx-yyyy.zzzzzzzzzzzzzzzzzzz')
-})
-
 listener = app.listen(process.env.PORT || 3000, function (port) {
   console.log(`Conclave is listening on port ${listener.address().port}`);
 });
