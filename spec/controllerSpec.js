@@ -38,7 +38,7 @@ describe("Controller", () => {
 
       expectedStruct = [ new Char("a", 1, 5, [new Identifier(3, 4)]) ];
       spyOn(controller.crdt, "populateText");
-      spyOn(controller, "updateEditor");
+      spyOn(controller, "replaceText");
     })
 
     it("sets proper value to crdt.struct", () => {
@@ -51,9 +51,9 @@ describe("Controller", () => {
       expect(controller.crdt.populateText).toHaveBeenCalled();
     });
 
-    it("calls updateEditor", () => {
+    it("calls replaceText", () => {
       controller.populateCRDT(initialStruct);
-      expect(controller.updateEditor).toHaveBeenCalled();
+      expect(controller.replaceText).toHaveBeenCalled();
     });
   });
 
@@ -431,7 +431,7 @@ describe("Controller", () => {
     });
   });
 
-  describe("updateEditor", () => {
+  describe("replaceText", () => {
     let controller;
 
     beforeEach(() => {
@@ -441,7 +441,7 @@ describe("Controller", () => {
     })
 
     it("calls editor.updateView with the crdt's text", () => {
-      controller.updateEditor(controller.crdt.text);
+      controller.replaceText(controller.crdt.text);
       expect(controller.editor.updateView).toHaveBeenCalledWith("blah");
     });
   });
