@@ -18,6 +18,19 @@ h1 {
   margin: 0;
   padding-bottom: 20px;
   font-family: "InputMedium";
+  margin-bottom: 0;
+}
+
+button {
+  float: right;
+  padding: 5px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  font-family: "InputLight";
+}
+
+button:hover {
+  cursor: pointer;
 }
 
 p {
@@ -35,6 +48,7 @@ textarea {
   line-height: 1.5em;
   border: none;
   box-shadow: 0 2px 20px -2px rgba(17, 117, 232, 0.15);
+  clear: both;
 }
 
 .CodeMirror-focused {

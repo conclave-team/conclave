@@ -10,7 +10,7 @@ describe("CRDT", () => {
     vector: new VersionVector(siteId),
     broadcastInsertion: function() {},
     broadcastDeletion: function() {},
-    updateEditor: function() {},
+    replaceText: function() {},
   };
 
   describe("handleLocalInsert", () => {
@@ -49,7 +49,7 @@ describe("CRDT", () => {
       siteCounter = 1;
       const position = [new Identifier(1, siteId)];
       char1 = new Char('A', siteCounter, siteId, position);
-      spyOn(crdt.controller, 'updateEditor');
+      spyOn(crdt.controller, 'replaceText');
       spyOn(crdt.vector, 'increment');
     });
 
@@ -74,9 +74,9 @@ describe("CRDT", () => {
       expect(crdt.text).toBe('A');
     });
 
-    it("calls updateEditor", function() {
+    it("calls replaceText", function() {
       crdt.handleRemoteInsert(char1);
-      expect(crdt.controller.updateEditor).toHaveBeenCalled();
+      expect(crdt.controller.replaceText).toHaveBeenCalled();
     });
 
     it('does not call vector "increment"', () => {
@@ -129,7 +129,7 @@ describe("CRDT", () => {
       position = [new Identifier(1, siteId)];
       char = new Char('A', siteCounter, siteId, position);
       crdt.handleRemoteInsert(char);
-      spyOn(crdt.controller, 'updateEditor');
+      spyOn(crdt.controller, 'replaceText');
     });
 
     it('removes a char from the crdt', () => {
@@ -144,9 +144,9 @@ describe("CRDT", () => {
       expect(crdt.text).toBe('');
     });
 
-    it("calls updateEditor", function() {
+    it("calls replaceText", function() {
       crdt.handleRemoteDelete(char);
-      expect(crdt.controller.updateEditor).toHaveBeenCalled();
+      expect(crdt.controller.replaceText).toHaveBeenCalled();
     });
   });
 
@@ -365,7 +365,7 @@ describe("CRDT", () => {
       mockController = {
         siteId: siteId,
         broadcastInsertion: function() {},
-        updateEditor: function() {},
+        replaceText: function() {},
       }
       crdt = new CRDT(mockController);
       char1 = new Char('A', siteCounter, siteId, [new Identifier(1, siteId)]);
@@ -404,7 +404,7 @@ describe("CRDT", () => {
       mockController = {
         siteId: siteId,
         broadcastInsertion: function() {},
-        updateEditor: function() {},
+        replaceText: function() {},
       }
       crdt = new CRDT(mockController);
       char1 = new Char('A', siteCounter, siteId, [new Identifier(1, siteId)]);
@@ -456,7 +456,7 @@ describe("CRDT", () => {
       mockController = {
         siteId: siteId,
         broadcastInsertion: function() {},
-        updateEditor: function() {},
+        replaceText: function() {},
       }
       crdt = new CRDT(mockController);
     });
@@ -480,7 +480,7 @@ describe("CRDT", () => {
       mockController = {
         siteId: siteId,
         broadcastInsertion: function() {},
-        updateEditor: function() {},
+        replaceText: function() {},
       }
       crdt = new CRDT(mockController);
     });
