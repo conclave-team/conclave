@@ -1,10 +1,12 @@
 import { JSDOM } from 'jsdom';
+import UUID from 'uuid/v1';
 import Controller from '../lib/controller';
 import Char from '../lib/char';
 import Identifier from '../lib/identifier';
 
 describe("Controller", () => {
   const mockPeer = {
+    id: 8,
     on: function() {},
     connect: function() {},
   };
@@ -12,17 +14,53 @@ describe("Controller", () => {
   const mockBroadcast = {
     bindServerEvents: function() {},
     connectToTarget: function() {},
-    send: function() {}
+    send: function() {},
+    addToNetwork: function() {},
+    removeFromNetwork: function() {},
+    connections: []
   };
 
   const mockEditor = {
     bindChangeEvent: function() {},
-    updateView: function(text) {}
+    updateView: function(text) {},
+    onDownload: function() {},
+    replaceText: function() {},
+    insertText: function() {},
+    deleteText: function() {},
   };
 
   const host = "https://localhost:3000";
-  const siteId = Math.floor(Math.random() * 1000);
-  const targetPeerId = Math.floor(Math.random() * 1000);
+  const siteId = UUID();
+  const targetPeerId = UUID();
+
+  describe("updateShareLink", () => {
+    let controller, mockDoc, link;
+
+    beforeEach(() => {
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+      mockDoc = new JSDOM(`<!DOCTYPE html><a id="myLink"></a>`).window.document;
+      link = mockDoc.querySelector("#myLink").textContent;
+    })
+
+    it("changes the link value", () => {
+      controller.updateShareLink(targetPeerId, mockDoc);
+      const updatedLink = mockDoc.querySelector("#myLink").textContent;
+
+      expect(link).not.toEqual(updatedLink);
+    });
+
+    it("sets the link's text content", () => {
+      controller.updateShareLink(targetPeerId, mockDoc);
+      const updatedLink = mockDoc.querySelector("#myLink").textContent;
+      expect(updatedLink).toEqual(host+"/?id=" + targetPeerId);
+    });
+
+    it("sets the link's href attribute", () => {
+      controller.updateShareLink(targetPeerId, mockDoc);
+      const href = mockDoc.querySelector("#myLink").getAttribute('href');
+      expect(href).toEqual(host+"/?id=" + targetPeerId);
+    });
+  });
 
   describe("populateCRDT", () => {
     let controller, initialStruct, expectedStruct;
@@ -38,7 +76,7 @@ describe("Controller", () => {
 
       expectedStruct = [ new Char("a", 1, 5, [new Identifier(3, 4)]) ];
       spyOn(controller.crdt, "populateText");
-      spyOn(controller, "updateEditor");
+      spyOn(controller.editor, "replaceText");
     })
 
     it("sets proper value to crdt.struct", () => {
@@ -51,9 +89,9 @@ describe("Controller", () => {
       expect(controller.crdt.populateText).toHaveBeenCalled();
     });
 
-    it("calls updateEditor", () => {
+    it("calls replaceText", () => {
       controller.populateCRDT(initialStruct);
-      expect(controller.updateEditor).toHaveBeenCalled();
+      expect(controller.editor.replaceText).toHaveBeenCalled();
     });
   });
 
@@ -88,71 +126,189 @@ describe("Controller", () => {
     });
   });
 
-  describe("updateShareLink", () => {
-    let controller, mockDocument, link;
+  describe("addToNetwork", () => {
+    const controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+    controller.broadcast.peer = mockPeer;
+    controller.network.push("b");
+    const mockDoc = new JSDOM(`<!DOCTYPE html><p id="peerId"></p>`).window.document;
+    const connList = mockDoc.querySelector("#peerId").textContent;
 
-    beforeEach(() => {
-      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
-      mockDocument = new JSDOM(`<!DOCTYPE html><a id="myLink"></a>`).window.document;
-      link = mockDocument.querySelector("#myLink").textContent;
-    })
-
-    it("changes the link value", () => {
-      controller.updateShareLink(targetPeerId, mockDocument);
-      const updatedLink = mockDocument.querySelector("#myLink").textContent;
-
-      expect(link).not.toEqual(updatedLink);
+    it("doesn't do anything if the id is already in the network list", () => {
+      spyOn(controller.broadcast, "addToNetwork");
+      controller.addToNetwork("b", mockDoc);
+      expect(controller.broadcast.addToNetwork).not.toHaveBeenCalled();
     });
 
-    it("sets the link's text content", () => {
-      controller.updateShareLink(targetPeerId, mockDocument);
-      const updatedLink = mockDocument.querySelector("#myLink").textContent;
-      expect(updatedLink).toEqual(host+"/?id=" + targetPeerId);
+    it("pushes the id into the network list", () => {
+      controller.addToNetwork("a", mockDoc);
+      expect(controller.network).toContain("a");
     });
 
-    it("sets the link's href attribute", () => {
-      controller.updateShareLink(targetPeerId, mockDocument);
-      const href = mockDocument.querySelector("#myLink").getAttribute('href');
-      expect(href).toEqual(host+"/?id=" + targetPeerId);
+    it("calls addToListOfPeers with the id passed in if it is not its own id", () => {
+      spyOn(controller, "addToListOfPeers");
+      controller.addToNetwork("c", mockDoc);
+      expect(controller.addToListOfPeers).toHaveBeenCalledWith("c", jasmine.any(Object));
+    });
+
+    it("doesn't call addToListOfPeers if its own id is passed in", () => {
+      spyOn(controller, "addToListOfPeers");
+      controller.addToNetwork(8, mockDoc);
+      expect(controller.addToListOfPeers).not.toHaveBeenCalled();
     });
   });
 
-  describe("addToConnectionList", () => {
-    let controller, mockDocument, connList;
+  describe("removeFromNetwork", () => {
+    const mockDoc = new JSDOM(`<!DOCTYPE html><p id="peerId"></p>`).window.document;
+    let controller;
 
     beforeEach(() => {
       controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
-      mockDocument = new JSDOM(`<!DOCTYPE html><p id="peerId"></p>`).window.document;
-      connList = mockDocument.querySelector("#peerId").textContent;
+      controller.broadcast.peer = mockPeer;
+      controller.network.push("b");
+      controller.addToListOfPeers("b", mockDoc);
+    });
+
+    it("doesn't do anything if the id isn't in the network list", () => {
+      spyOn(controller.broadcast, "removeFromNetwork");
+      spyOn(controller, "removeFromListOfPeers");
+      controller.removeFromNetwork("a", mockDoc);
+      expect(controller.broadcast.removeFromNetwork).not.toHaveBeenCalled();
+      expect(controller.removeFromListOfPeers).not.toHaveBeenCalled();
+    });
+
+    it("removes the id from the network list", () => {
+      controller.removeFromNetwork("b", mockDoc);
+      expect(controller.network.length).toEqual(0);
+    });
+
+    it("calls removeFromListOfPeers with the id passed in", () => {
+      spyOn(controller, "removeFromNetwork");
+      controller.removeFromNetwork("b", mockDoc);
+      expect(controller.removeFromNetwork).toHaveBeenCalledWith("b", mockDoc);
+    });
+
+    it("calls broadcast.removeFromNetwork with the id passed in", () => {
+      spyOn(controller.broadcast, "removeFromNetwork");
+      controller.removeFromNetwork("b", mockDoc);
+      expect(controller.broadcast.removeFromNetwork).toHaveBeenCalledWith("b");
+    });
+  });
+
+  describe("addToListOfPeers", () => {
+    let controller, mockDoc, connList;
+
+    beforeEach(() => {
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+      mockDoc = new JSDOM(`<!DOCTYPE html><p id="peerId"></p>`).window.document;
+      connList = mockDoc.querySelector("#peerId").textContent;
     })
 
     it("updates the connection list on the page", () => {
-      controller.addToConnectionList(targetPeerId, mockDocument);
-      const updatedConnList = mockDocument.querySelector("#peerId").textContent;
+      controller.addToListOfPeers(targetPeerId, mockDoc);
+      const updatedConnList = mockDoc.querySelector("#peerId").textContent;
       expect(connList).not.toEqual(updatedConnList);
     });
 
     it("adds the id passed in to the list", () => {
-      controller.addToConnectionList(targetPeerId, mockDocument);
-      const updatedConnList = mockDocument.querySelector("#peerId").textContent;
+      controller.addToListOfPeers(targetPeerId, mockDoc);
+      const updatedConnList = mockDoc.querySelector("#peerId").textContent;
       expect(updatedConnList).toEqual(String(targetPeerId));
     });
   });
 
-  describe("removeFromConnectionList", () => {
-    let controller, mockDocument;
+  describe("removeFromListOfPeers", () => {
+    let controller, mockDoc;
 
     beforeEach(() => {
       controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
-      mockDocument = new JSDOM(`<!DOCTYPE html><p id="peerId"><li id="abcde"></li></p>`).window.document;
-      controller.addToConnectionList(targetPeerId, mockDocument);
+      mockDoc = new JSDOM(`<!DOCTYPE html><p id="peerId"><li id="abcde"></li></p>`).window.document;
+      controller.addToListOfPeers(targetPeerId, mockDoc);
     })
 
     it("removes the connection list element from the list", () => {
-      const numElements = mockDocument.getElementsByTagName("LI").length;
-      controller.removeFromConnectionList(targetPeerId, mockDocument);
-      const updatedNumElements = mockDocument.getElementsByTagName("LI").length;
+      const numElements = mockDoc.getElementsByTagName("LI").length;
+      controller.removeFromListOfPeers(targetPeerId, mockDoc);
+      const updatedNumElements = mockDoc.getElementsByTagName("LI").length;
       expect(updatedNumElements).toEqual(numElements - 1);
+    });
+  });
+
+  describe("findNewTarget", () => {
+    const controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+
+    it("filters its own id out and throws an error if possible network list is empty", () => {
+      controller.network.push(8);
+      expect(controller.findNewTarget).toThrowError();
+    });
+
+    it("calls broadcast.connectToTarget with a random peer on the list", () => {
+      controller.network.push(9);
+      controller.network.push(10);
+      spyOn(controller.broadcast, "connectToTarget");
+      controller.findNewTarget();
+      const args = controller.broadcast.connectToTarget.calls.allArgs();
+      expect([9,10].indexOf(args[0][0])).toBeGreaterThan(-1);
+    });
+  });
+
+  describe("handleSync", () => {
+    const controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+    const mockDoc = new JSDOM(`<!DOCTYPE html><p id="peerId"></p>`).window.document;
+    const syncObj = {
+      initialStruct: [{
+        position: [ {digit: 3, siteId: 4} ],
+        counter: 1,
+        siteId: 5,
+        value: "a"
+      }, {
+        position: [ {digit: 4, siteId: 5} ],
+        counter: 1,
+        siteId: 6,
+        value: "b"
+      }],
+      initialVersions: {
+        arr: [{
+        siteId: 2,
+        counter: 1,
+        exceptions: [6, 7],
+      }]},
+      network: [1, 2, 3]
+    };
+
+    it("calls populateCRDT with the initial struct property", () => {
+      spyOn(controller, "populateCRDT");
+      controller.handleSync(syncObj, mockDoc);
+      expect(controller.populateCRDT).toHaveBeenCalledWith([{
+            position: [ {digit: 3, siteId: 4} ],
+            counter: 1,
+            siteId: 5,
+            value: "a"
+          }, {
+            position: [ {digit: 4, siteId: 5} ],
+            counter: 1,
+            siteId: 6,
+            value: "b"
+          }
+      ]);
+    });
+
+    it("calls populateVersionVector with the initial versions property", () => {
+      spyOn(controller, "populateVersionVector");
+      controller.handleSync(syncObj, mockDoc);
+      expect(controller.populateVersionVector).toHaveBeenCalledWith({
+        arr: [{
+        siteId: 2,
+        counter: 1,
+        exceptions: [6, 7],
+      }]});
+    });
+
+    it("calls addToNetwork for each id in the network property", () => {
+      spyOn(controller, "addToNetwork");
+      controller.handleSync(syncObj, mockDoc);
+      expect(controller.addToNetwork).toHaveBeenCalledWith(1, jasmine.any(Object));
+      expect(controller.addToNetwork).toHaveBeenCalledWith(2, jasmine.any(Object));
+      expect(controller.addToNetwork).toHaveBeenCalledWith(3, jasmine.any(Object));
     });
   });
 
@@ -354,20 +510,16 @@ describe("Controller", () => {
   });
 
   describe("localInsert", () => {
-    let controller;
-
-    beforeEach(() => {
-      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
-      spyOn(controller.crdt, "handleLocalInsert");
-    })
+    const controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
 
     it("calls crdt.handleLocalInsert with the character object and index passed in", () => {
       const identifier1 = new Identifier(4, 5);
       const identifier2 = new Identifier(6, 7);
-      const newChar = new Char("a", 1, 0, [identifier1, identifier2]);
-      controller.localInsert(newChar, 5);
+      const chars = [new Char("a", 1, 0, [identifier1, identifier2])];
 
-      expect(controller.crdt.handleLocalInsert).toHaveBeenCalledWith(newChar, 5);
+      spyOn(controller.crdt, "handleLocalInsert");
+      controller.localInsert(chars, 5);
+      expect(controller.crdt.handleLocalInsert).toHaveBeenCalledWith(chars[0], 5);
     });
   });
 
@@ -431,18 +583,33 @@ describe("Controller", () => {
     });
   });
 
-  describe("updateEditor", () => {
+
+// Didn't flush out these 2 tests since they'll be changing a lot with array of arrays
+  describe("insertIntoEditor", () => {
     let controller;
 
     beforeEach(() => {
       controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
-      controller.crdt.text = "blah";
-      spyOn(controller.editor, "updateView");
+      spyOn(controller.editor, "insertText");
     })
 
-    it("calls editor.updateView with the crdt's text", () => {
-      controller.updateEditor(controller.crdt.text);
-      expect(controller.editor.updateView).toHaveBeenCalledWith("blah");
+    it("calls editor.insertText", () => {
+      controller.insertIntoEditor("a", 0);
+      expect(controller.editor.insertText).toHaveBeenCalled();
+    });
+  });
+
+  describe("deleteFromEditor", () => {
+    let controller;
+
+    beforeEach(() => {
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+      spyOn(controller.editor, "deleteText");
+    })
+
+    it("calls editor.deleteText", () => {
+      controller.deleteFromEditor("a", 0);
+      expect(controller.editor.deleteText).toHaveBeenCalled();
     });
   });
 });

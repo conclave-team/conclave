@@ -10,7 +10,7 @@ export function mockController() {
     siteId: UUID(),
     broadcastInsertion: function() {},
     broadcastDeletion: function() {},
-    updateEditor: function() {},
+    replaceText: function() {},
     vector: {
       localVersion: {
         counter: 0
