@@ -22,7 +22,8 @@ describe("Controller", () => {
 
   const mockEditor = {
     bindChangeEvent: function() {},
-    updateView: function(text) {}
+    updateView: function(text) {},
+    onDownload: function() {}
   };
 
   const host = "https://localhost:3000";
