@@ -11,6 +11,8 @@ describe("CRDT", () => {
     broadcastInsertion: function() {},
     broadcastDeletion: function() {},
     replaceText: function() {},
+    insertIntoEditor: function() {},
+    deleteFromEditor: function() {},
   };
 
   describe("handleLocalInsert", () => {
@@ -49,8 +51,7 @@ describe("CRDT", () => {
       siteCounter = 1;
       const position = [new Identifier(1, siteId)];
       char1 = new Char('A', siteCounter, siteId, position);
-      spyOn(crdt.controller, 'replaceText');
-      spyOn(crdt.vector, 'increment');
+      spyOn(crdt.controller, 'insertIntoEditor');
     });
 
     it("adds char to CRDT", () => {
@@ -74,14 +75,9 @@ describe("CRDT", () => {
       expect(crdt.text).toBe('A');
     });
 
-    it("calls replaceText", function() {
+    it("calls insertIntoEditor", function() {
       crdt.handleRemoteInsert(char1);
-      expect(crdt.controller.replaceText).toHaveBeenCalled();
-    });
-
-    it('does not call vector "increment"', () => {
-      crdt.handleRemoteInsert(char1);
-      expect(crdt.vector.increment).not.toHaveBeenCalled();
+      expect(crdt.controller.insertIntoEditor).toHaveBeenCalled();
     });
   });
 
@@ -129,7 +125,7 @@ describe("CRDT", () => {
       position = [new Identifier(1, siteId)];
       char = new Char('A', siteCounter, siteId, position);
       crdt.handleRemoteInsert(char);
-      spyOn(crdt.controller, 'replaceText');
+      spyOn(crdt.controller, 'deleteFromEditor');
     });
 
     it('removes a char from the crdt', () => {
@@ -144,9 +140,9 @@ describe("CRDT", () => {
       expect(crdt.text).toBe('');
     });
 
-    it("calls replaceText", function() {
+    it("calls deleteFromEditor", function() {
       crdt.handleRemoteDelete(char);
-      expect(crdt.controller.replaceText).toHaveBeenCalled();
+      expect(crdt.controller.deleteFromEditor).toHaveBeenCalled();
     });
   });
 
@@ -352,7 +348,6 @@ describe("CRDT", () => {
   });
 
   describe("findIndexByPosition", () => {
-    let mockController;
     let crdt;
     let siteId;
     let siteCounter;
@@ -362,11 +357,6 @@ describe("CRDT", () => {
     beforeEach(() => {
       siteId = Math.floor(Math.random() * 1000);
       siteCounter = Math.floor(Math.random() * 1000);
-      mockController = {
-        siteId: siteId,
-        broadcastInsertion: function() {},
-        replaceText: function() {},
-      }
       crdt = new CRDT(mockController);
       char1 = new Char('A', siteCounter, siteId, [new Identifier(1, siteId)]);
       char2 = new Char('B', siteCounter + 1, siteId, [new Identifier(3, siteId)]);
@@ -390,7 +380,6 @@ describe("CRDT", () => {
   });
 
   describe("findInsertIndex", () => {
-    let mockController;
     let crdt;
     let siteId;
     let siteCounter;
@@ -401,11 +390,6 @@ describe("CRDT", () => {
     beforeEach(() => {
       siteId = Math.floor(Math.random() * 1000);
       siteCounter = Math.floor(Math.random() * 1000);
-      mockController = {
-        siteId: siteId,
-        broadcastInsertion: function() {},
-        replaceText: function() {},
-      }
       crdt = new CRDT(mockController);
       char1 = new Char('A', siteCounter, siteId, [new Identifier(1, siteId)]);
       char2 = new Char('B', siteCounter + 1, siteId, [new Identifier(3, siteId)]);
@@ -447,17 +431,11 @@ describe("CRDT", () => {
   describe('insertText', () => {
     let siteId;
     let siteCounter;
-    let mockController;
     let crdt;
 
     beforeEach(() => {
       siteId = Math.floor(Math.random() * 1000);
       siteCounter = Math.floor(Math.random() * 1000);
-      mockController = {
-        siteId: siteId,
-        broadcastInsertion: function() {},
-        replaceText: function() {},
-      }
       crdt = new CRDT(mockController);
     });
 
@@ -471,17 +449,11 @@ describe("CRDT", () => {
   describe('deleteText', () => {
     let siteId;
     let siteCounter;
-    let mockController;
     let crdt;
 
     beforeEach(() => {
       siteId = Math.floor(Math.random() * 1000);
       siteCounter = Math.floor(Math.random() * 1000);
-      mockController = {
-        siteId: siteId,
-        broadcastInsertion: function() {},
-        replaceText: function() {},
-      }
       crdt = new CRDT(mockController);
     });
 

@@ -23,7 +23,10 @@ describe("Controller", () => {
   const mockEditor = {
     bindChangeEvent: function() {},
     updateView: function(text) {},
-    onDownload: function() {}
+    onDownload: function() {},
+    replaceText: function() {},
+    insertText: function() {},
+    deleteText: function() {},
   };
 
   const host = "https://localhost:3000";
@@ -73,7 +76,7 @@ describe("Controller", () => {
 
       expectedStruct = [ new Char("a", 1, 5, [new Identifier(3, 4)]) ];
       spyOn(controller.crdt, "populateText");
-      spyOn(controller, "replaceText");
+      spyOn(controller.editor, "replaceText");
     })
 
     it("sets proper value to crdt.struct", () => {
@@ -88,7 +91,7 @@ describe("Controller", () => {
 
     it("calls replaceText", () => {
       controller.populateCRDT(initialStruct);
-      expect(controller.replaceText).toHaveBeenCalled();
+      expect(controller.editor.replaceText).toHaveBeenCalled();
     });
   });
 
@@ -512,11 +515,11 @@ describe("Controller", () => {
     it("calls crdt.handleLocalInsert with the character object and index passed in", () => {
       const identifier1 = new Identifier(4, 5);
       const identifier2 = new Identifier(6, 7);
-      const newChar = new Char("a", 1, 0, [identifier1, identifier2]);
+      const chars = [new Char("a", 1, 0, [identifier1, identifier2])];
 
       spyOn(controller.crdt, "handleLocalInsert");
-      controller.localInsert(newChar, 5);
-      expect(controller.crdt.handleLocalInsert).toHaveBeenCalledWith(newChar, 5);
+      controller.localInsert(chars, 5);
+      expect(controller.crdt.handleLocalInsert).toHaveBeenCalledWith(chars[0], 5);
     });
   });
 
@@ -580,18 +583,33 @@ describe("Controller", () => {
     });
   });
 
-  describe("replaceText", () => {
+
+// Didn't flush out these 2 tests since they'll be changing a lot with array of arrays
+  describe("insertIntoEditor", () => {
     let controller;
 
     beforeEach(() => {
       controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
-      controller.crdt.text = "blah";
-      spyOn(controller.editor, "updateView");
+      spyOn(controller.editor, "insertText");
     })
 
-    it("calls editor.updateView with the crdt's text", () => {
-      controller.replaceText(controller.crdt.text);
-      expect(controller.editor.updateView).toHaveBeenCalledWith("blah");
+    it("calls editor.insertText", () => {
+      controller.insertIntoEditor("a", 0);
+      expect(controller.editor.insertText).toHaveBeenCalled();
+    });
+  });
+
+  describe("deleteFromEditor", () => {
+    let controller;
+
+    beforeEach(() => {
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
+      spyOn(controller.editor, "deleteText");
+    })
+
+    it("calls editor.deleteText", () => {
+      controller.deleteFromEditor("a", 0);
+      expect(controller.editor.deleteText).toHaveBeenCalled();
     });
   });
 });

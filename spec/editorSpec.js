@@ -4,9 +4,9 @@ import Editor from '../lib/editor';
 
 describe("Editor", () => {
   const mockMDE = {
-    // codemirror: {
-    //   on: function() {}
-    // }
+    codemirror: {
+      setOption: function() {}
+    }
   };
   const editor = new Editor(mockMDE);
   editor.controller = {
@@ -66,16 +66,6 @@ describe("Editor", () => {
       editor.controller.crdt.text = "";
       expect(editor.findLinearIdx(0, 0)).toEqual(0);
     });
-
-    it("returns -1 if line index not found in lines of text", () => {
-      editor.controller.crdt.text = "a";
-      expect(editor.findLinearIdx(1, 0)).toEqual(-1);
-    });
-
-    it("returns -1 if ch index not found in lines of text", () => {
-      editor.controller.crdt.text = "ab";
-      expect(editor.findLinearIdx(0, 3)).toEqual(-1);
-    })
 
     it("calculates linear index from a single line of text", () => {
       editor.controller.crdt.text = "abcdefghijklmnop";
