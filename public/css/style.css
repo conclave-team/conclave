@@ -19,12 +19,16 @@ h1 {
   margin-bottom: 0;
 }
 
-button {
+button, input {
   float: right;
   padding: 5px;
   border-radius: 5px;
-  margin-bottom: 10px;
+  margin: 0 0 10px 10px;
   font-family: "InputLight";
+}
+
+input {
+  width: 175px;
 }
 
 button:hover {
@@ -43,5 +47,5 @@ textarea {
 .CodeMirror {
   font-family: 'InputLight';
   border-radius: 8px;
-  clear: both;
+  clear: right;
 }
