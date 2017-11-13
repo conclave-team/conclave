@@ -10,7 +10,8 @@ export function mockController() {
     siteId: UUID(),
     broadcastInsertion: function() {},
     broadcastDeletion: function() {},
-    replaceText: function() {},
+    insertIntoEditor: function() {},
+    deleteFromEditor: function() {},
     vector: {
       localVersion: {
         counter: 0
@@ -25,6 +26,11 @@ const crdt2 = new CRDT(mockController());
 const crdt3 = new CRDT(mockController());
 const crdt4 = new CRDT(mockController());
 const crdt5 = new CRDT(mockController());
+
+[crdt1, crdt2, crdt3, crdt4, crdt5].forEach(crdt => {
+  crdt.insertText = function() {};
+  crdt.deleteText = function() {};
+});
 
 let table = `
 #### PERFORMANCE METRICS

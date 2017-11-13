@@ -38,13 +38,6 @@ function insertBeginning(crdt, numberOfOperations) {
   return end - start;
 }
 
-function remoteInsertBeginning(crdt, numberOfOperations) {
-  const chars = generateChars(numberOfOperations);
-  const descChars = chars.reverse();
-
-  return remoteInsert(crdt, descChars);
-}
-
 function insertEnd(crdt, numberOfOperations) {
   const start = Date.now();
 
@@ -54,6 +47,13 @@ function insertEnd(crdt, numberOfOperations) {
 
   const end = Date.now();
   return end - start;
+}
+
+function remoteInsertBeginning(crdt, numberOfOperations) {
+  const chars = generateChars(numberOfOperations);
+  const descChars = chars.reverse();
+
+  return remoteInsert(crdt, descChars);
 }
 
 function remoteInsertEnd(crdt, numberOfOperations) {
@@ -81,7 +81,6 @@ function deleteRandom(crdt) {
   }
 
   const end = Date.now();
-console.log(crdt.struct);
   return end - start;
 }
 
@@ -174,8 +173,6 @@ function shuffle(a) {
 }
 
 function avgIdLength(crdt) {
-  // const convertCharIntoDigit = (char) => char.position.map(id => id.digit).join(''); //this isn't working?
-  // const idArray = crdt.struct.map(convertCharIntoDigit);
   crdt.struct.forEach(char => {
     if (!char.position) {
       console.log(char);
