@@ -16,6 +16,19 @@ body {
 
 h1 {
   font-family: "InputMedium";
+  margin-bottom: 0;
+}
+
+button {
+  float: right;
+  padding: 5px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  font-family: "InputLight";
+}
+
+button:hover {
+  cursor: pointer;
 }
 
 p {
@@ -30,4 +43,5 @@ textarea {
 .CodeMirror {
   font-family: 'InputLight';
   border-radius: 8px;
+  clear: both;
 }
