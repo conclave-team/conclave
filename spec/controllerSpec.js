@@ -16,7 +16,8 @@ describe("Controller", () => {
     connectToTarget: function() {},
     send: function() {},
     addToNetwork: function() {},
-    removeFromNetwork: function() {}
+    removeFromNetwork: function() {},
+    connections: []
   };
 
   const mockEditor = {
@@ -139,10 +140,6 @@ describe("Controller", () => {
       expect(controller.network).toContain("a");
     });
 
-    it("sorts the network list alphabetically", () => {
-      expect(controller.network).toEqual(["a", "b"]);
-    });
-
     it("calls addToListOfPeers with the id passed in if it is not its own id", () => {
       spyOn(controller, "addToListOfPeers");
       controller.addToNetwork("c", mockDoc);
@@ -240,12 +237,13 @@ describe("Controller", () => {
       expect(controller.findNewTarget).toThrowError();
     });
 
-    it("calls broadcast.connectToTarget with the first peer on the list", () => {
+    it("calls broadcast.connectToTarget with a random peer on the list", () => {
       controller.network.push(9);
       controller.network.push(10);
       spyOn(controller.broadcast, "connectToTarget");
       controller.findNewTarget();
-      expect(controller.broadcast.connectToTarget).toHaveBeenCalledWith(9);
+      const args = controller.broadcast.connectToTarget.calls.allArgs();
+      expect([9,10].indexOf(args[0][0])).toBeGreaterThan(-1);
     });
   });
 
