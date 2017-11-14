@@ -15,7 +15,7 @@ const sslOptions = {
 const server = http.createServer(app).listen(PORT, function () {
   console.log(`Conclave is listening on port ${PORT}`);
 });
-https.createServer(sslOptions, app).listen(443);
+https.createServer(sslOptions, app).listen(PORT);
 
 app.use(express.static('public'));
 app.set('views', './views');
@@ -29,9 +29,9 @@ app.use(function(req, res, next) {
 
 app.get('/', function (req, res) {
   const address = req.protocol + '://' + req.get('host');
-  const host = req.get('host').split(':')[0];
+  const [ host, port ] = req.get('host').split(':');
   const id = req.query.id ? req.query.id : 0;
-  res.render('index', { id: id, host: host, address: address });
+  res.render('index', { id: id, host: host, address: address, port: port });
 });
 
 app.use('/peerjs', ExpressPeerServer(server, {debug:true}));
