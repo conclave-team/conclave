@@ -96,7 +96,6 @@ ${Util.addRowWithId(10, crdt1, Util.insertBeginning)}
 ${Util.addRowWithId(100, crdt2, Util.insertBeginning)}
 ${Util.addRowWithId(1000, crdt3, Util.insertBeginning)}
 ${Util.addRowWithId(10000, crdt4, Util.insertBeginning)}
-${Util.addRowWithId(100000, crdt5, Util.insertBeginning)}
 
 # LOCAL DELETIONS
 --------------------------------------------------------------
@@ -107,7 +106,6 @@ ${Util.addRow(10, crdt1, Util.deleteBeginning)}
 ${Util.addRow(100, crdt2, Util.deleteBeginning)}
 ${Util.addRow(1000, crdt3, Util.deleteBeginning)}
 ${Util.addRow(10000, crdt4, Util.deleteBeginning)}
-${Util.addRow(100000, crdt5, Util.deleteBeginning)}
 
 # REMOTE INSERTIONS
 --------------------------------------------------------------
@@ -144,7 +142,6 @@ ${Util.addRowWithId(10, crdt1, Util.insertEnd)}
 ${Util.addRowWithId(100, crdt2, Util.insertEnd)}
 ${Util.addRowWithId(1000, crdt3, Util.insertEnd)}
 ${Util.addRowWithId(10000, crdt4, Util.insertEnd)}
-${Util.addRowWithId(100000, crdt5, Util.insertEnd)}
 
 # LOCAL DELETIONS
 --------------------------------------------------------------
@@ -155,7 +152,6 @@ ${Util.addRow(10, crdt1, Util.deleteEnd)}
 ${Util.addRow(100, crdt2, Util.deleteEnd)}
 ${Util.addRow(1000, crdt3, Util.deleteEnd)}
 ${Util.addRow(10000, crdt4, Util.deleteEnd)}
-${Util.addRow(100000, crdt5, Util.deleteEnd)}
 
 # REMOTE INSERTIONS
 --------------------------------------------------------------
