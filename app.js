@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-// const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 const PORT2 = process.env.PORT || 443;
 const ExpressPeerServer = require('peer').ExpressPeerServer;
 const path = require('path');
@@ -13,12 +13,11 @@ const sslOptions = {
   cert: fs.readFileSync('server.crt')
 }
 
-// const server = http.createServer(app).listen(PORT, function () {
-//   console.log(`Conclave is listening on port ${PORT}`);
-// });
-const server = https.createServer(sslOptions, app).listen(PORT2, function() {
-  console.log(PORT2);
+const server = http.createServer(app).listen(PORT, function () {
+  console.log(`Conclave is listening on port ${PORT}`);
 });
+
+https.createServer(sslOptions, app).listen(PORT2);
 
 app.use(express.static('public'));
 app.set('views', './views');
