@@ -14,6 +14,7 @@ describe("Controller", () => {
   const mockBroadcast = {
     bindServerEvents: function() {},
     connectToTarget: function() {},
+    connectToNewTarget: function() {},
     send: function() {},
     addToNetwork: function() {},
     removeFromNetwork: function() {},

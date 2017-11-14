@@ -149,7 +149,7 @@ function generateRemoteStructs(numberOfOperations) {
 
   const numOfOps = numberOfOperations / remoteCRDTs.length;
 
-  remoteCRDTs.forEach(crdt => insertEnd(crdt, numOfOps));
+  remoteCRDTs.forEach(crdt => insertRandom(crdt, numOfOps));
 
   return remoteCRDTs.map(crdt => crdt.struct);
 }
@@ -173,11 +173,6 @@ function shuffle(a) {
 }
 
 function avgIdLength(crdt) {
-  crdt.struct.forEach(char => {
-    if (!char.position) {
-      console.log(char);
-    }
-  });
   const idArray = crdt.struct.map(char => char.position.map(id => id.digit).join(''));
   const digitLengthSum = idArray.reduce((acc, id) => { return acc + id.length }, 0);
 
