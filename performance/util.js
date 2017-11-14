@@ -2,10 +2,11 @@ import Char from '../lib/char';
 import CRDT from '../lib/crdt';
 import { mockController } from './all';
 
-const CELL_1_SIZE = 19;
-const CELL_2_SIZE = 23;
-const CELL_3_SIZE = 22;
-const CELL_4_SIZE = 18;
+const CELL_1_SIZE = 17;
+const CELL_2_SIZE = 20;
+const CELL_3_SIZE = 21;
+const CELL_4_SIZE = 16;
+const CELL_5_SIZE = 15;
 
 function insertRandom(crdt, numberOfOperations) {
   const start = Date.now();
@@ -179,6 +180,13 @@ function avgIdLength(crdt) {
   return Math.floor(digitLengthSum / idArray.length);
 }
 
+function avgPosLength(crdt) {
+  const posArray = crdt.struct.map(char => char.position);
+  const positionLengthSum = posArray.reduce((acc, pos) => { return acc + pos.length }, 0);
+
+  return Math.floor(positionLengthSum / posArray.length);
+}
+
 function average(time, operations) {
   return time / operations;
 }
@@ -200,9 +208,10 @@ function addRowWithId(operations, crdt, func) {
   const cell2 = addPadding(totalTime, CELL_2_SIZE);
   const cell3 = addPadding(average(totalTime, operations), CELL_3_SIZE);
   const cell4 = addPadding(avgIdLength(crdt), CELL_4_SIZE);
+  const cell5 = addPadding(avgPosLength(crdt), CELL_5_SIZE);
 
-  return `|${cell1}|${cell2}|${cell3}|${cell4}|
-${'-'.repeat(87)}`
+  return `|${cell1}|${cell2}|${cell3}|${cell4}|${cell5}|
+${'-'.repeat(95)}`
 }
 
 function addRow(operations, crdt, func) {
@@ -212,7 +221,7 @@ function addRow(operations, crdt, func) {
   const cell3 = addPadding(average(totalTime, operations), CELL_3_SIZE);
 
   return `|${cell1}|${cell2}|${cell3}|
-${'-'.repeat(68)}`
+${'-'.repeat(62)}`
 }
 
 function getTimestamp() {
