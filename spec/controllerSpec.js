@@ -28,6 +28,7 @@ describe("Controller", () => {
     replaceText: function() {},
     insertText: function() {},
     deleteText: function() {},
+    removeCursor: function() {}
   };
 
   const host = "https://localhost:3000";
@@ -102,58 +103,56 @@ describe("Controller", () => {
     beforeEach(() => {
       controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
 
-      initialVersions = {
-        arr: [{
+      initialVersions = [{
           siteId: 2,
           counter: 1,
           exceptions: [6, 7],
-        }],
-      };
+        }];
     })
 
     it("sets counter in the version vector", () => {
       controller.populateVersionVector(initialVersions);
-      expect(controller.vector.versions.arr[0].counter).toEqual(1);
+      expect(controller.vector.versions[1].counter).toEqual(1);
     });
 
     it("sets siteID in the version vector", () => {
       controller.populateVersionVector(initialVersions);
-      expect(controller.vector.versions.arr[0].siteId).toEqual(2);
+      expect(controller.vector.versions[1].siteId).toEqual(2);
     });
 
     it("adds exceptions to this local version", () => {
       controller.populateVersionVector(initialVersions);
-      expect(controller.vector.versions.arr[0].exceptions.length).toEqual(2);
+      expect(controller.vector.versions[1].exceptions.length).toEqual(2);
     });
   });
 
   describe("addToNetwork", () => {
     const controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
     controller.broadcast.peer = mockPeer;
-    controller.network.push("b");
+    controller.network.push({ peerId: "b", siteId: '10' });
     const mockDoc = new JSDOM(`<!DOCTYPE html><p id="peerId"></p>`).window.document;
     const connList = mockDoc.querySelector("#peerId").textContent;
 
     it("doesn't do anything if the id is already in the network list", () => {
       spyOn(controller.broadcast, "addToNetwork");
-      controller.addToNetwork("b", mockDoc);
+      controller.addToNetwork("b", '10', mockDoc);
       expect(controller.broadcast.addToNetwork).not.toHaveBeenCalled();
     });
 
     it("pushes the id into the network list", () => {
-      controller.addToNetwork("a", mockDoc);
-      expect(controller.network).toContain("a");
+      controller.addToNetwork("a", '11', mockDoc);
+      expect(controller.network).toContain({peerId: "a", siteId: '11'});
     });
 
     it("calls addToListOfPeers with the id passed in if it is not its own id", () => {
       spyOn(controller, "addToListOfPeers");
-      controller.addToNetwork("c", mockDoc);
-      expect(controller.addToListOfPeers).toHaveBeenCalledWith("c", jasmine.any(Object));
+      controller.addToNetwork('10', "c", mockDoc);
+      expect(controller.addToListOfPeers).toHaveBeenCalledWith("c", '10', mockDoc);
     });
 
     it("doesn't call addToListOfPeers if its own id is passed in", () => {
       spyOn(controller, "addToListOfPeers");
-      controller.addToNetwork(8, mockDoc);
+      controller.addToNetwork('b', '10', mockDoc);
       expect(controller.addToListOfPeers).not.toHaveBeenCalled();
     });
   });
@@ -165,8 +164,8 @@ describe("Controller", () => {
     beforeEach(() => {
       controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
       controller.broadcast.peer = mockPeer;
-      controller.network.push("b");
-      controller.addToListOfPeers("b", mockDoc);
+      controller.network.push({peerId: 'b', siteId: '10'});
+      controller.addToListOfPeers('10', "b", mockDoc);
     });
 
     it("doesn't do anything if the id isn't in the network list", () => {
@@ -191,7 +190,7 @@ describe("Controller", () => {
     it("calls broadcast.removeFromNetwork with the id passed in", () => {
       spyOn(controller.broadcast, "removeFromNetwork");
       controller.removeFromNetwork("b", mockDoc);
-      expect(controller.broadcast.removeFromNetwork).toHaveBeenCalledWith("b");
+      expect(controller.broadcast.removeFromNetwork).toHaveBeenCalledWith("b", '10');
     });
   });
 
@@ -205,15 +204,9 @@ describe("Controller", () => {
     })
 
     it("updates the connection list on the page", () => {
-      controller.addToListOfPeers(targetPeerId, mockDoc);
+      controller.addToListOfPeers(siteId, targetPeerId, mockDoc);
       const updatedConnList = mockDoc.querySelector("#peerId").textContent;
       expect(connList).not.toEqual(updatedConnList);
-    });
-
-    it("adds the id passed in to the list", () => {
-      controller.addToListOfPeers(targetPeerId, mockDoc);
-      const updatedConnList = mockDoc.querySelector("#peerId").textContent;
-      expect(updatedConnList).toEqual(String(targetPeerId));
     });
   });
 
@@ -223,12 +216,12 @@ describe("Controller", () => {
     beforeEach(() => {
       controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
       mockDoc = new JSDOM(`<!DOCTYPE html><p id="peerId"><li id="abcde"></li></p>`).window.document;
-      controller.addToListOfPeers(targetPeerId, mockDoc);
+      controller.addToListOfPeers(siteId, targetPeerId, mockDoc);
     })
 
     it("removes the connection list element from the list", () => {
       const numElements = mockDoc.getElementsByTagName("LI").length;
-      controller.removeFromListOfPeers(targetPeerId, mockDoc);
+      controller.removeFromListOfPeers('abcde', mockDoc);
       const updatedNumElements = mockDoc.getElementsByTagName("LI").length;
       expect(updatedNumElements).toEqual(numElements - 1);
     });
@@ -242,13 +235,15 @@ describe("Controller", () => {
       expect(controller.findNewTarget).toThrowError();
     });
 
-    it("calls broadcast.connectToTarget with a random peer on the list", () => {
-      controller.network.push(9);
-      controller.network.push(10);
-      spyOn(controller.broadcast, "connectToTarget");
-      controller.findNewTarget();
-      const args = controller.broadcast.connectToTarget.calls.allArgs();
-      expect([9,10].indexOf(args[0][0])).toBeGreaterThan(-1);
+    it("calls broadcast.connectToNewTarget with a random peer on the list", () => {
+      controller.network.push({peerId: 'a', siteId: '10'});
+      controller.network.push({peerId: 'b', siteId: '11'});
+      controller.broadcast.connections = ['a', 'b'];
+      spyOn(controller.broadcast, "connectToNewTarget");
+      controller.findNewTarget('c');
+      const args = controller.broadcast.connectToNewTarget.calls.allArgs();
+
+      expect(['a', 'b'].indexOf(args[0][0])).toBeGreaterThan(-1);
     });
   });
 
@@ -267,13 +262,18 @@ describe("Controller", () => {
         siteId: 6,
         value: "b"
       }],
-      initialVersions: {
-        arr: [{
+      initialVersions: [{
         siteId: 2,
         counter: 1,
         exceptions: [6, 7],
-      }]},
-      network: [1, 2, 3]
+      }],
+      peerId: '7',
+      siteId: '10',
+      network: [
+        {peerId: '1', siteId: '3'},
+        {peerId: '2', siteId: '4'},
+        {peerId: '3', siteId: '5'}
+      ]
     };
 
     it("calls populateCRDT with the initial struct property", () => {
@@ -296,20 +296,19 @@ describe("Controller", () => {
     it("calls populateVersionVector with the initial versions property", () => {
       spyOn(controller, "populateVersionVector");
       controller.handleSync(syncObj, mockDoc);
-      expect(controller.populateVersionVector).toHaveBeenCalledWith({
-        arr: [{
+      expect(controller.populateVersionVector).toHaveBeenCalledWith([{
         siteId: 2,
         counter: 1,
         exceptions: [6, 7],
-      }]});
+      }]);
     });
 
     it("calls addToNetwork for each id in the network property", () => {
       spyOn(controller, "addToNetwork");
       controller.handleSync(syncObj, mockDoc);
-      expect(controller.addToNetwork).toHaveBeenCalledWith(1, jasmine.any(Object));
-      expect(controller.addToNetwork).toHaveBeenCalledWith(2, jasmine.any(Object));
-      expect(controller.addToNetwork).toHaveBeenCalledWith(3, jasmine.any(Object));
+      expect(controller.addToNetwork).toHaveBeenCalledWith('1', '3', mockDoc);
+      expect(controller.addToNetwork).toHaveBeenCalledWith('2', '4', mockDoc);
+      expect(controller.addToNetwork).toHaveBeenCalledWith('3', '5', mockDoc);
     });
   });
 

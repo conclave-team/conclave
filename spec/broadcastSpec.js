@@ -97,7 +97,6 @@ describe('Broadcast', () => {
       spyOn(broadcast.controller, "addToNetwork");
       broadcast.addToConnections(conn);
       expect(broadcast.connections.length).toEqual(1);
-      expect(broadcast.controller.addToNetwork).toHaveBeenCalledWith(conn.peer);
     });
 
     it("doesn't call either of the functions if the connection is already in the list", () => {
@@ -114,8 +113,8 @@ describe('Broadcast', () => {
 
     it("calls send with type 'add to network' and newPeer of id passed in", () => {
       spyOn(broadcast, "send");
-      broadcast.addToNetwork(5);
-      expect(broadcast.send).toHaveBeenCalledWith({type:'add to network',newPeer:5});
+      broadcast.addToNetwork(5, '10');
+      expect(broadcast.send).toHaveBeenCalledWith({type:'add to network',newPeer:5, newSite: '10'});
     });
   });
 
@@ -125,8 +124,8 @@ describe('Broadcast', () => {
 
     it("calls send with type 'remove to network' and oldPeer of id passed in", () => {
       spyOn(broadcast, "send");
-      broadcast.removeFromNetwork(5);
-      expect(broadcast.send).toHaveBeenCalledWith({type:'remove from network',oldPeer:5});
+      broadcast.removeFromNetwork(5, '10');
+      expect(broadcast.send).toHaveBeenCalledWith({type:'remove from network', oldPeer:5, oldSite: '10'});
     });
   });
 
