@@ -69,6 +69,10 @@ video {
   border-radius: 6px;
 }
 
+video:hover {
+  cursor: pointer;
+}
+
 .CodeMirror {
   font-family: 'InputLight';
   border-radius: 8px;

@@ -2,11 +2,11 @@ import Char from '../lib/char';
 import CRDT from '../lib/crdt';
 import { mockController } from './all';
 
-const CELL_1_SIZE = 19;
-const CELL_2_SIZE = 23;
-const CELL_3_SIZE = 22;
-const CELL_4_SIZE = 18;
-const CELL_5_SIZE = 20;
+const CELL_1_SIZE = 17;
+const CELL_2_SIZE = 20;
+const CELL_3_SIZE = 21;
+const CELL_4_SIZE = 16;
+const CELL_5_SIZE = 15;
 
 function insertRandom(crdt, numberOfOperations) {
   const start = Date.now();
@@ -211,7 +211,8 @@ function addRowWithId(operations, crdt, func) {
   const cell5 = addPadding(avgPosLength(crdt), CELL_5_SIZE);
 
   return `|${cell1}|${cell2}|${cell3}|${cell4}|${cell5}|
-${'-'.repeat(108)}`
+${'-'.repeat(95)}`
+
 }
 
 function addRow(operations, crdt, func) {
@@ -221,7 +222,7 @@ function addRow(operations, crdt, func) {
   const cell3 = addPadding(average(totalTime, operations), CELL_3_SIZE);
 
   return `|${cell1}|${cell2}|${cell3}|
-${'-'.repeat(68)}`
+${'-'.repeat(62)}`
 }
 
 function getTimestamp() {
