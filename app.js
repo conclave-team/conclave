@@ -9,8 +9,8 @@ const https = require('https');
 const fs = require('fs');
 
 const sslOptions = {
-  key: fs.readFileSync('./server.key'),
-  cert: fs.readFileSync('./server.crt'),
+  key: fs.readFileSync('./key.key'),
+  cert: fs.readFileSync('./crt.crt'),
   passphrase: 'sunny',
   requestCert: false,
   rejectUnauthorized: false

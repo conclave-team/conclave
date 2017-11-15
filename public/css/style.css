@@ -95,3 +95,7 @@ video {
   position: absolute;
   line-height: 15px;
 }
+
+.hide * {
+  visibility: hidden;
+}
