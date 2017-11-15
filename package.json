@@ -6,8 +6,8 @@
   "scripts": {
     "test": "jasmine",
     "start": "node app.js",
-    "build": "babel lib -d build && babel demo -d demo-build",
-    "compile": "browserify build/main.js -o public/js/bundle.js && browserify demo-build/demo.js -o public/js/demo-bundle.js",
+    "build": "babel lib -d build",
+    "compile": "browserify build/main.js -o public/js/bundle.js",
     "postinstall": "npm run build && npm run compile",
     "local": "npm run build && npm run compile && npm start",
     "perform": "babel-node performance/all.js"

@@ -9,7 +9,10 @@ app.set('view engine', 'pug');
 
 app.get('/', function (req, res) {
   let proto = req.protocol;
-  if (req.get('host').split(":")[0] !== 'localhost') {
+
+  if (proto === 'http' && req.get('host').split(":")[0] !== 'localhost') {
+    res.redirect('https://' + req.get('host') + (req.query.id || ''))
+  } else if (req.get('host').split(":")[0] !== 'localhost') {
     proto = proto + 's';
   }
   const host = proto + '://' + req.get('host');
