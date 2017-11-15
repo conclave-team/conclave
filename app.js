@@ -16,9 +16,9 @@ const sslOptions = {
   rejectUnauthorized: false
 }
 
-http.createServer(app).listen(PORT, function () {
-  console.log(`Conclave is listening on port ${PORT}`);
-});
+// http.createServer(app).listen(PORT, function () {
+//   console.log(`Conclave is listening on port ${PORT}`);
+// });
 
 const server = https.createServer(sslOptions, app).listen(PORT2);
 
