@@ -9,15 +9,18 @@ const https = require('https');
 const fs = require('fs');
 
 const sslOptions = {
-  key: fs.readFileSync('server.key'),
-  cert: fs.readFileSync('server.crt')
+  key: fs.readFileSync('./server.key'),
+  cert: fs.readFileSync('./server.crt'),
+  passphrase: 'sunny',
+  requestCert: false,
+  rejectUnauthorized: false
 }
 
-const server = http.createServer(app).listen(PORT, function () {
+http.createServer(app).listen(PORT, function () {
   console.log(`Conclave is listening on port ${PORT}`);
 });
 
-https.createServer(sslOptions, app).listen(PORT2);
+const server = https.createServer(sslOptions, app).listen(PORT2);
 
 app.use(express.static('public'));
 app.set('views', './views');

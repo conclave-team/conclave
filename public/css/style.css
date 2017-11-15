@@ -60,7 +60,8 @@ video {
   float: right;
   margin-right: 10%;
   visibility: hidden;
-  border: 10px solid;
+  border-bottom: 13px solid;
+  border-radius: 6px;
 }
 
 .CodeMirror {
