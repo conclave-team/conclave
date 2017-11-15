@@ -6,6 +6,7 @@ const CELL_1_SIZE = 19;
 const CELL_2_SIZE = 23;
 const CELL_3_SIZE = 22;
 const CELL_4_SIZE = 18;
+const CELL_5_SIZE = 20;
 
 function insertRandom(crdt, numberOfOperations) {
   const start = Date.now();
@@ -179,6 +180,13 @@ function avgIdLength(crdt) {
   return Math.floor(digitLengthSum / idArray.length);
 }
 
+function avgPosLength(crdt) {
+  const posArray = crdt.struct.map(char => char.position.length);
+  const posLengthSum = posArray.reduce((acc, len) => { return acc + len }, 0);
+
+  return Math.floor(posLengthSum / posArray.length);
+}
+
 function average(time, operations) {
   return time / operations;
 }
@@ -200,9 +208,10 @@ function addRowWithId(operations, crdt, func) {
   const cell2 = addPadding(totalTime, CELL_2_SIZE);
   const cell3 = addPadding(average(totalTime, operations), CELL_3_SIZE);
   const cell4 = addPadding(avgIdLength(crdt), CELL_4_SIZE);
+  const cell5 = addPadding(avgPosLength(crdt), CELL_5_SIZE);
 
-  return `|${cell1}|${cell2}|${cell3}|${cell4}|
-${'-'.repeat(87)}`
+  return `|${cell1}|${cell2}|${cell3}|${cell4}|${cell5}|
+${'-'.repeat(108)}`
 }
 
 function addRow(operations, crdt, func) {

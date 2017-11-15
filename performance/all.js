@@ -16,7 +16,9 @@ export function mockController() {
       localVersion: {
         counter: 0
       },
-      increment: function() {}
+      increment: function() {
+        this.localVersion.counter++;
+      }
     }
   }
 }
@@ -33,17 +35,17 @@ const crdt5 = new CRDT(mockController());
 });
 
 let table = `
-#### PERFORMANCE METRICS
-======================================================================================
+#### PERFORMANCE METRICS (Base: ${crdt1.base}, Boundary: ${crdt1.boundary}, Strategy: ${crdt1.strategy})
+===========================================================================================================
 
 ## RANDOM
 ---------
 
 # LOCAL INSERTIONS
----------------------------------------------------------------------------------------
-|  # of Operations  |  Total Execute Time   | Avg. Operation Time  |  Avg. ID Length  |
-|                   |   (in milliseconds)   |  (in milliseconds)   |                  |
----------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+|  # of Operations  |  Total Execute Time   | Avg. Operation Time  |  Avg. ID Length  |  Avg. Pos. Length  |
+|                   |   (in milliseconds)   |  (in milliseconds)   |                  |                    |
+------------------------------------------------------------------------------------------------------------
 ${Util.addRowWithId(10, crdt1, Util.insertRandom)}
 ${Util.addRowWithId(100, crdt2, Util.insertRandom)}
 ${Util.addRowWithId(1000, crdt3, Util.insertRandom)}
@@ -88,10 +90,10 @@ ${Util.addRow(100000, crdt5, Util.remoteDeleteRandom)}
 -------------------
 
 # LOCAL INSERTIONS
----------------------------------------------------------------------------------------
-|  # of Operations  |  Total Execute Time   | Avg. Operation Time  |  Avg. ID Length  |
-|                   |   (in milliseconds)   |  (in milliseconds)   |                  |
----------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+|  # of Operations  |  Total Execute Time   | Avg. Operation Time  |  Avg. ID Length  |  Avg. Pos. Length  |
+|                   |   (in milliseconds)   |  (in milliseconds)   |                  |                    |
+------------------------------------------------------------------------------------------------------------
 ${Util.addRowWithId(10, crdt1, Util.insertBeginning)}
 ${Util.addRowWithId(100, crdt2, Util.insertBeginning)}
 ${Util.addRowWithId(1000, crdt3, Util.insertBeginning)}
@@ -136,10 +138,10 @@ ${Util.addRow(100000, crdt5, Util.remoteDeleteBeginning)}
 -------------
 
 # LOCAL INSERTIONS
----------------------------------------------------------------------------------------
-|  # of Operations  |  Total Execute Time   | Avg. Operation Time  |  Avg. ID Length  |
-|                   |   (in milliseconds)   |  (in milliseconds)   |                  |
----------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+|  # of Operations  |  Total Execute Time   | Avg. Operation Time  |  Avg. ID Length  |  Avg. Pos. Length  |
+|                   |   (in milliseconds)   |  (in milliseconds)   |                  |                    |
+------------------------------------------------------------------------------------------------------------
 ${Util.addRowWithId(10, crdt1, Util.insertEnd)}
 ${Util.addRowWithId(100, crdt2, Util.insertEnd)}
 ${Util.addRowWithId(1000, crdt3, Util.insertEnd)}
