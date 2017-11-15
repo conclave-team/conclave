@@ -54,6 +54,15 @@ textarea {
   height: 200px;
 }
 
+video {
+  width: 25%;
+  height: auto;
+  float: right;
+  margin-right: 10%;
+  visibility: hidden;
+  border: 10px solid;
+}
+
 .CodeMirror {
   font-family: 'InputLight';
   border-radius: 8px;
