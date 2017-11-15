@@ -18,10 +18,6 @@ html(lang="en")
       a(id='myLink')
     p(id='peerId') Connected peers:
     script.
-      const gTARGETPEERID = '#{id}'
-      const gADDRESS = '#{address}'
-      const gHOST = "#{host}"
-      const gPORT = "#{port}"
-
-      console.log(gTARGETPEERID, gADDRESS, gHOST, gPORT)
+      const gTARGETPEERID = '!{id}'
+      const gHOST = '!{host}'
     script(src='js/bundle.js')
