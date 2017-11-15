@@ -5,22 +5,22 @@ const PORT2 = process.env.PORT || 443;
 const ExpressPeerServer = require('peer').ExpressPeerServer;
 const path = require('path');
 const http = require('http');
-const https = require('https');
+// const https = require('https');
 const fs = require('fs');
 
-const sslOptions = {
-  key: fs.readFileSync('./key.key'),
-  cert: fs.readFileSync('./crt.crt'),
-  passphrase: 'sunny',
-  requestCert: false,
-  rejectUnauthorized: false
-}
+// const sslOptions = {
+//   key: fs.readFileSync('./key.key'),
+//   cert: fs.readFileSync('./crt.crt'),
+//   passphrase: 'sunny',
+//   requestCert: false,
+//   rejectUnauthorized: false
+// }
 
-// http.createServer(app).listen(PORT, function () {
-//   console.log(`Conclave is listening on port ${PORT}`);
-// });
+http.createServer(app).listen(PORT, function () {
+  console.log(`Conclave is listening on port ${PORT}`);
+});
 
-const server = https.createServer(sslOptions, app).listen(PORT2);
+// const server = https.createServer(sslOptions, app).listen(PORT2);
 
 app.use(express.static('public'));
 app.set('views', './views');
