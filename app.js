@@ -13,7 +13,6 @@ app.get('/', function (req, res) {
     proto = proto + 's';
   }
   const host = proto + '://' + req.get('host');
-  console.log(host);
   const id = req.query.id ? req.query.id : 0;
   res.render('index', { id: id, host: host });
 });

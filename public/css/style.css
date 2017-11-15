@@ -61,6 +61,7 @@ video {
   margin-right: 10%;
   visibility: hidden;
   border-bottom: 13px solid;
+  border-right: 13px solid;
   border-radius: 6px;
 }
 
