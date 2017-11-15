@@ -54,6 +54,10 @@ textarea {
   height: 200px;
 }
 
+span:hover {
+  cursor: pointer;
+}
+
 video {
   width: 25%;
   height: auto;
