@@ -146,7 +146,7 @@ function generateChars(numberOfOperations) {
 }
 
 function generateRemoteStructs(numberOfOperations) {
-  const remoteCRDTs = generateRemoteCRDTs(numberOfOperations / 5);
+  const remoteCRDTs = generateRemoteCRDTs(Math.log10(numberOfOperations));
 
   const numOfOps = numberOfOperations / remoteCRDTs.length;
 
