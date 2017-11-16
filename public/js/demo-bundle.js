@@ -1440,7 +1440,6 @@ var Editor = function () {
       var _this3 = this;
 
       this.mde.codemirror.on("change", function (_, changeObj) {
-        console.log(changeObj);
         if (changeObj.origin === "setValue") return;
         if (changeObj.origin === "insertText") return;
         if (changeObj.origin === "deleteText") return;
@@ -1470,7 +1469,7 @@ var Editor = function () {
       var chars = this.extractChars(changeObj.text);
       var startPos = changeObj.from;
 
-      this.updateRemoteCursorsInsert(changeObj.to);
+      this.updateRemoteCursorsInsert(chars, changeObj.to);
       this.controller.localInsert(chars, startPos);
     }
   }, {
@@ -1478,8 +1477,9 @@ var Editor = function () {
     value: function processDelete(changeObj) {
       var startPos = changeObj.from;
       var endPos = changeObj.to;
+      var chars = this.extractChars(changeObj.removed);
 
-      this.updateRemoteCursorsDelete(changeObj.to);
+      this.updateRemoteCursorsDelete(chars, changeObj.to, changeObj.from);
       this.controller.localDelete(startPos, endPos);
     }
   }, {
