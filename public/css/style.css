@@ -51,7 +51,7 @@ p {
   font-size: 14px;
 }
 
-#newRoot, #newLink {
+#newRoot, #newRoot2, #newLink {
   margin: 5px auto;
   text-align: center;
   font-size: 12px;
@@ -64,7 +64,7 @@ textarea {
   height: 200px;
 }
 
-span:hover {
+li span:hover {
   cursor: pointer;
 }
 
