@@ -1,6 +1,6 @@
 import Char from '../lib/char';
 import CRDT from '../lib/crdt';
-import { mockController } from './script';
+import { mockController } from './scriptLinear';
 
 const CELL_1_SIZE = 17;
 const CELL_2_SIZE = 20;
@@ -15,14 +15,6 @@ function insertRandom(crdt, numberOfOperations) {
   for(let i = 0; i < numberOfOperations; i++) {
     index = Math.floor(Math.random() * i);
     crdt.handleLocalInsert('a', index);
-  }
-
-  for (let i = 0; i < numberOfOperations; i++) {
-    ch = Math.floor(Math.random() * i);
-    line = Math.floor(Math.random() * 100);
-
-    pos = { line: 0, ch: ch };
-    crdt.handleLocalInsert('a', pos);
   }
 
   const end = Date.now();

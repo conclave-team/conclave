@@ -250,6 +250,7 @@ var Broadcast = function () {
         vid.style.visibility = 'visible';
         vid.style.borderColor = color;
         vid.srcObject = stream;
+        vid.play();
 
         vid.onclick = function () {
           return callObj.close();
@@ -511,22 +512,16 @@ var Controller = function () {
   }, {
     key: 'populateCRDT',
     value: function populateCRDT(initialStruct) {
-      // const struct = initialStruct.forEach(ch => {
-      //   const char = new Char(ch.value, ch.counter, ch.siteId, ch.position.map(id => {
-      //     return new Identifier(id.digit, id.siteId);
-      //   }))
-      //
-      //   this.crdt.handleRemoteInsert(char);
-      // });
-
-      var struct = initialStruct.map(function (ch) {
-        return new _char2.default(ch.value, ch.counter, ch.siteId, ch.position.map(function (id) {
-          return new _identifier2.default(id.digit, id.siteId);
-        }));
+      var struct = initialStruct.map(function (line) {
+        return line.map(function (ch) {
+          return new _char2.default(ch.value, ch.counter, ch.siteId, ch.position.map(function (id) {
+            return new _identifier2.default(id.digit, id.siteId);
+          }));
+        });
       });
+
       this.crdt.struct = struct;
-      this.crdt.populateText();
-      this.editor.replaceText(this.crdt.text);
+      this.editor.replaceText(this.crdt.toText());
     }
   }, {
     key: 'populateVersionVector',
@@ -765,16 +760,19 @@ var Controller = function () {
     }
   }, {
     key: 'localDelete',
-    value: function localDelete(startIdx, endIdx) {
-      for (var i = startIdx; i < endIdx; i++) {
-        this.crdt.handleLocalDelete(startIdx);
-      }
+    value: function localDelete(startPos, endPos) {
+      this.crdt.handleLocalDelete(startPos, endPos);
     }
   }, {
     key: 'localInsert',
-    value: function localInsert(chars, idx) {
+    value: function localInsert(chars, startPos) {
       for (var i = 0; i < chars.length; i++) {
-        this.crdt.handleLocalInsert(chars[i], i + idx);
+        if (chars[i - 1] === '\n') {
+          startPos.line++;
+          startPos.ch = 0;
+        }
+        this.crdt.handleLocalInsert(chars[i], startPos);
+        startPos.ch++;
       }
     }
   }, {
@@ -801,28 +799,15 @@ var Controller = function () {
     }
   }, {
     key: 'insertIntoEditor',
-    value: function insertIntoEditor(value, index, siteId) {
-      var substring = this.crdt.text.slice(0, index + 1);
-      var linesOfText = substring.split("\n");
-      var line = void 0,
-          char = void 0;
-
-      if (value === "\n") {
-        line = linesOfText.length - 2;
-        char = linesOfText[line].length;
-      } else {
-        line = linesOfText.length - 1;
-        char = linesOfText[line].length - 1;
-      }
-
+    value: function insertIntoEditor(value, pos, siteId) {
       var positions = {
         from: {
-          line: line,
-          ch: char
+          line: pos.line,
+          ch: pos.ch
         },
         to: {
-          line: line,
-          ch: char
+          line: pos.line,
+          ch: pos.ch
         }
       };
 
@@ -830,39 +815,29 @@ var Controller = function () {
     }
   }, {
     key: 'deleteFromEditor',
-    value: function deleteFromEditor(value, index, siteId) {
-      var substring = this.crdt.text.slice(0, index + 1);
-      var linesOfText = substring.split("\n");
-      var line = void 0,
-          char = void 0,
-          positions = void 0;
+    value: function deleteFromEditor(value, pos, siteId) {
+      var positions = void 0;
 
       if (value === "\n") {
-        line = linesOfText.length - 2;
-        char = linesOfText[line].length;
-
         positions = {
           from: {
-            line: line,
-            ch: char
+            line: pos.line,
+            ch: pos.ch
           },
           to: {
-            line: line + 1,
+            line: pos.line + 1,
             ch: 0
           }
         };
       } else {
-        line = linesOfText.length - 1;
-        char = linesOfText[line].length - 1;
-
         positions = {
           from: {
-            line: line,
-            ch: char
+            line: pos.line,
+            ch: pos.ch
           },
           to: {
-            line: line,
-            ch: char + 1
+            line: pos.line,
+            ch: pos.ch + 1
           }
         };
       }
@@ -906,9 +881,8 @@ var CRDT = function () {
 
     this.controller = controller;
     this.vector = controller.vector;
-    this.struct = [];
+    this.struct = [[]];
     this.siteId = controller.siteId;
-    this.text = "";
     this.base = base;
     this.boundary = boundary;
     this.strategy = strategy;
@@ -917,120 +891,210 @@ var CRDT = function () {
 
   _createClass(CRDT, [{
     key: 'handleLocalInsert',
-    value: function handleLocalInsert(val, index) {
+    value: function handleLocalInsert(value, pos) {
       this.vector.increment();
-
-      var char = this.generateChar(val, index);
-      this.insertChar(index, char);
-      this.insertText(char.value, index);
-
+      var char = this.generateChar(value, pos);
+      this.insertChar(char, pos);
       this.controller.broadcastInsertion(char);
     }
   }, {
     key: 'handleRemoteInsert',
     value: function handleRemoteInsert(char) {
-      var index = this.findInsertIndex(char);
-
-      this.insertChar(index, char);
-      this.insertText(char.value, index);
-
-      this.controller.insertIntoEditor(char.value, index, char.siteId);
+      var pos = this.findPosition(char);
+      this.insertChar(char, pos);
+      this.controller.insertIntoEditor(char.value, pos, char.siteId);
     }
   }, {
     key: 'insertChar',
-    value: function insertChar(index, char) {
-      this.struct.splice(index, 0, char);
+    value: function insertChar(char, pos) {
+      if (pos.line === this.struct.length) {
+        this.struct.push([]);
+      }
+
+      // if inserting a newline, split line into two lines
+      if (char.value === "\n") {
+        var lineAfter = this.struct[pos.line].splice(pos.ch);
+        var lineBefore = this.struct[pos.line].concat(char);
+        if (lineAfter.length === 0) {
+          this.struct.splice(pos.line, 1, lineBefore);
+        } else {
+          this.struct.splice(pos.line, 1, lineBefore, lineAfter);
+        }
+      } else {
+        this.struct[pos.line].splice(pos.ch, 0, char);
+      }
     }
   }, {
     key: 'handleLocalDelete',
-    value: function handleLocalDelete(idx) {
-      this.vector.increment();
+    value: function handleLocalDelete(startPos, endPos) {
+      var char = void 0,
+          line = void 0,
+          ch = void 0,
+          i = void 0;
+      var newlineRemoved = false;
 
-      var char = this.struct.splice(idx, 1)[0];
-      this.deleteText(idx);
+      // for multi-line deletes
+      if (startPos.line !== endPos.line) {
+        // delete chars on first line from startPos.ch to end of line
+        do {
+          char = this.struct[startPos.line].splice(startPos.ch, 1)[0];
 
-      this.controller.broadcastDeletion(char);
+          if (char) {
+            this.vector.increment();
+            this.controller.broadcastDeletion(char);
+          }
+
+          if (char.value === "\n") {
+            newlineRemoved = true;
+            break;
+          }
+        } while (char);
+
+        // delete all chars on 2nd through 2nd-to-last lines
+        for (line = startPos.line + 1; line < endPos.line; line++) {
+          do {
+            char = this.struct[line].splice(0, 1)[0];
+            if (char) {
+              this.vector.increment();
+              this.controller.broadcastDeletion(char);
+            }
+          } while (char);
+        }
+
+        // delete chars on last line from 0 to endPos.ch
+        for (ch = 0; ch < endPos.ch; ch++) {
+          char = this.struct[endPos.line].splice(0, 1)[0];
+          this.vector.increment();
+          this.controller.broadcastDeletion(char);
+        }
+
+        // remove empty lines
+        for (line = 0; line < this.struct.length; line++) {
+          if (this.struct[line].length === 0) {
+            this.struct.splice(line, 1);
+            line--;
+          }
+        }
+
+        // if newline deleted from start line, concat start line with next non-empty line
+        if (newlineRemoved && this.struct[startPos.line + 1]) {
+          var mergedLine = this.struct[startPos.line].concat(this.struct[startPos.line + 1]);
+          this.struct.splice(startPos.line, 2, mergedLine);
+        }
+
+        // single-line deletes
+      } else {
+        for (i = startPos.ch; i < endPos.ch; i++) {
+          char = this.struct[startPos.line].splice(startPos.ch, 1)[0];
+
+          if (char.value === "\n") {
+            var _mergedLine = this.struct[startPos.line].concat(this.struct[startPos.line + 1]);
+            this.struct.splice(startPos.line, 2, _mergedLine);
+          }
+          this.vector.increment();
+          this.controller.broadcastDeletion(char);
+        }
+      }
     }
   }, {
     key: 'handleRemoteDelete',
     value: function handleRemoteDelete(char, siteId) {
-      var index = this.findIndexByPosition(char);
-      this.struct.splice(index, 1);
+      var pos = this.findPosition(char);
+      this.struct[pos.line].splice(pos.ch, 1)[0];
 
-      this.controller.deleteFromEditor(char.value, index, siteId);
-      this.deleteText(index);
-    }
-  }, {
-    key: 'findInsertIndex',
-    value: function findInsertIndex(char) {
-      var left = 0;
-      var right = this.struct.length - 1;
-      var mid = void 0,
-          compareNum = void 0;
-
-      if (this.struct.length === 0 || char.compareTo(this.struct[left]) < 0) {
-        return left;
-      } else if (char.compareTo(this.struct[right]) > 0) {
-        return this.struct.length;
+      // when deleting newline, concat start line with next non-empty line
+      if (char.value === "\n" && this.struct[pos.line + 1]) {
+        var mergedLine = this.struct[pos.line].concat(this.struct[pos.line + 1]);
+        this.struct.splice(pos.line, 2, mergedLine);
       }
 
-      while (left + 1 < right) {
-        mid = Math.floor(left + (right - left) / 2);
-        compareNum = char.compareTo(this.struct[mid]);
+      this.controller.deleteFromEditor(char.value, pos, siteId);
+    }
 
-        if (compareNum === 0) {
-          return mid;
-        } else if (compareNum > 0) {
-          left = mid;
-        } else {
-          right = mid;
+    // to be replaced with binary search
+
+  }, {
+    key: 'findPosition',
+    value: function findPosition(char) {
+      var line = void 0,
+          ch = void 0;
+      var numLines = this.struct.length;
+
+      if (numLines === 0) {
+        return { line: 0, ch: 0 };
+      }
+
+      for (line = 0; line < numLines; line++) {
+        if (this.struct[line].length === 0) {
+          return { line: line, ch: 0 };
+        }
+
+        var chars = this.struct[line];
+        var _lastChar = chars[chars.length - 1];
+
+        // chars will only be equal when deleting; method could be optimized for deletes
+        if (char.compareTo(_lastChar) <= 0) {
+          for (ch = 0; ch < chars.length; ch++) {
+            if (char.compareTo(chars[ch]) <= 0) {
+              return { line: line, ch: ch };
+            }
+          }
         }
       }
 
-      return char.compareTo(this.struct[left]) === 0 ? left : right;
-    }
-  }, {
-    key: 'findIndexByPosition',
-    value: function findIndexByPosition(char) {
-      var left = 0;
-      var right = this.struct.length - 1;
-      var mid = void 0,
-          compareNum = void 0;
+      // char is greater than all chars; either add to last line or add to a new line
+      var lastLine = this.struct[numLines - 1];
+      var lastChar = lastLine[lastLine.length - 1];
 
-      if (this.struct.length === 0) {
-        throw new Error("Character does not exist in CRDT.");
-      }
-
-      while (left + 1 < right) {
-        mid = Math.floor(left + (right - left) / 2);
-        compareNum = char.compareTo(this.struct[mid]);
-
-        if (compareNum === 0) {
-          return mid;
-        } else if (compareNum > 0) {
-          left = mid;
-        } else {
-          right = mid;
-        }
-      }
-
-      if (char.compareTo(this.struct[left]) === 0) {
-        return left;
-      } else if (char.compareTo(this.struct[right]) === 0) {
-        return right;
+      if (lastChar.value === "\n") {
+        return { line: numLines, ch: 0 };
       } else {
-        throw new Error("Character does not exist in CRDT.");
+        return { line: numLines - 1, ch: lastLine.length };
       }
+    }
+  }, {
+    key: 'findPosBefore',
+    value: function findPosBefore(pos) {
+      var ch = pos.ch;
+      var line = pos.line;
+
+      if (ch === 0 && line === 0) {
+        return [];
+      } else if (ch === 0 && line !== 0) {
+        line = line - 1;
+        ch = this.struct[line].length;
+      }
+
+      return this.struct[line][ch - 1].position;
+    }
+  }, {
+    key: 'findPosAfter',
+    value: function findPosAfter(pos) {
+      var ch = pos.ch;
+      var line = pos.line;
+
+      var numLines = this.struct.length;
+      var numChars = this.struct[line] && this.struct[line].length || 0;
+
+      if (line === numLines - 1 && ch === numChars) {
+        return [];
+      } else if (line < numLines - 1 && ch === numChars) {
+        line = line + 1;
+        ch = 0;
+      } else if (line > numLines - 1 && ch === 0) {
+        return [];
+      }
+
+      return this.struct[line][ch].position;
     }
   }, {
     key: 'generateChar',
-    value: function generateChar(val, index) {
-      var posBefore = this.struct[index - 1] && this.struct[index - 1].position || [];
-      var posAfter = this.struct[index] && this.struct[index].position || [];
+    value: function generateChar(val, pos) {
+      var posBefore = this.findPosBefore(pos);
+      var posAfter = this.findPosAfter(pos);
       var newPos = this.generatePosBetween(posBefore, posAfter);
-      var localCounter = this.vector.localVersion.counter;
 
-      return new _char2.default(val, localCounter, this.siteId, newPos);
+      return new _char2.default(val, this.vector.localVersion.counter, this.siteId, newPos);
     }
   }, {
     key: 'retrieveStrategy',
@@ -1123,21 +1187,13 @@ var CRDT = function () {
       return Math.floor(Math.random() * (max - min)) + min;
     }
   }, {
-    key: 'insertText',
-    value: function insertText(val, index) {
-      this.text = this.text.slice(0, index) + val + this.text.slice(index);
-    }
-  }, {
-    key: 'deleteText',
-    value: function deleteText(index) {
-      this.text = this.text.slice(0, index) + this.text.slice(index + 1);
-    }
-  }, {
-    key: 'populateText',
-    value: function populateText() {
-      this.text = this.struct.map(function (char) {
-        return char.value;
-      }).join('');
+    key: 'toText',
+    value: function toText() {
+      return this.struct.map(function (line) {
+        return line.map(function (char) {
+          return char.value;
+        }).join('');
+      });
     }
   }]);
 
@@ -1268,14 +1324,6 @@ var demo = new _controller2.default(location.search.slice(1) || '0', location.or
 
 var script1 = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nAliquam ut eleifend lorem, eget accumsan justo. Praesent dui lacus,\nplacerat a nisl ac, hendrerit accumsan odio. Duis sollicitudin vehicula';
 
-// ultrices. Sed magna diam, aliquam in blandit non, mollis eget
-// mi. In nec consequat tortor. Pellentesque malesuada urna quis rutrum faucibus. Donec
-// dui quam, mattis id diam eu, vehicula posuere eros. Donec cursus orci non semper
-// condimentum. Fusce ut maximus purus. Donec lacus libero, varius eget viverra sit
-// amet, egestas malesuada augue. Sed sed quam at erat euismod imperdiet. Duis sodales,
-// nisi a efficitur pellentesque, metus mauris semper ex, in faucibus nulla ligula sed tortor.
-// Morbi sed varius lectus, eget consequat augue.
-
 var bot1 = new _userBot2.default('conclave-bot1', 'conclave-demo', script1, demo.editor.mde);
 bot1.runScript(200);
 },{"./broadcast":1,"./controller":3,"./editor":8,"./userBot":13,"fs":19,"peerjs":41,"simplemde":47,"uuid/v1":52}],8:[function(require,module,exports){
@@ -1380,7 +1428,7 @@ var Editor = function () {
           var fileText = e.target.result;
           _this2.controller.localInsert(fileText, 0);
           _this2.controller.crdt.populateText();
-          _this2.replaceText(_this2.controller.crdt.text);
+          _this2.replaceText(_this2.controller.crdt.text.join(''));
           _this2.hideUpload();
         };
         fileReader.readAsText(file, "UTF-8");
@@ -1392,6 +1440,7 @@ var Editor = function () {
       var _this3 = this;
 
       this.mde.codemirror.on("change", function (_, changeObj) {
+        console.log(changeObj);
         if (changeObj.origin === "setValue") return;
         if (changeObj.origin === "insertText") return;
         if (changeObj.origin === "deleteText") return;
@@ -1419,23 +1468,19 @@ var Editor = function () {
     key: 'processInsert',
     value: function processInsert(changeObj) {
       var chars = this.extractChars(changeObj.text);
-      var linePos = changeObj.from.line;
-      var charPos = changeObj.from.ch;
-      var startIdx = this.findLinearIdx(linePos, charPos);
-      var newPosition = this.generatePosition;
+      var startPos = changeObj.from;
 
-      this.updateRemoteCursorsInsert(chars, changeObj.to);
-      this.controller.localInsert(chars, startIdx);
+      this.updateRemoteCursorsInsert(changeObj.to);
+      this.controller.localInsert(chars, startPos);
     }
   }, {
     key: 'processDelete',
     value: function processDelete(changeObj) {
-      var startIdx = this.findLinearIdx(changeObj.from.line, changeObj.from.ch);
-      var endIdx = this.findLinearIdx(changeObj.to.line, changeObj.to.ch);
-      var chars = this.extractChars(changeObj.removed);
+      var startPos = changeObj.from;
+      var endPos = changeObj.to;
 
-      this.updateRemoteCursorsDelete(chars, changeObj.to, changeObj.from);
-      this.controller.localDelete(startIdx, endIdx);
+      this.updateRemoteCursorsDelete(changeObj.to);
+      this.controller.localDelete(startPos, endPos);
     }
   }, {
     key: 'processUndoRedo',
@@ -1459,7 +1504,7 @@ var Editor = function () {
     key: 'replaceText',
     value: function replaceText(text) {
       var cursor = this.mde.codemirror.getCursor();
-      this.mde.value(text);
+      this.mde.value(text.join(''));
       this.mde.codemirror.setCursor(cursor);
     }
   }, {

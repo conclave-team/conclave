@@ -29,11 +29,6 @@ const crdt3 = new CRDT(mockController());
 const crdt4 = new CRDT(mockController());
 const crdt5 = new CRDT(mockController());
 
-[crdt1, crdt2, crdt3, crdt4, crdt5].forEach(crdt => {
-  crdt.insertText = function() {};
-  crdt.deleteText = function() {};
-});
-
 let table = `
 #### PERFORMANCE METRICS
 Base: ${crdt1.base} | Boundary: ${crdt1.boundary} | Strategy: ${crdt1.strategy}
