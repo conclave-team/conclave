@@ -459,7 +459,7 @@ var Controller = function () {
     value: function updateShareLink(id) {
       var doc = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : document;
 
-      var shareLink = this.host + '/?' + id;
+      var shareLink = this.host + '?' + id;
       var aTag = doc.querySelector('#myLink');
 
       aTag.textContent = shareLink;
