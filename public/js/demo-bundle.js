@@ -969,12 +969,7 @@ var CRDT = function () {
         }
 
         // remove empty lines
-        for (line = 0; line < this.struct.length; line++) {
-          if (this.struct[line].length === 0) {
-            this.struct.splice(line, 1);
-            line--;
-          }
-        }
+        this.removeEmptyLines();
 
         // if newline deleted from start line, concat start line with next non-empty line
         if (newlineRemoved && this.struct[startPos.line + 1]) {
@@ -997,10 +992,24 @@ var CRDT = function () {
       }
     }
   }, {
+    key: 'removeEmptyLines',
+    value: function removeEmptyLines() {
+      for (var line = 0; line < this.struct.length; line++) {
+        if (this.struct[line].length === 0) {
+          this.struct.splice(line, 1);
+          line--;
+        }
+      }
+
+      if (this.struct.length === 0) {
+        this.struct.push([]);
+      }
+    }
+  }, {
     key: 'handleRemoteDelete',
     value: function handleRemoteDelete(char, siteId) {
       var pos = this.findPosition(char);
-      this.struct[pos.line].splice(pos.ch, 1)[0];
+      this.struct[pos.line].splice(pos.ch, 1);
 
       // when deleting newline, concat start line with next non-empty line
       if (char.value === "\n" && this.struct[pos.line + 1]) {
@@ -1008,48 +1017,116 @@ var CRDT = function () {
         this.struct.splice(pos.line, 2, mergedLine);
       }
 
+      this.removeEmptyLines();
       this.controller.deleteFromEditor(char.value, pos, siteId);
     }
+  }, {
+    key: 'isEmpty',
+    value: function isEmpty() {
+      return this.struct.length === 1 && this.struct[0].length === 0;
+    }
 
-    // to be replaced with binary search
+    // could be refactored to look prettier
 
   }, {
     key: 'findPosition',
     value: function findPosition(char) {
-      var line = void 0,
-          ch = void 0;
-      var numLines = this.struct.length;
+      var minLine = 0;
+      var totalLines = this.struct.length;
+      var maxLine = totalLines - 1;
+      var lastLine = this.struct[maxLine];
+      var currentLine = void 0,
+          midLine = void 0,
+          charIdx = void 0,
+          minCurrentLine = void 0,
+          lastChar = void 0,
+          maxCurrentLine = void 0,
+          minLastChar = void 0,
+          maxLastChar = void 0;
 
-      if (numLines === 0) {
+      // check if struct is empty or char is less than first char
+      if (this.isEmpty() || char.compareTo(this.struct[0][0]) <= 0) {
         return { line: 0, ch: 0 };
       }
 
-      for (line = 0; line < numLines; line++) {
-        if (this.struct[line].length === 0) {
-          return { line: line, ch: 0 };
-        }
+      lastChar = lastLine[lastLine.length - 1];
 
-        var chars = this.struct[line];
-        var _lastChar = chars[chars.length - 1];
+      // char is greater than all existing chars (insert at end)
+      if (char.compareTo(lastChar) > 0) {
+        return this.findEndPosition(lastChar, lastLine, totalLines);
+      }
 
-        // chars will only be equal when deleting; method could be optimized for deletes
-        if (char.compareTo(_lastChar) <= 0) {
-          for (ch = 0; ch < chars.length; ch++) {
-            if (char.compareTo(chars[ch]) <= 0) {
-              return { line: line, ch: ch };
-            }
-          }
+      // binary search
+      while (minLine + 1 < maxLine) {
+        midLine = Math.floor(minLine + (maxLine - minLine) / 2);
+        currentLine = this.struct[midLine];
+        lastChar = currentLine[currentLine.length - 1];
+
+        if (char.compareTo(lastChar) === 0) {
+          return { line: midLine, ch: currentLine.length - 1 };
+        } else if (char.compareTo(lastChar) < 0) {
+          maxLine = midLine;
+        } else {
+          minLine = midLine;
         }
       }
 
-      // char is greater than all chars; either add to last line or add to a new line
-      var lastLine = this.struct[numLines - 1];
-      var lastChar = lastLine[lastLine.length - 1];
+      // Check between min and max line.
+      minCurrentLine = this.struct[minLine];
+      minLastChar = minCurrentLine[minCurrentLine.length - 1];
+      maxCurrentLine = this.struct[maxLine];
+      maxLastChar = maxCurrentLine[maxCurrentLine.length - 1];
 
-      if (lastChar.value === "\n") {
-        return { line: numLines, ch: 0 };
+      if (char.compareTo(minLastChar) <= 0) {
+        charIdx = this.findIndexInLine(char, minCurrentLine);
+        return { line: minLine, ch: charIdx };
       } else {
-        return { line: numLines - 1, ch: lastLine.length };
+        charIdx = this.findIndexInLine(char, maxCurrentLine);
+        return { line: maxLine, ch: charIdx };
+      }
+    }
+  }, {
+    key: 'findEndPosition',
+    value: function findEndPosition(lastChar, lastLine, totalLines) {
+      if (lastChar.value === "\n") {
+        return { line: totalLines, ch: 0 };
+      } else {
+        return { line: totalLines - 1, ch: lastLine.length };
+      }
+    }
+  }, {
+    key: 'findIndexInLine',
+    value: function findIndexInLine(char, line) {
+      var left = 0;
+      var right = line.length - 1;
+      var mid = void 0,
+          compareNum = void 0;
+
+      if (line.length === 0 || char.compareTo(line[left]) < 0) {
+        return left;
+      } else if (char.compareTo(line[right]) > 0) {
+        return this.struct.length;
+      }
+
+      while (left + 1 < right) {
+        mid = Math.floor(left + (right - left) / 2);
+        compareNum = char.compareTo(line[mid]);
+
+        if (compareNum === 0) {
+          return mid;
+        } else if (compareNum > 0) {
+          left = mid;
+        } else {
+          right = mid;
+        }
+      }
+
+      if (char.compareTo(line[left]) === 0) {
+        return left;
+      } else if (char.compareTo(line[right]) === 0) {
+        return right;
+      } else {
+        throw new Error("Character does not exist in CRDT.");
       }
     }
   }, {
