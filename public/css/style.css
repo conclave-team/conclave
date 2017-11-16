@@ -21,16 +21,26 @@ h1 {
   margin-bottom: 0;
 }
 
-button, input {
+label, button {
   float: right;
-  padding: 5px;
+  padding: 0 15px;
   border-radius: 5px;
+  border: 1px solid rgb(17, 117, 232);
   margin: 0 0 10px 10px;
   font-family: "InputLight";
+  font-size: 12px;
+  line-height: 32px;
+  color: rgb(17, 117, 232);
+  cursor: pointer;
 }
 
-input {
-  width: 175px;
+#file {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
 }
 
 button:hover {
