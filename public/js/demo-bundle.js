@@ -15,7 +15,8 @@ var Broadcast = function () {
 
     this.controller = null;
     this.peer = null;
-    this.connections = [];
+    this.outConns = [];
+    this.inConns = [];
     this.outgoingBuffer = [];
     this.MAX_BUFFER_SIZE = 30;
     this.currentStream = null;
@@ -28,7 +29,7 @@ var Broadcast = function () {
       if (operation.type === 'insert' || operation.type === 'delete') {
         this.addToOutgoingBuffer(operationJSON);
       }
-      this.connections.forEach(function (conn) {
+      this.outConns.forEach(function (conn) {
         return conn.send(operationJSON);
       });
     }
@@ -44,7 +45,7 @@ var Broadcast = function () {
   }, {
     key: 'processOutgoingBuffer',
     value: function processOutgoingBuffer(peerId) {
-      var connection = this.connections.find(function (conn) {
+      var connection = this.outConns.find(function (conn) {
         return conn.peer === peerId;
       });
       this.outgoingBuffer.forEach(function (op) {
@@ -64,9 +65,13 @@ var Broadcast = function () {
 
       this.peer.on('open', function (id) {
         _this.controller.updateShareLink(id);
-        _this.onError();
         _this.onPeerConnection();
-        _this.connectToTarget(targetPeerId, id);
+        if (targetPeerId == 0) {
+          _this.controller.addToNetwork(id, _this.controller.siteId);
+        } else {
+          _this.requestConnection(targetPeerId, id, _this.controller.siteId);
+        }
+        _this.onError();
       });
     }
   }, {
@@ -82,43 +87,56 @@ var Broadcast = function () {
       });
     }
   }, {
-    key: 'connectToTarget',
-    value: function connectToTarget(targetId, peerId) {
-      if (targetId != 0) {
-        var conn = this.peer.connect(targetId);
-        var syncRequest = JSON.stringify({
-          type: 'syncRequest',
-          siteId: this.controller.siteId,
-          peerId: peerId
-        });
-
-        conn.on('open', function () {
-          conn.send(syncRequest);
-        });
-      } else {
-        this.controller.addToNetwork(peerId, this.controller.siteId);
-      }
-    }
-  }, {
-    key: 'connectToNewTarget',
-    value: function connectToNewTarget(targetId) {
-      var _this3 = this;
-
-      var createUrl = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-      var conn = this.peer.connect(targetId);
-      conn.on("open", function () {
-        if (createUrl) {
-          _this3.controller.createNewUrl(targetId);
-        }
-        _this3.addToConnections(conn);
+    key: 'requestConnection',
+    value: function requestConnection(target, peerId, siteId) {
+      var conn = this.peer.connect(target);
+      this.addToOutConns(conn);
+      conn.on('open', function () {
+        conn.send(JSON.stringify({
+          type: 'connRequest',
+          peerId: peerId,
+          siteId: siteId
+        }));
       });
     }
   }, {
-    key: 'addToConnections',
-    value: function addToConnections(connection) {
-      if (!this.isAlreadyConnected(connection)) {
-        this.connections.push(connection);
+    key: 'redistribute',
+    value: function redistribute(peerId, siteId) {
+      var halfTheNetwork = Math.ceil(this.controller.network.length / 2);
+      var tooManyInConns = this.inConns.length > Math.max(halfTheNetwork, 5);
+      var tooManyOutConns = this.outConns.length > Math.max(halfTheNetwork, 5);
+
+      if (tooManyInConns || tooManyOutConns) {
+        this.forwardMessage(peerId, siteId);
+      } else {
+        this.syncTo(peerId, siteId);
+      }
+    }
+  }, {
+    key: 'forwardMessage',
+    value: function forwardMessage(peerId, siteId) {
+      var connected = this.outConns.filter(function (conn) {
+        return conn.peer !== peerId;
+      });
+      var randomIdx = Math.floor(Math.random() * connected.length);
+      connected[randomIdx].send(JSON.stringify({
+        type: 'connRequest',
+        peerId: peerId,
+        siteId: siteId
+      }));
+    }
+  }, {
+    key: 'addToOutConns',
+    value: function addToOutConns(connection) {
+      if (!this.isAlreadyConnectedOut(connection)) {
+        this.outConns.push(connection);
+      }
+    }
+  }, {
+    key: 'addToInConns',
+    value: function addToInConns(connection) {
+      if (!this.isAlreadyConnectedIn(connection)) {
+        this.inConns.push(connection);
       }
     }
   }, {
@@ -141,20 +159,36 @@ var Broadcast = function () {
   }, {
     key: 'removeFromConnections',
     value: function removeFromConnections(peer) {
-      this.connections = this.connections.filter(function (conn) {
+      this.inConns = this.inConns.filter(function (conn) {
         return conn.peer !== peer;
       });
-      this.controller.removeFromNetwork(peer);
+      this.outConns = this.outConns.filter(function (conn) {
+        return conn.peer !== peer;
+      });
+      this.removeFromNetwork(peer);
     }
   }, {
-    key: 'isAlreadyConnected',
-    value: function isAlreadyConnected(connection) {
+    key: 'isAlreadyConnectedOut',
+    value: function isAlreadyConnectedOut(connection) {
       if (connection.peer) {
-        return !!this.connections.find(function (conn) {
+        return !!this.outConns.find(function (conn) {
           return conn.peer === connection.peer;
         });
       } else {
-        return !!this.connections.find(function (conn) {
+        return !!this.outConns.find(function (conn) {
+          return conn.peer.id === connection;
+        });
+      }
+    }
+  }, {
+    key: 'isAlreadyConnectedIn',
+    value: function isAlreadyConnectedIn(connection) {
+      if (connection.peer) {
+        return !!this.inConns.find(function (conn) {
+          return conn.peer === connection.peer;
+        });
+      } else {
+        return !!this.inConns.find(function (conn) {
           return conn.peer.id === connection;
         });
       }
@@ -162,22 +196,22 @@ var Broadcast = function () {
   }, {
     key: 'onPeerConnection',
     value: function onPeerConnection() {
-      var _this4 = this;
+      var _this3 = this;
 
       this.peer.on('connection', function (connection) {
-        _this4.onConnection(connection);
-        _this4.onVideoCall(connection);
-        _this4.onData(connection);
-        _this4.onConnClose(connection);
+        _this3.onConnection(connection);
+        _this3.onVideoCall(connection);
+        _this3.onData(connection);
+        _this3.onConnClose(connection);
       });
     }
   }, {
     key: 'syncTo',
     value: function syncTo(peerId, siteId) {
-      var connBack = this.connections.find(function (conn) {
-        return conn.peer === peerId;
-      });
+      var connBack = this.peer.connect(peerId);
+      this.addToOutConns(connBack);
       this.controller.addToNetwork(peerId, siteId);
+
       var initialData = JSON.stringify({
         type: 'syncResponse',
         siteId: this.controller.siteId,
@@ -204,33 +238,24 @@ var Broadcast = function () {
   }, {
     key: 'onConnection',
     value: function onConnection(connection) {
-      var _this5 = this;
-
-      connection.on('open', function () {
-        if (_this5.isAlreadyConnected(connection)) {
-          return;
-        }
-
-        var connBack = _this5.peer.connect(connection.peer);
-        _this5.addToConnections(connBack);
-      });
+      this.addToInConns(connection);
     }
   }, {
     key: 'onVideoCall',
     value: function onVideoCall() {
-      var _this6 = this;
+      var _this4 = this;
 
       this.peer.on('call', function (callObj) {
         var peerFlag = document.getElementById(callObj.peer).children[0];
         var color = peerFlag.style.backgroundColor;
 
-        _this6.controller.highlightName(peerFlag, color);
+        _this4.controller.highlightName(peerFlag, color);
 
         navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(function (ms) {
           peerFlag.onclick = function () {
             callObj.answer(ms);
-            _this6.controller.unHighlightName(peerFlag);
-            _this6.onStream(callObj, color);
+            _this4.controller.unHighlightName(peerFlag);
+            _this4.onStream(callObj, color);
           };
         });
       });
@@ -238,13 +263,13 @@ var Broadcast = function () {
   }, {
     key: 'onStream',
     value: function onStream(callObj, color) {
-      var _this7 = this;
+      var _this5 = this;
 
       callObj.on('stream', function (stream) {
-        if (_this7.currentStream) {
-          _this7.currentStream.close();
+        if (_this5.currentStream) {
+          _this5.currentStream.close();
         }
-        _this7.currentStream = callObj;
+        _this5.currentStream = callObj;
 
         var vid = document.querySelector('video');
         vid.style.visibility = 'visible';
@@ -256,14 +281,14 @@ var Broadcast = function () {
           return callObj.close();
         };
         callObj.on('close', function () {
-          return _this7.onStreamClose(vid, callObj.peer);
+          return _this5.onStreamClose(vid, callObj.peer);
         });
       });
     }
   }, {
     key: 'onStreamClose',
     value: function onStreamClose(vid, peerId) {
-      var _this8 = this;
+      var _this6 = this;
 
       vid.style.visibility = 'hidden';
       this.currentStream.localStream.getTracks().forEach(function (track) {
@@ -274,47 +299,70 @@ var Broadcast = function () {
       var peerFlag = document.getElementById(peerId).children[0];
       peerFlag.onclick = function () {
         navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then(function (ms) {
-          return _this8.videoCall(peerId, ms, vid.style.borderColor);
+          return _this6.videoCall(peerId, ms, vid.style.borderColor);
         });
       };
     }
   }, {
     key: 'onData',
     value: function onData(connection) {
-      var _this9 = this;
+      var _this7 = this;
 
       connection.on('data', function (data) {
         var dataObj = JSON.parse(data);
 
         switch (dataObj.type) {
-          case 'syncResponse':
-            _this9.controller.handleSync(dataObj);
+          case 'connRequest':
+            _this7.redistribute(dataObj.peerId, dataObj.siteId);
             break;
-          case 'syncRequest':
-            _this9.syncTo(dataObj.peerId, dataObj.siteId);
+          case 'syncResponse':
+            _this7.controller.handleSync(dataObj);
             break;
           case 'syncEnd':
-            _this9.processOutgoingBuffer(dataObj.peerId);
+            _this7.processOutgoingBuffer(dataObj.peerId);
             break;
           case 'add to network':
-            _this9.controller.addToNetwork(dataObj.newPeer, dataObj.newSite);
+            _this7.controller.addToNetwork(dataObj.newPeer, dataObj.newSite);
             break;
           case 'remove from network':
-            _this9.controller.removeFromNetwork(dataObj.oldPeer);
+            _this7.controller.removeFromNetwork(dataObj.oldPeer);
             break;
           default:
-            _this9.controller.handleRemoteOperation(dataObj);
+            _this7.controller.handleRemoteOperation(dataObj);
         }
       });
     }
   }, {
+    key: 'randomId',
+    value: function randomId() {
+      var _this8 = this;
+
+      var possConns = this.inConns.filter(function (conn) {
+        return _this8.peer.id !== conn.peer;
+      });
+      var randomIdx = Math.floor(Math.random() * possConns.length);
+      if (possConns[randomIdx]) {
+        return possConns[randomIdx].peer;
+      } else {
+        return false;
+      }
+    }
+  }, {
     key: 'onConnClose',
     value: function onConnClose(connection) {
-      var _this10 = this;
+      var _this9 = this;
 
       connection.on('close', function () {
-        _this10.removeFromConnections(connection.peer);
-        _this10.controller.findNewTarget(connection.peer);
+        _this9.removeFromConnections(connection.peer);
+        if (connection.peer == _this9.controller.refreshId) {
+          var id = _this9.randomId();
+          if (id) {
+            _this9.controller.createNewUrl(id);
+          }
+        }
+        if (_this9.inConns.length < 5 || _this9.outConns.length < 5) {
+          _this9.controller.findNewTarget();
+        }
       });
     }
   }]);
@@ -438,9 +486,10 @@ var Controller = function () {
     this.host = host;
     this.buffer = [];
     this.network = [];
-    this.rootRoom = targetPeerId;
+    this.urlId = targetPeerId;
+    this.refreshId = null;
 
-    if (targetPeerId === '0') this.enableEditor();
+    if (targetPeerId == 0) this.enableEditor();
 
     this.broadcast = broadcast;
     this.broadcast.controller = this;
@@ -471,12 +520,14 @@ var Controller = function () {
     value: function createNewUrl(id) {
       var doc = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : document;
 
+      this.refreshId = id;
+
       var pTag = doc.querySelector('#newRoot');
       pTag.style.visibility = 'visible';
+      var pTag2 = doc.querySelector('#newRoot2');
+      pTag2.style.visibility = 'visible';
 
-      this.rootRoom = id;
-
-      var newRootLink = this.host + '/?id=' + id;
+      var newRootLink = this.host + '?' + id;
       var aTag = doc.querySelector("#newLink");
       aTag.textContent = newRootLink;
       aTag.setAttribute('href', newRootLink);
@@ -494,20 +545,11 @@ var Controller = function () {
     value: function removeUrl() {
       var doc = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
 
-      var pTag = doc.querySelector('#newRoot');
+      var pTag = doc.querySelector('#newRoot2');
       pTag.style.visibility = 'hidden';
-
-      this.rootRoom = null;
 
       var aTag = doc.querySelector("#newLink");
       aTag.style.visibility = 'hidden';
-    }
-  }, {
-    key: 'afterDownload',
-    value: function afterDownload(e) {
-      var doc = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : document;
-
-      doc.body.removeChild(e.target);
     }
   }, {
     key: 'populateCRDT',
@@ -550,9 +592,6 @@ var Controller = function () {
         return obj.siteId === siteId;
       })) {
         this.network.push({ peerId: peerId, siteId: siteId });
-        this.network.sort(function (obj1, obj2) {
-          return obj1.peerId.localeCompare(obj2.peerId);
-        });
         if (siteId !== this.siteId) {
           this.addToListOfPeers(siteId, peerId, doc);
         }
@@ -624,13 +663,6 @@ var Controller = function () {
       peerDOM.style.border = 'none';
       peerDOM.style.boxShadow = 'none';
     }
-
-    // getPeerColor(peerId) {
-    //   const peer = this.network.find(net => net.peerId === peerId);
-    //   const siteId = peer.siteId;
-    //   return generateItemFromHash(siteId, CSS_COLORS);
-    // }
-
   }, {
     key: 'removeFromListOfPeers',
     value: function removeFromListOfPeers(peerId) {
@@ -640,10 +672,10 @@ var Controller = function () {
     }
   }, {
     key: 'findNewTarget',
-    value: function findNewTarget(oldId) {
+    value: function findNewTarget() {
       var _this3 = this;
 
-      var connected = this.broadcast.connections.map(function (conn) {
+      var connected = this.broadcast.outConns.map(function (conn) {
         return conn.peer;
       });
       var unconnected = this.network.filter(function (obj) {
@@ -652,22 +684,16 @@ var Controller = function () {
       var possibleTargets = unconnected.filter(function (obj) {
         return obj.peerId !== _this3.broadcast.peer.id;
       });
-      var rootRoomClosed = this.wasRootRoom(oldId);
-
       if (possibleTargets.length === 0) {
         this.removeUrl();
         this.broadcast.peer.on('connection', function (conn) {
-          _this3.createNewUrl(conn.peer);
+          return _this3.createNewUrl(conn.peer);
         });
       } else {
         var randomIdx = Math.floor(Math.random() * possibleTargets.length);
-        this.broadcast.connectToNewTarget(possibleTargets[randomIdx].peerId, rootRoomClosed);
+        var newTarget = possibleTargets[randomIdx].peerId;
+        this.broadcast.requestConnection(newTarget, this.broadcast.peer.id, this.siteId);
       }
-    }
-  }, {
-    key: 'wasRootRoom',
-    value: function wasRootRoom(id) {
-      return id === this.rootRoom;
     }
   }, {
     key: 'handleSync',
@@ -676,12 +702,17 @@ var Controller = function () {
 
       var doc = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : document;
 
+      if (syncObj.peerId != this.urlId) {
+        this.createNewUrl(syncObj.peerId);
+      }
+
       syncObj.network.forEach(function (obj) {
         return _this4.addToNetwork(obj.peerId, obj.siteId, doc);
       });
       this.populateCRDT(syncObj.initialStruct);
       this.populateVersionVector(syncObj.initialVersions);
       this.enableEditor();
+
       this.syncEnd(syncObj.peerId);
     }
   }, {
@@ -692,13 +723,15 @@ var Controller = function () {
         peerId: this.broadcast.peer.id
       });
 
-      var connection = this.broadcast.connections.find(function (conn) {
+      var connection = this.broadcast.outConns.find(function (conn) {
         return conn.peer === peerId;
       });
 
-      if (connection.open) {
+      if (connection) {
         connection.send(operation);
       } else {
+        connection = this.broadcast.peer.connect(peerId);
+        this.broadcast.addToOutConns(connection);
         connection.on('open', function () {
           connection.send(operation);
         });
@@ -1448,7 +1481,7 @@ var Editor = function () {
     value: function onDownload() {
       var _this = this;
 
-      if (this.controller.rootRoom == 0) {
+      if (this.controller.urlId == 0) {
         this.onUpload();
       } else {
         this.hideUpload();
