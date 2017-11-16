@@ -66,12 +66,12 @@ var Broadcast = function () {
       this.peer.on('open', function (id) {
         _this.controller.updateShareLink(id);
         _this.onPeerConnection();
+        _this.onError();
         if (targetPeerId == 0) {
           _this.controller.addToNetwork(id, _this.controller.siteId);
         } else {
           _this.requestConnection(targetPeerId, id, _this.controller.siteId);
         }
-        _this.onError();
       });
     }
   }, {
