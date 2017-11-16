@@ -1,7 +1,6 @@
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
-// const server = require('http').createServer(app);
 let listener;
 
 app.use(express.static('public'));
