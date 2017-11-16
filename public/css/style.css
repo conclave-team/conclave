@@ -54,6 +54,25 @@ textarea {
   height: 200px;
 }
 
+span:hover {
+  cursor: pointer;
+}
+
+video {
+  width: 25%;
+  height: auto;
+  float: right;
+  margin-right: 10%;
+  visibility: hidden;
+  border-bottom: 13px solid;
+  border-right: 13px solid;
+  border-radius: 6px;
+}
+
+video:hover {
+  cursor: pointer;
+}
+
 .CodeMirror {
   font-family: 'InputLight';
   border-radius: 8px;
@@ -61,6 +80,7 @@ textarea {
   border: none;
   box-shadow: 0 2px 20px -2px rgba(17, 117, 232, 0.15);
   clear: right;
+  padding: 0;
 }
 
 .CodeMirror-focused {
@@ -68,7 +88,7 @@ textarea {
 }
 
 .CodeMirror-scroll {
-  overflow: visible !important;
+  padding: 10px;
 }
 
 .remote-cursor {
@@ -83,4 +103,8 @@ textarea {
   left: 0px;
   position: absolute;
   line-height: 15px;
+}
+
+.hide * {
+  visibility: hidden;
 }

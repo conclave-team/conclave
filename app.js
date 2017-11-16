@@ -8,7 +8,11 @@ app.set('views', './views');
 app.set('view engine', 'pug');
 
 app.get('/', function (req, res) {
-  const host = req.protocol + '://' + req.get('host');
+  let proto = req.protocol;
+  if (req.get('host').split(":")[0] !== 'localhost') {
+    proto = proto + 's';
+  }
+  const host = proto + '://' + req.get('host');
   const id = req.query.id ? req.query.id : 0;
   res.render('index', { id: id, host: host });
 });
