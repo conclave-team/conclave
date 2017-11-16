@@ -488,6 +488,7 @@ var Controller = function () {
     this.network = [];
     this.urlId = targetPeerId;
     this.refreshId = null;
+    this.makeOwnName();
 
     if (targetPeerId == 0) this.enableEditor();
 
@@ -624,6 +625,18 @@ var Controller = function () {
     key: 'removeRemoteCursor',
     value: function removeRemoteCursor(siteId) {
       this.editor.removeRemoteCursor(siteId);
+    }
+  }, {
+    key: 'makeOwnName',
+    value: function makeOwnName() {
+      var node = document.createElement('span');
+      var color = (0, _hashAlgo.generateItemFromHash)(this.siteId, _cssColors2.default);
+      var name = (0, _hashAlgo.generateItemFromHash)(this.siteId, _cursorNames.ANIMALS);
+
+      node.textContent = name;
+      node.style.backgroundColor = color;
+
+      document.querySelector('#ownName').appendChild(node);
     }
   }, {
     key: 'addToListOfPeers',
