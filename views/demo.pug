@@ -5,13 +5,19 @@ html(lang="en")
     link(rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css")
     link(rel='stylesheet' href='css/style.css')
   body
-    p(id='newRoot') The host has left the room. Do NOT refresh your page! Follow this link instead.
-    a(id='newLink') placeholder
-    h1 Conclave
-    button(type='button' id='show-text') Show All Text
+    p.disappear(id='newRoot') The host has left the room. Do NOT refresh your page! Follow this link instead.
+    a.disappear(id='newLink') placeholder
+    h1 Conclave Demo
+    button(type='button' id='download') Download Document
+    button(type='button' id='upload') Upload
+    input(type='file' id='file')
     #wrapper
       textarea(row='10' col='20')
+      video
     p.disappear Sharing Link:
       a(id='myLink')
     p(id='peerId') Connected peers:
+    script.
+      const gTARGETPEERID = '!{id}'
+      const gHOST = '!{host}'
     script(src='js/demo-bundle.js')
