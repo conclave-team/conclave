@@ -47,12 +47,17 @@ Editor
 
 #conclave {
   width: 100%;
-  max-width: 1000px;
   margin: 0 auto;
 }
 
 .header {
   overflow: hidden;
+}
+
+.text-wrapper {
+  display: flex;
+  flex-direction: row-reverse;
+  min-width: 600px;
 }
 
 textarea {
@@ -67,6 +72,10 @@ textarea {
 #ownName span {
   padding: 2px;
   margin-left: 8px;
+}
+
+#peerId {
+  margin-left: 10px;
 }
 
 label, button {
@@ -140,6 +149,8 @@ CodeMirror
   clear: both;
   padding: 0;
   height: 400px;
+  width: 100%;
+  min-width: 500px;
 }
 
 .CodeMirror-focused {

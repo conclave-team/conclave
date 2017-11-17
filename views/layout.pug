@@ -5,18 +5,18 @@ html(lang="en")
     link(rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css")
     link(rel='stylesheet' href='css/style.css')
   body
+    h1= title
+
     block header
 
-    h1= title
     #conclave.hide
       .header
         p(id='ownName') You are the
         button(type='button' id='download') Save
-        label(for='file' id='upload') Upload Document
+        label(for='file' id='upload') Upload
         input(type='file' id='file' accept='.txt, .js, .rb, .md')
-
       .text-wrapper
-        p(id='peerId') Connected peers:
+        p(id='peerId') Peers:
         textarea(row='10' col='20')
       video
 
