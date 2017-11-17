@@ -1,25 +1,22 @@
-doctype html
-html(lang="en")
-  head
-    title='Conclave'
-    link(rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css")
-    link(rel='stylesheet' href='css/style.css')
-  body
-    p(id='newRoot') Do NOT refresh your page! You will leave the network if you do.
-    p(id='newRoot2') Follow this link instead.
-    a(id='newLink') placeholder
-    h1 Conclave
-    #conclave.hide
-      .header
-        p(id='ownName') You are the
-        button(type='button' id='download') Save
-        label(for='file' id='upload') Upload Document
-        input(type='file' id='file' accept='.txt, .js, .rb, .md')
+extends layout.pug
 
-      .text-wrapper
-        p(id='peerId') Connected peers:
-        textarea(row='10' col='20')
-      video
-    p Sharing Link:
-      a(id='myLink' target="_blank")
-    script(src='js/bundle.js')
+block header
+  p(id='newRoot') Do NOT refresh your page! You will leave the network if you do.
+  p(id='newRoot2') Follow this link instead.
+  a(id='newLink') placeholder
+
+block editor
+  #conclave.hide
+    .header
+      p(id='ownName') You are the
+      button(type='button' id='download') Save
+      label(for='file' id='upload') Upload Document
+      input(type='file' id='file' accept='.txt, .js, .rb, .md')
+
+    .text-wrapper
+      p(id='peerId') Connected peers:
+      textarea(row='10' col='20')
+    video
+  p Sharing Link:
+    a(id='myLink' target="_blank")
+  script(src='js/bundle.js')

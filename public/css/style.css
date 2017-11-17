@@ -1,3 +1,7 @@
+/****************
+Fonts
+****************/
+
 @font-face {
   font-family: "InputLight";
   src: url('../assets/fonts/InputSans-Light.ttf');
@@ -7,6 +11,10 @@
   font-family: "InputMedium";
   src: url('../assets/fonts/InputSans-Medium.ttf');
 }
+
+/****************
+General
+****************/
 
 body {
   font-family: "InputLight";
@@ -21,8 +29,34 @@ h1 {
   margin-bottom: 0;
 }
 
+p {
+  font-size: 14px;
+}
+
+.hide * {
+  visibility: hidden;
+}
+
+.disappear {
+  display: none;
+}
+
+/****************
+Editor
+****************/
+
+textarea {
+  width: 100%;
+  height: 200px;
+}
+
 #ownName {
   float: left;
+}
+
+#ownName span {
+  padding: 2px;
+  margin-left: 8px;
 }
 
 label, button {
@@ -51,9 +85,10 @@ button:hover {
   cursor: pointer;
 }
 
-p {
-  font-size: 14px;
+li span:hover {
+  cursor: pointer;
 }
+
 
 #newRoot, #newRoot2, #newLink {
   margin: 5px auto;
@@ -63,14 +98,9 @@ p {
   visibility: hidden;
 }
 
-textarea {
-  width: 100%;
-  height: 200px;
-}
-
-li span:hover {
-  cursor: pointer;
-}
+/****************
+Video
+****************/
 
 video {
   width: 25%;
@@ -86,6 +116,10 @@ video {
 video:hover {
   cursor: pointer;
 }
+
+/********************
+CodeMirror
+********************/
 
 .CodeMirror {
   font-family: 'InputLight';
@@ -105,6 +139,10 @@ video:hover {
   padding: 10px;
 }
 
+/********************
+Cursors
+********************/
+
 .remote-cursor {
   width: 2px;
   position: absolute;
@@ -117,17 +155,4 @@ video:hover {
   left: 0px;
   position: absolute;
   line-height: 15px;
-}
-
-.hide * {
-  visibility: hidden;
-}
-
-.disappear {
-  display: none;
-}
-
-#ownName span {
-  padding: 2px;
-  margin-left: 8px;
 }
