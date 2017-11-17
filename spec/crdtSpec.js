@@ -10,33 +10,33 @@ describe("CRDT", () => {
     vector: new VersionVector(siteId),
     broadcastInsertion: function() {},
     broadcastDeletion: function() {},
-    replaceText: function() {},
     insertIntoEditor: function() {},
     deleteFromEditor: function() {},
   };
 
   describe("handleLocalInsert", () => {
-    let crdt;
+    let crdt, pos;
 
     beforeEach(() => {
       crdt = new CRDT(mockController);
+      pos = { line: 0, ch: 0 };
       spyOn(crdt.controller, 'broadcastInsertion');
       spyOn(crdt.vector, 'increment');
     });
 
     it("calls vector 'increment'", () => {
-      crdt.handleLocalInsert('A', 0);
+      crdt.handleLocalInsert('A', pos);
       expect(crdt.vector.increment).toHaveBeenCalled();
     });
 
     it("adds char to CRDT", () => {
-      expect(crdt.struct.length).toBe(0)
-      crdt.handleLocalInsert('A', 0);
-      expect(crdt.struct.length).toBe(1);
+      expect(crdt.totalChars()).toBe(0)
+      crdt.handleLocalInsert('A', pos);
+      expect(crdt.totalChars()).toBe(1);
     });
 
     it("calls broadcastInsertion", function() {
-      crdt.handleLocalInsert('A', 0);
+      crdt.handleLocalInsert('A', pos);
       expect(crdt.controller.broadcastInsertion).toHaveBeenCalled();
     });
   });
@@ -55,9 +55,9 @@ describe("CRDT", () => {
     });
 
     it("adds char to CRDT", () => {
-      expect(crdt.struct.length).toBe(0)
+      expect(crdt.totalChars()).toBe(0)
       crdt.handleRemoteInsert(char1);
-      expect(crdt.struct.length).toBe(1);
+      expect(crdt.totalChars()).toBe(1);
     });
 
     it("sorts chars based on position", () => {
@@ -65,14 +65,14 @@ describe("CRDT", () => {
 
       crdt.handleRemoteInsert(char1);
       crdt.handleRemoteInsert(char2);
-      expect(crdt.struct).toEqual([char2, char1]);
-      expect(crdt.text).toBe('BA');
+      expect(crdt.struct[0]).toEqual([char2, char1]);
+      expect(crdt.toText()).toBe('BA');
     });
 
     it("inserts the char value into the text property", () => {
-      expect(crdt.text).toBe('');
+      expect(crdt.toText()).toBe('');
       crdt.handleRemoteInsert(char1);
-      expect(crdt.text).toBe('A');
+      expect(crdt.toText()).toBe('A');
     });
 
     it("calls insertIntoEditor", function() {
@@ -82,34 +82,22 @@ describe("CRDT", () => {
   });
 
   describe("handleLocalDelete", () => {
-    let crdt;
-    let char1;
-    let char2;
+    let crdt, char1, char2, startPos, endPos;
 
     beforeEach(() => {
       crdt = new CRDT(mockController);
       char1 = new Char("a", 1, siteId, [new Identifier(1, 25)]);
       char2 = new Char("b", 2, siteId, [new Identifier(2, 25)]);
+      startPos = { line: 0, ch: 0 };
+      endPos = { line: 0, ch: 1 };
       crdt.handleRemoteInsert(char1);
       crdt.handleRemoteInsert(char2);
-      spyOn(crdt.controller, 'broadcastDeletion');
-      spyOn(crdt.vector, 'increment');
-    });
-
-    it("calls vector 'increment'", () => {
-      crdt.handleLocalDelete(0);
-      expect(crdt.vector.increment).toHaveBeenCalled();
     });
 
     it("deletes the correct character", () => {
-      expect(crdt.struct).toEqual([char1, char2]);
-      crdt.handleLocalDelete(0);
-      expect(crdt.struct).toEqual([char2]);
-    });
-
-    it("calls broadcastDeletion", function() {
-      crdt.handleLocalDelete(0);
-      expect(crdt.controller.broadcastDeletion).toHaveBeenCalled();
+      expect(crdt.struct[0]).toEqual([char1, char2]);
+      crdt.handleLocalDelete(startPos, endPos);
+      expect(crdt.struct[0]).toEqual([char2]);
     });
   });
 
@@ -129,15 +117,15 @@ describe("CRDT", () => {
     });
 
     it('removes a char from the crdt', () => {
-      expect(crdt.struct.length).toBe(1);
+      expect(crdt.totalChars()).toBe(1);
       crdt.handleRemoteDelete(char);
-      expect(crdt.struct.length).toBe(0);
+      expect(crdt.totalChars()).toBe(0);
     });
 
     it("updates the crdt's text", () => {
-      expect(crdt.text).toBe('A');
+      expect(crdt.toText()).toBe('A');
       crdt.handleRemoteDelete(char);
-      expect(crdt.text).toBe('');
+      expect(crdt.toText()).toBe('');
     });
 
     it("calls deleteFromEditor", function() {
@@ -147,13 +135,13 @@ describe("CRDT", () => {
   });
 
   describe("generateChar", () => {
-    let crdt;
-    let char;
+    let crdt, char, pos;
 
     beforeEach(() => {
       crdt = new CRDT(mockController);
+      pos = { line: 0, ch: 0 };
       crdt.vector.increment();
-      char = crdt.generateChar("A", 0);
+      char = crdt.generateChar("A", pos);
     });
 
     it("returns new Char object", () => {
@@ -182,7 +170,10 @@ describe("CRDT", () => {
     let crdt;
 
     beforeEach(() => {
-      crdt = new CRDT(mockController);
+      const base = 16;
+      const boundary = 5;
+      const strategy = 'every2nd';
+      crdt = new CRDT(mockController, base, boundary, strategy);
     });
 
     it('returns (0 < newDigit <= boundary) when both positions are empty', () => {
@@ -290,7 +281,10 @@ describe("CRDT", () => {
     let crdt;
 
     beforeEach(() => {
-      crdt = new CRDT(mockController);
+      const base = 16;
+      const boundary = 5;
+      const strategy = 'every2nd';
+      crdt = new CRDT(mockController, base, boundary, strategy);
     });
 
     it("returns digit within min + boundary when strategy is + and boundary < distance", () => {
@@ -324,7 +318,7 @@ describe("CRDT", () => {
     });
 
     it("returns empty text when CRDT is empty", () => {
-      expect(crdt.text).toBe("");
+      expect(crdt.toText()).toBe("");
     });
 
     it("returns char value when char is inserted", () => {
@@ -332,7 +326,7 @@ describe("CRDT", () => {
       const char1 = new Char('A', siteCounter, siteId, position);
 
       crdt.handleRemoteInsert(char1);
-      expect(crdt.text).toBe("A")
+      expect(crdt.toText()).toBe("A")
     });
 
     it('removes a char from the crdt', () => {
@@ -340,52 +334,15 @@ describe("CRDT", () => {
       const char1 = new Char('A', siteCounter, siteId, position);
 
       crdt.handleRemoteInsert(char1);
-      expect(crdt.text).toBe("A");
+      expect(crdt.toText()).toBe("A");
 
       crdt.handleRemoteDelete(char1);
-      expect(crdt.text).toBe("");
+      expect(crdt.toText()).toBe("");
     });
   });
 
-  describe("findIndexByPosition", () => {
-    let crdt;
-    let siteId;
-    let siteCounter;
-    let char1;
-    let char2;
-
-    beforeEach(() => {
-      siteId = Math.floor(Math.random() * 1000);
-      siteCounter = Math.floor(Math.random() * 1000);
-      crdt = new CRDT(mockController);
-      char1 = new Char('A', siteCounter, siteId, [new Identifier(1, siteId)]);
-      char2 = new Char('B', siteCounter + 1, siteId, [new Identifier(3, siteId)]);
-    });
-
-    it ("throws error when crdt is empty", () => {
-      expect(() => crdt.findIndexByPosition(char1)).toThrow(new Error("Character does not exist in CRDT."));
-    });
-
-    it("returns the index of a char when found in crdt", () => {
-      crdt.handleRemoteInsert(char1);
-      crdt.handleRemoteInsert(char2);
-      const index = crdt.findIndexByPosition(char2);
-      expect(index).toBe(1);
-    });
-
-    it("throws error if char doesn't exist in crdt", () => {
-      crdt.handleRemoteInsert(char1);
-      expect(() => crdt.handleRemoteDelete(char2)).toThrow(new Error("Character does not exist in CRDT."));
-    });
-  });
-
-  describe("findInsertIndex", () => {
-    let crdt;
-    let siteId;
-    let siteCounter;
-    let char1;
-    let char2;
-    let char3;
+  describe("findIndexInLine", () => {
+    let crdt, siteId, siteCounter, char1, char2, char3, line1;
 
     beforeEach(() => {
       siteId = Math.floor(Math.random() * 1000);
@@ -394,73 +351,31 @@ describe("CRDT", () => {
       char1 = new Char('A', siteCounter, siteId, [new Identifier(1, siteId)]);
       char2 = new Char('B', siteCounter + 1, siteId, [new Identifier(3, siteId)]);
       char3 = new Char('C', siteCounter + 2, siteId, [new Identifier(5, siteId)]);
+      line1 = crdt.struct[0];
     });
 
     it ("returns 0 if array is empty", () => {
-      expect(crdt.findInsertIndex(char1)).toBe(0);
+      expect(crdt.findIndexInLine(char1, line1)).toBe(0);
     });
 
     it ("returns 0 if char position is less than first char", () => {
-      crdt.handleRemoteInsert(char2);
-      expect(crdt.struct.length).toBe(1);
-      expect(crdt.findInsertIndex(char1)).toBe(0);
-    });
-
-    it ("returns length if array if char position is greater than last char", () => {
-      crdt.handleRemoteInsert(char1);
-      crdt.handleRemoteInsert(char2);
-      expect(crdt.struct.length).toBe(2);
-      expect(crdt.findInsertIndex(char3)).toBe(2);
+      crdt.handleRemoteInsert(char2, 0);
+      expect(crdt.totalChars()).toBe(1);
+      expect(crdt.findIndexInLine(char1, line1)).toBe(0);
     });
 
     it("returns the index of a char when found in crdt", () => {
       crdt.handleRemoteInsert(char1);
       crdt.handleRemoteInsert(char2);
-      const index = crdt.findInsertIndex(char2);
+      const index = crdt.findIndexInLine(char2, line1);
       expect(index).toBe(1);
     });
 
     it("returns the index of where it would be located if it existed in the array", () => {
       crdt.handleRemoteInsert(char1);
       crdt.handleRemoteInsert(char3);
-      const index = crdt.findInsertIndex(char2);
+      const index = crdt.findIndexInLine(char2, line1);
       expect(index).toBe(1);
-    });
-  });
-
-  describe('insertText', () => {
-    let siteId;
-    let siteCounter;
-    let crdt;
-
-    beforeEach(() => {
-      siteId = Math.floor(Math.random() * 1000);
-      siteCounter = Math.floor(Math.random() * 1000);
-      crdt = new CRDT(mockController);
-    });
-
-    it('inserts character in the correct index', () => {
-      crdt.text = 'tet';
-      crdt.insertText('s', 2);
-      expect(crdt.text).toBe('test');
-    });
-  });
-
-  describe('deleteText', () => {
-    let siteId;
-    let siteCounter;
-    let crdt;
-
-    beforeEach(() => {
-      siteId = Math.floor(Math.random() * 1000);
-      siteCounter = Math.floor(Math.random() * 1000);
-      crdt = new CRDT(mockController);
-    });
-
-    it('deletes character in the correct index', () => {
-      crdt.text = 'tester';
-      crdt.deleteText(4);
-      expect(crdt.text).toBe('testr');
     });
   });
 });
