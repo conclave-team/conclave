@@ -7,14 +7,18 @@ html(lang="en")
   body
     p.disappear(id='newRoot') The host has left the room. Do NOT refresh your page! Follow this link instead.
     a.disappear(id='newLink') placeholder
-    h1 Conclave Demo
-    button(type='button' id='download') Download Document
-    label(for='file' id='upload') Upload Document
-    input(type='file' id='file' accept='.txt, .js, .rb, .md')
-    #wrapper
-      textarea(row='10' col='20')
+    h1 About
+    #conclave.hide
+      .header
+        p(id='ownName') You are the
+        button(type='button' id='download') Save
+        label(for='file' id='upload') Upload Document
+        input(type='file' id='file' accept='.txt, .js, .rb, .md')
+
+      .text-wrapper
+        p(id='peerId') Connected peers:
+        textarea(row='10' col='20')
       video
     p.disappear Sharing Link:
       a(id='myLink')
-    p(id='peerId') Connected peers:
     script(src='js/demo-bundle.js')

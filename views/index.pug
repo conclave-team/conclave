@@ -9,14 +9,17 @@ html(lang="en")
     p(id='newRoot2') Follow this link instead.
     a(id='newLink') placeholder
     h1 Conclave
-    p(id='ownName') You are the 
-    button(type='button' id='download') Download Document
-    label(for='file' id='upload') Upload Document
-    input(type='file' id='file' accept='.txt, .js, .rb, .md')
-    #wrapper.hide
-      textarea(row='10' col='20')
+    #conclave
+      .header
+        p(id='ownName') You are the
+        button(type='button' id='download') Save
+        label(for='file' id='upload') Upload Document
+        input(type='file' id='file' accept='.txt, .js, .rb, .md')
+
+      .text-wrapper
+        p(id='peerId') Connected peers:
+        textarea(row='10' col='20')
       video
     p Sharing Link:
       a(id='myLink' target="_blank")
-    p(id='peerId') Connected peers:
     script(src='js/bundle.js')
