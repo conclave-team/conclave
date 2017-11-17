@@ -8,5 +8,16 @@ html(lang="en")
     block header
 
     h1= title
+    #conclave.hide
+      .header
+        p(id='ownName') You are the
+        button(type='button' id='download') Save
+        label(for='file' id='upload') Upload Document
+        input(type='file' id='file' accept='.txt, .js, .rb, .md')
 
-    block editor
+      .text-wrapper
+        p(id='peerId') Connected peers:
+        textarea(row='10' col='20')
+      video
+
+    block footer
