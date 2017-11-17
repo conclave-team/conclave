@@ -13,6 +13,19 @@ Fonts
 }
 
 /****************
+animations
+****************/
+
+@keyframes blinker {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.connecting {
+  animation: blinker 1.5s cubic-bezier(.5, 0, 1, 1) infinite alternate;
+}
+
+/****************
 General
 ****************/
 
@@ -52,12 +65,18 @@ Editor
 
 .header {
   overflow: hidden;
+  max-width: 1265px;
+  width: 100%;
+  margin-right: 100px;
+  padding-right: 65px;
+  box-sizing: border-box;
 }
 
 .text-wrapper {
   display: flex;
   flex-direction: row-reverse;
   min-width: 600px;
+  justify-content: space-between;
 }
 
 textarea {
@@ -76,6 +95,12 @@ textarea {
 
 #peerId {
   margin-left: 10px;
+  flex-grow: 1;
+}
+
+#peerId li {
+  list-style-type: none;
+  margin: 3px 3px 0;
 }
 
 label, button {
@@ -151,6 +176,7 @@ CodeMirror
   height: 400px;
   width: 100%;
   min-width: 500px;
+  max-width: 1200px;
 }
 
 .CodeMirror-focused {
