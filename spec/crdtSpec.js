@@ -69,15 +69,39 @@ describe("CRDT", () => {
       expect(crdt.toText()).toBe('BA');
     });
 
-    it("inserts the char value into the text property", () => {
-      expect(crdt.toText()).toBe('');
-      crdt.handleRemoteInsert(char1);
-      expect(crdt.toText()).toBe('A');
-    });
-
     it("calls insertIntoEditor", function() {
       crdt.handleRemoteInsert(char1);
       expect(crdt.controller.insertIntoEditor).toHaveBeenCalled();
+    });
+  });
+
+  describe("insertChar", () => {
+    let crdt, char, siteCounter, pos, newlineChar;
+
+    beforeEach(() => {
+      crdt = new CRDT(mockController);
+      siteCounter = 1;
+      char = new Char('A', siteCounter, siteId, [new Identifier(2, siteId)]);
+      newlineChar = new Char('\n', siteCounter + 1, siteId, [new Identifier(1, siteId)]);
+      pos = { line: 1, ch: 0 };
+    });
+
+    it("adds a new line to struct if non-newline char is inserted on a new line", () => {
+      expect(crdt.struct.length).toBe(1);
+      crdt.insertChar(char, pos);
+      expect(crdt.struct.length).toBe(2);
+    });
+
+    it("adds a new char to correct line in the crdt", () => {
+      crdt.insertChar(newlineChar, pos);
+      expect(crdt.struct[1].length).toBe(1);
+    });
+
+    it("splits line into two lines when a newline is inserted before the last char of a line ", () => {
+      crdt.insertChar(char, pos);
+      expect(crdt.struct.length).toBe(2);
+      crdt.insertChar(newlineChar, pos)
+      expect(crdt.struct.length).toBe(3);
     });
   });
 
