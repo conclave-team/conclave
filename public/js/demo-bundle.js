@@ -624,13 +624,6 @@ var Controller = function () {
       peerDOM.style.border = 'none';
       peerDOM.style.boxShadow = 'none';
     }
-
-    // getPeerColor(peerId) {
-    //   const peer = this.network.find(net => net.peerId === peerId);
-    //   const siteId = peer.siteId;
-    //   return generateItemFromHash(siteId, CSS_COLORS);
-    // }
-
   }, {
     key: 'removeFromListOfPeers',
     value: function removeFromListOfPeers(peerId) {
@@ -788,14 +781,20 @@ var Controller = function () {
     }
   }, {
     key: 'broadcastDeletion',
-    value: function broadcastDeletion(char) {
-      var operation = {
-        type: 'delete',
-        char: char,
-        version: this.vector.getLocalVersion()
-      };
+    value: function broadcastDeletion(chars) {
+      var _this5 = this;
 
-      this.broadcast.send(operation);
+      chars.forEach(function (char) {
+        _this5.vector.increment();
+
+        var operation = {
+          type: 'delete',
+          char: char,
+          version: _this5.vector.getLocalVersion()
+        };
+
+        _this5.broadcast.send(operation);
+      });
     }
   }, {
     key: 'insertIntoEditor',
@@ -927,68 +926,88 @@ var CRDT = function () {
   }, {
     key: 'handleLocalDelete',
     value: function handleLocalDelete(startPos, endPos) {
-      var char = void 0,
+      var chars = void 0,
           line = void 0,
           ch = void 0,
-          i = void 0;
+          i = void 0,
+          charNum = void 0;
       var newlineRemoved = false;
 
       // for multi-line deletes
       if (startPos.line !== endPos.line) {
         // delete chars on first line from startPos.ch to end of line
-        do {
-          char = this.struct[startPos.line].splice(startPos.ch, 1)[0];
+        chars = this.struct[startPos.line].splice(startPos.ch);
 
-          if (char) {
-            this.vector.increment();
-            this.controller.broadcastDeletion(char);
-          }
+        if (chars.find(function (char) {
+          return char.value === '\n';
+        })) newlineRemoved = true;
 
-          if (char.value === "\n") {
-            newlineRemoved = true;
-            break;
-          }
-        } while (char);
+        for (line = startPos.line + 1; line < endPos.line; line++) {
+          chars = chars.concat(this.struct[line].splice(0));
+        }
+
+        chars = chars.concat(this.struct[endPos.line].splice(0, endPos.ch));
+        this.controller.broadcastDeletion(chars);
+
+        // do {
+        //   char = this.struct[startPos.line].splice(startPos.ch, );
+        //
+        //   if (char) {
+        //     this.vector.increment();
+        //     this.controller.broadcastDeletion(char);
+        //   }
+        //
+        //   if (char.value === "\n") {
+        //     newlineRemoved = true;
+        //     break;
+        //   }
+        // } while (char);
 
         // delete all chars on 2nd through 2nd-to-last lines
-        for (line = startPos.line + 1; line < endPos.line; line++) {
-          do {
-            char = this.struct[line].splice(0, 1)[0];
-            if (char) {
-              this.vector.increment();
-              this.controller.broadcastDeletion(char);
-            }
-          } while (char);
-        }
+
+        // do {
+        //   char = this.struct[line].splice(0, 1)[0];
+        //   if (char) {
+        //     this.vector.increment();
+        //     this.controller.broadcastDeletion(char);
+        //   }
+        // } while (char);
+
 
         // delete chars on last line from 0 to endPos.ch
-        for (ch = 0; ch < endPos.ch; ch++) {
-          char = this.struct[endPos.line].splice(0, 1)[0];
-          this.vector.increment();
-          this.controller.broadcastDeletion(char);
-        }
+
+
+        // for (ch = 0; ch < endPos.ch; ch++) {
+        //   char = this.struct[endPos.line].splice(0, 1)[0];
+        //   this.vector.increment();
+        //   this.controller.broadcastDeletion(char);
+        // }
 
         // remove empty lines
         this.removeEmptyLines();
 
         // if newline deleted from start line, concat start line with next non-empty line
-        if (newlineRemoved && this.struct[startPos.line + 1]) {
+        if (this.struct[startPos.line + 1]) {
           var mergedLine = this.struct[startPos.line].concat(this.struct[startPos.line + 1]);
           this.struct.splice(startPos.line, 2, mergedLine);
         }
 
         // single-line deletes
       } else {
-        for (i = startPos.ch; i < endPos.ch; i++) {
-          char = this.struct[startPos.line].splice(startPos.ch, 1)[0];
+        charNum = endPos.ch - startPos.ch;
+        chars = this.struct[startPos.line].splice(startPos.ch, charNum);
+        this.controller.broadcastDeletion(chars);
 
-          if (char.value === "\n") {
-            var _mergedLine = this.struct[startPos.line].concat(this.struct[startPos.line + 1]);
-            this.struct.splice(startPos.line, 2, _mergedLine);
-          }
-          this.vector.increment();
-          this.controller.broadcastDeletion(char);
-        }
+        // for (i = startPos.ch; i < endPos.ch; i++) {
+        //   char = this.struct[startPos.line].splice(startPos.ch, 1)[0];
+        //
+        //   if (char.value === "\n") {
+        //     const mergedLine = this.struct[startPos.line].concat(this.struct[startPos.line + 1]);
+        //     this.struct.splice(startPos.line, 2, mergedLine);
+        //   }
+        //   this.vector.increment();
+        //   this.controller.broadcastDeletion(char);
+        // }
       }
     }
   }, {
@@ -1123,10 +1142,8 @@ var CRDT = function () {
 
       if (char.compareTo(line[left]) === 0) {
         return left;
-      } else if (char.compareTo(line[right]) === 0) {
-        return right;
       } else {
-        throw new Error("Character does not exist in CRDT.");
+        return right;
       }
     }
   }, {
