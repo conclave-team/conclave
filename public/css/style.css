@@ -79,13 +79,9 @@ Editor
   justify-content: space-between;
 }
 
-textarea {
-  width: 100%;
-  height: 200px;
-}
-
 #ownName {
   float: left;
+  margin-left: 5px;
 }
 
 #ownName span {
@@ -114,6 +110,10 @@ label, button {
   line-height: 32px;
   color: rgb(17, 117, 232);
   cursor: pointer;
+}
+
+li {
+  list-style: none;
 }
 
 #file {
