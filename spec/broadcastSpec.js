@@ -1,7 +1,7 @@
 import Broadcast from '../lib/broadcast';
 import UUID from 'uuid/v1';
 
-describe('Broadcast', () => {
+fdescribe('Broadcast', () => {
   const mockController = {
     siteId: UUID(),
     peer: {
@@ -21,18 +21,73 @@ describe('Broadcast', () => {
       expect(broadcast.peer).toBeNull();
     });
 
-    it('creates a connections array', () => {
-      expect(broadcast.connections).toBeTruthy();
+    it('creates an incoming connections array', () => {
+      expect(broadcast.inConns).toBeTruthy();
+    });
+
+    it('creates an outgoing connections array', () => {
+      expect(broadcast.outConns).toBeTruthy();
+    });
+
+    it('creates an outgoing buffer array', () => {
+      expect(broadcast.outgoingBuffer).toBeTruthy();
     });
   });
 
   describe('send', () => {
     const broadcast = new Broadcast(12345);
 
-    it('calls forEach on the connections array', () => {
-      spyOn(broadcast.connections, 'forEach');
+    it('calls forEach on the outgoing connections array', () => {
+      spyOn(broadcast.outConns, 'forEach');
       broadcast.send([]);
-      expect(broadcast.connections.forEach).toHaveBeenCalled();
+      expect(broadcast.outConns.forEach).toHaveBeenCalled();
+    });
+
+    it('adds the operation to the outgoing buffer if it is an insertion', () => {
+      spyOn(broadcast, 'addToOutgoingBuffer');
+      broadcast.send({type: 'insert'});
+      expect(broadcast.addToOutgoingBuffer).toHaveBeenCalled();
+    });
+
+    it('adds the operation to the outgoing buffer if it is a deletion', () => {
+      spyOn(broadcast, 'addToOutgoingBuffer');
+      broadcast.send({type: 'delete'});
+      expect(broadcast.addToOutgoingBuffer).toHaveBeenCalled();
+    });
+
+    it('does not add the operation to the outgoing buffer otherwise', () => {
+      spyOn(broadcast, 'addToOutgoingBuffer');
+      broadcast.send({type: 'add to network'});
+      expect(broadcast.addToOutgoingBuffer).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('addToOutgoingBuffer', () => {
+    const bc = new Broadcast(12345);
+    bc.outgoingBuffer = [
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4,
+      5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+    ];
+    bc.addToOutgoingBuffer(5);
+
+    it('removes the first item in the buffer if it is full', () => {
+      expect(bc.outgoingBuffer[0]).toEqual(1);
+    });
+
+    it('adds the operation to the end of the buffer', () => {
+      expect(bc.outgoingBuffer[bc.outgoingBuffer.length-1]).toEqual(5);
+    });
+  });
+
+  describe('processOutgoingBuffer', () => {
+    const bc = new Broadcast(12345);
+    bc.outConns = [{peer: 6, send: function() {}}]
+    bc.outgoingBuffer = [1, 2, 3, 4, 5];
+
+    it('sends every operation in the outgoing buffer to the connection', () => {
+      spyOn(bc.outConns[0], 'send');
+      bc.processOutgoingBuffer(6);
+      expect(bc.outConns[0].send.calls.count()).toEqual(5);
     });
   });
 

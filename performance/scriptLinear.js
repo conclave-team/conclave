@@ -1,5 +1,5 @@
 import CRDT from '../lib/crdtLinear';
-import * as Util from './util';
+import * as Util from './utilLinear';
 import fs from 'fs';
 import UUID from 'uuid/v1';
 
@@ -52,7 +52,6 @@ ${Util.addRowWithId(10, crdt1, Util.insertRandom)}
 ${Util.addRowWithId(100, crdt2, Util.insertRandom)}
 ${Util.addRowWithId(1000, crdt3, Util.insertRandom)}
 ${Util.addRowWithId(10000, crdt4, Util.insertRandom)}
-${Util.addRowWithId(100000, crdt5, Util.insertRandom)}
 
 # LOCAL DELETIONS
 --------------------------------------------------------------
@@ -63,7 +62,6 @@ ${Util.addRow(10, crdt1, Util.deleteRandom)}
 ${Util.addRow(100, crdt2, Util.deleteRandom)}
 ${Util.addRow(1000, crdt3, Util.deleteRandom)}
 ${Util.addRow(10000, crdt4, Util.deleteRandom)}
-${Util.addRow(100000, crdt5, Util.deleteRandom)}
 
 # REMOTE INSERTIONS
 --------------------------------------------------------------
@@ -74,7 +72,6 @@ ${Util.addRow(10, crdt1, Util.remoteInsertRandom)}
 ${Util.addRow(100, crdt2, Util.remoteInsertRandom)}
 ${Util.addRow(1000, crdt3, Util.remoteInsertRandom)}
 ${Util.addRow(10000, crdt4, Util.remoteInsertRandom)}
-${Util.addRow(100000, crdt5, Util.remoteInsertRandom)}
 
 # REMOTE DELETIONS
 --------------------------------------------------------------
@@ -85,7 +82,6 @@ ${Util.addRow(10, crdt1, Util.remoteDeleteRandom)}
 ${Util.addRow(100, crdt2, Util.remoteDeleteRandom)}
 ${Util.addRow(1000, crdt3, Util.remoteDeleteRandom)}
 ${Util.addRow(10000, crdt4, Util.remoteDeleteRandom)}
-${Util.addRow(100000, crdt5, Util.remoteDeleteRandom)}
 
 
 ## AT THE BEGINNING
@@ -100,7 +96,6 @@ ${Util.addRowWithId(10, crdt1, Util.insertBeginning)}
 ${Util.addRowWithId(100, crdt2, Util.insertBeginning)}
 ${Util.addRowWithId(1000, crdt3, Util.insertBeginning)}
 ${Util.addRowWithId(10000, crdt4, Util.insertBeginning)}
-${Util.addRowWithId(100000, crdt5, Util.insertBeginning)}
 
 # LOCAL DELETIONS
 --------------------------------------------------------------
@@ -111,7 +106,6 @@ ${Util.addRow(10, crdt1, Util.deleteBeginning)}
 ${Util.addRow(100, crdt2, Util.deleteBeginning)}
 ${Util.addRow(1000, crdt3, Util.deleteBeginning)}
 ${Util.addRow(10000, crdt4, Util.deleteBeginning)}
-${Util.addRow(100000, crdt5, Util.deleteBeginning)}
 
 # REMOTE INSERTIONS
 --------------------------------------------------------------
@@ -122,7 +116,6 @@ ${Util.addRow(10, crdt1, Util.remoteInsertBeginning)}
 ${Util.addRow(100, crdt2, Util.remoteInsertBeginning)}
 ${Util.addRow(1000, crdt3, Util.remoteInsertBeginning)}
 ${Util.addRow(10000, crdt4, Util.remoteInsertBeginning)}
-${Util.addRow(100000, crdt5, Util.remoteInsertBeginning)}
 
 # REMOTE DELETIONS
 --------------------------------------------------------------
@@ -133,7 +126,6 @@ ${Util.addRow(10, crdt1, Util.remoteDeleteBeginning)}
 ${Util.addRow(100, crdt2, Util.remoteDeleteBeginning)}
 ${Util.addRow(1000, crdt3, Util.remoteDeleteBeginning)}
 ${Util.addRow(10000, crdt4, Util.remoteDeleteBeginning)}
-${Util.addRow(100000, crdt5, Util.remoteDeleteBeginning)}
 
 
 ## AT THE END
@@ -148,7 +140,6 @@ ${Util.addRowWithId(10, crdt1, Util.insertEnd)}
 ${Util.addRowWithId(100, crdt2, Util.insertEnd)}
 ${Util.addRowWithId(1000, crdt3, Util.insertEnd)}
 ${Util.addRowWithId(10000, crdt4, Util.insertEnd)}
-${Util.addRowWithId(100000, crdt5, Util.insertEnd)}
 
 # LOCAL DELETIONS
 --------------------------------------------------------------
@@ -159,7 +150,6 @@ ${Util.addRow(10, crdt1, Util.deleteEnd)}
 ${Util.addRow(100, crdt2, Util.deleteEnd)}
 ${Util.addRow(1000, crdt3, Util.deleteEnd)}
 ${Util.addRow(10000, crdt4, Util.deleteEnd)}
-${Util.addRow(100000, crdt5, Util.deleteEnd)}
 
 # REMOTE INSERTIONS
 --------------------------------------------------------------
@@ -170,7 +160,6 @@ ${Util.addRow(10, crdt1, Util.remoteInsertEnd)}
 ${Util.addRow(100, crdt2, Util.remoteInsertEnd)}
 ${Util.addRow(1000, crdt3, Util.remoteInsertEnd)}
 ${Util.addRow(10000, crdt4, Util.remoteInsertEnd)}
-${Util.addRow(100000, crdt5, Util.remoteInsertEnd)}
 
 # REMOTE DELETIONS
 --------------------------------------------------------------
@@ -181,7 +170,6 @@ ${Util.addRow(10, crdt1, Util.remoteDeleteEnd)}
 ${Util.addRow(100, crdt2, Util.remoteDeleteEnd)}
 ${Util.addRow(1000, crdt3, Util.remoteDeleteEnd)}
 ${Util.addRow(10000, crdt4, Util.remoteDeleteEnd)}
-${Util.addRow(100000, crdt5, Util.remoteDeleteEnd)}
 `;
 
 fs.writeFile(`${logPath}/${Util.getTimestamp()}.log`, table, function(err) {

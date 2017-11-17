@@ -1,5 +1,5 @@
 import Char from '../lib/char';
-import CRDT from '../lib/crdt';
+import CRDT from '../lib/crdtLinear';
 import { mockController } from './scriptLinear';
 
 const CELL_1_SIZE = 17;
