@@ -1,5 +1,5 @@
 import CRDT from '../lib/crdtLinear';
-import * as Util from './util';
+import * as Util from './utilLinear';
 import fs from 'fs';
 import UUID from 'uuid/v1';
 
