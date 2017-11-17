@@ -204,3 +204,18 @@ Cursors
   position: absolute;
   line-height: 15px;
 }
+
+/********************
+Cursors
+********************/
+
+.peer {
+  margin-left: 20px;
+}
+
+.light {
+  background-image: url("../assets/img/call.png");
+  background-repeat: no-repeat;
+  background-size: 16px;
+  background-position: 0;
+}
