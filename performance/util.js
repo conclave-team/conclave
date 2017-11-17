@@ -9,13 +9,25 @@ const CELL_4_SIZE = 16;
 const CELL_5_SIZE = 15;
 
 function insertRandom(crdt, numberOfOperations) {
-  const start = Date.now();
+  let counter = 0;
+  let line = 0;
   let ch, pos;
+  const start = Date.now();
 
   for (let i = 0; i < numberOfOperations; i++) {
-    ch = Math.floor(Math.random() * i);
-    pos = { line: 0, ch: ch };
-    crdt.handleLocalInsert('a', pos);
+    if (counter === 100) {
+      pos = { line: line, ch: counter}
+      crdt.handleLocalInsert('\n', pos);
+
+      line++;
+      counter = 0;
+    } else {
+      ch = Math.floor(Math.random() * counter);
+      pos = { line: line, ch: ch };
+      crdt.handleLocalInsert('a', pos);
+
+      counter++
+    }
   }
 
   const end = Date.now();
@@ -37,13 +49,15 @@ function remoteInsert(crdt, chars) {
 }
 
 function deleteRandom(crdt) {
+  const totalChars = crdt.totalChars();
   const start = Date.now();
-  let ch, startPos, endPos;
+  let line, ch, startPos, endPos;
 
-  for(let i = crdt.struct[0].length - 1; i >= 0; i--) {
-    ch = Math.floor(Math.random() * i);
-    startPos = { line: 0, ch: ch }
-    endPos = { line: 0, ch: ch + 1 }
+  for(let i = totalChars; i > 0; i--) {
+    line = Math.floor(Math.random() * this.struct.length)
+    ch = Math.floor(Math.random() * this.struct[line].length);
+    startPos = { line: line, ch: ch }
+    endPos = { line: line, ch: ch + 1 }
     crdt.handleLocalDelete(startPos, endPos);
   }
 
@@ -67,11 +81,24 @@ function remoteDelete(crdt, chars) {
 }
 
 function insertBeginning(crdt, numberOfOperations) {
+  let counter = 0;
+  let line = 0;
+  let ch, pos;
   const start = Date.now();
 
   for (let i = 0; i < numberOfOperations; i++) {
-    let pos = { line: 0, ch: 0 };
-    crdt.handleLocalInsert('a', pos);
+    if (counter === 100) {
+      pos = { line: line, ch: counter };
+      crdt.handleLocalInsert('\n', pos);
+
+      line++;
+      counter = 0;
+    } else {
+      pos = { line: line, ch: 0 };
+      crdt.handleLocalInsert('a', pos);
+
+      counter++
+    }
   }
 
   const end = Date.now();
@@ -79,9 +106,10 @@ function insertBeginning(crdt, numberOfOperations) {
 }
 
 function deleteBeginning(crdt) {
+  const totalChars = crdt.totalChars();
   const start = Date.now();
 
-  for (let i = crdt.struct[0].length - 1; i >= 0; i--) {
+  for (let i = totalChars; i > 0; i--) {
     let startPos = { line: 0, ch: 0 };
     let endPos = { line: 0, ch: 1};
 
@@ -105,11 +133,24 @@ function remoteDeleteBeginning(crdt) {
 }
 
 function insertEnd(crdt, numberOfOperations) {
+  let counter = 0;
+  let line = 0;
+  let ch, pos;
   const start = Date.now();
 
   for (let i = 0; i < numberOfOperations; i++) {
-    let pos = { line: 0, ch: i };
-    crdt.handleLocalInsert('a', pos);
+    pos = { line: line, ch: counter };
+
+    if (counter === 100) {
+      crdt.handleLocalInsert('\n', pos);
+
+      line++;
+      counter = 0;
+    } else {
+      crdt.handleLocalInsert('a', pos);
+
+      counter++
+    }
   }
 
   const end = Date.now();
