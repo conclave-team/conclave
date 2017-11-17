@@ -15,6 +15,14 @@ app.get('/demo', function (req, res) {
   res.render('demo');
 });
 
+app.get('/idLength', function (req, res) {
+  res.render('idGraph');
+});
+
+app.get('/opTime', function (req, res) {
+  res.render('timeGraph');
+})
+
 var srv = app.listen(port, function() {
 	console.log('Listening on '+port)
 })
