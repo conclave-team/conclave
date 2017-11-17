@@ -1,6 +1,6 @@
 import Char from '../lib/char';
 import CRDT from '../lib/crdt';
-import { mockController } from './all';
+import { mockController } from './script';
 
 const CELL_1_SIZE = 17;
 const CELL_2_SIZE = 20;
@@ -10,11 +10,12 @@ const CELL_5_SIZE = 15;
 
 function insertRandom(crdt, numberOfOperations) {
   const start = Date.now();
-  let index;
+  let ch, pos;
 
-  for(let i = 0; i < numberOfOperations; i++) {
-    index = Math.floor(Math.random() * i);
-    crdt.handleLocalInsert('a', index);
+  for (let i = 0; i < numberOfOperations; i++) {
+    ch = Math.floor(Math.random() * i);
+    pos = { line: 0, ch: ch };
+    crdt.handleLocalInsert('a', pos);
   }
 
   const end = Date.now();
@@ -22,45 +23,8 @@ function insertRandom(crdt, numberOfOperations) {
 }
 
 function remoteInsertRandom(crdt, numberOfOperations) {
-  const chars = generateChars(numberOfOperations);
-  const randomChars = shuffle(chars);
-
-  return remoteInsert(crdt, randomChars);
-}
-
-function insertBeginning(crdt, numberOfOperations) {
-  const start = Date.now();
-
-  for(let i = 0; i < numberOfOperations; i++) {
-    crdt.handleLocalInsert('a', 0);
-  }
-
-  const end = Date.now();
-  return end - start;
-}
-
-function insertEnd(crdt, numberOfOperations) {
-  const start = Date.now();
-
-  for(let i = 0; i < numberOfOperations; i++) {
-    crdt.handleLocalInsert('a', i);
-  }
-
-  const end = Date.now();
-  return end - start;
-}
-
-function remoteInsertBeginning(crdt, numberOfOperations) {
-  const chars = generateChars(numberOfOperations);
-  const descChars = chars.reverse();
-
-  return remoteInsert(crdt, descChars);
-}
-
-function remoteInsertEnd(crdt, numberOfOperations) {
-  const ascChars = generateChars(numberOfOperations);
-
-  return remoteInsert(crdt, ascChars);
+  const chars = shuffle(generateChars(numberOfOperations));
+  return remoteInsert(crdt, chars);
 }
 
 function remoteInsert(crdt, chars) {
@@ -74,11 +38,13 @@ function remoteInsert(crdt, chars) {
 
 function deleteRandom(crdt) {
   const start = Date.now();
-  let index;
+  let ch, startPos, endPos;
 
-  for(let i = crdt.struct.length - 1; i >= 0; i--) {
-    index = Math.floor(Math.random() * i);
-    crdt.handleLocalDelete(index);
+  for(let i = crdt.struct[0].length - 1; i >= 0; i--) {
+    ch = Math.floor(Math.random() * i);
+    startPos = { line: 0, ch: ch }
+    endPos = { line: 0, ch: ch + 1 }
+    crdt.handleLocalDelete(startPos, endPos);
   }
 
   const end = Date.now();
@@ -86,45 +52,9 @@ function deleteRandom(crdt) {
 }
 
 function remoteDeleteRandom(crdt) {
-  let toDel = [];
-  crdt.struct.forEach(char => toDel.push(char));
-  const randomToDel = shuffle(toDel);
-  return remoteDelete(crdt, randomToDel);
-}
+  const charsToDelete = [].concat.apply([], crdt.struct);
 
-function deleteBeginning(crdt) {
-  const start = Date.now();
-
-  for(let i = crdt.struct.length - 1; i >= 0; i--) {
-    crdt.handleLocalDelete(0);
-  }
-
-  const end = Date.now();
-  return end - start;
-}
-
-function remoteDeleteBeginning(crdt) {
-  let toDel = [];
-  crdt.struct.forEach(char => toDel.push(char));
-  return remoteDelete(crdt, toDel);
-}
-
-function deleteEnd(crdt) {
-  const start = Date.now();
-
-  for(let i = crdt.struct.length - 1; i >= 0; i--) {
-    crdt.handleLocalDelete(i);
-  }
-
-  const end = Date.now();
-  return end - start;
-}
-
-function remoteDeleteEnd(crdt) {
-  let toDel = [];
-  crdt.struct.forEach(char => toDel.push(char));
-  const reverseToDel = toDel.reverse();
-  return remoteDelete(crdt, reverseToDel);
+  return remoteDelete(crdt, shuffle(charsToDelete));
 }
 
 function remoteDelete(crdt, chars) {
@@ -136,33 +66,106 @@ function remoteDelete(crdt, chars) {
   return end - start;
 }
 
-function generateChars(numberOfOperations) {
-  const structs = generateRemoteStructs(numberOfOperations);
-  const charObjects = [];
-  for (let i = 0; i < structs[0].length; i++) {
-    structs.forEach(struct => charObjects.push(struct[i]));
+function insertBeginning(crdt, numberOfOperations) {
+  const start = Date.now();
+
+  for (let i = 0; i < numberOfOperations; i++) {
+    let pos = { line: 0, ch: 0 };
+    crdt.handleLocalInsert('a', pos);
   }
-  return charObjects;
+
+  const end = Date.now();
+  return end - start;
 }
 
-function generateRemoteStructs(numberOfOperations) {
-  const remoteCRDTs = generateRemoteCRDTs(numberOfOperations / 5);
+function deleteBeginning(crdt) {
+  const start = Date.now();
 
-  const numOfOps = numberOfOperations / remoteCRDTs.length;
+  for (let i = crdt.struct[0].length - 1; i >= 0; i--) {
+    let startPos = { line: 0, ch: 0 };
+    let endPos = { line: 0, ch: 1};
 
-  remoteCRDTs.forEach(crdt => insertRandom(crdt, numOfOps));
+    crdt.handleLocalDelete(startPos, endPos);
+  }
 
-  return remoteCRDTs.map(crdt => crdt.struct);
+  const end = Date.now();
+  return end - start;
 }
 
-function generateRemoteCRDTs(num) {
-  let CRDTs = [];
+function remoteInsertBeginning(crdt, numberOfOperations) {
+  const chars = generateChars(numberOfOperations);
+  const descChars = chars.reverse();
+
+  return remoteInsert(crdt, descChars);
+}
+
+function remoteDeleteBeginning(crdt) {
+  const charsToDelete = [].concat.apply([], crdt.struct);
+  return remoteDelete(crdt, charsToDelete);
+}
+
+function insertEnd(crdt, numberOfOperations) {
+  const start = Date.now();
+
+  for (let i = 0; i < numberOfOperations; i++) {
+    let pos = { line: 0, ch: i };
+    crdt.handleLocalInsert('a', pos);
+  }
+
+  const end = Date.now();
+  return end - start;
+}
+
+function deleteEnd(crdt) {
+  const start = Date.now();
+
+  for (let i = crdt.struct[0].length - 1; i >= 0; i--) {
+    let startPos = { line: 0, ch: i };
+    let endPos = { line: 0, ch: i + 1 };
+    crdt.handleLocalDelete(startPos, endPos);
+  }
+
+  const end = Date.now();
+  return end - start;
+}
+
+function remoteInsertEnd(crdt, numberOfOperations) {
+  const ascChars = generateChars(numberOfOperations);
+
+  return remoteInsert(crdt, ascChars);
+}
+
+function remoteDeleteEnd(crdt) {
+  const charsToDelete = [].concat.apply([], crdt.struct);
+  const reverseToDel = charsToDelete.reverse();
+  return remoteDelete(crdt, reverseToDel);
+}
+
+function generateChars(numOps) {
+  let crdts = [];
   let crdt;
-  for (let i = 0; i < num; i++) {
+
+  // Create crdts based on number of operations requested
+  for (let i = 0; i < Math.log10(numOps); i++) {
     crdt = new CRDT(mockController());
-    CRDTs.push(crdt);
+    crdts.push(crdt);
   }
-  return CRDTs;
+
+  // Insert characters randomly in each crdt
+  const numOpsPerCRDT = numOps / crdts.length;
+  crdts.forEach(crdt => insertRandom(crdt, numOpsPerCRDT));
+
+  let chars = [];
+  const structsWithLines = crdts.map(crdt => crdt.struct);
+  const structs = structsWithLines.map(struct => {
+    return [].concat.apply([], struct);
+  });
+
+  for (let i = 0; i < structs[0].length; i++) {
+    structs.forEach(struct => chars.push(struct[i]));
+  }
+
+  return chars;
 }
 
 function shuffle(a) {
@@ -174,17 +177,31 @@ function shuffle(a) {
 }
 
 function avgIdLength(crdt) {
-  const idArray = crdt.struct.map(char => char.position.map(id => id.digit).join(''));
-  const digitLengthSum = idArray.reduce((acc, id) => { return acc + id.length }, 0);
+  let numChars = 0;
 
-  return Math.floor(digitLengthSum / idArray.length);
+  const idArray = crdt.struct.map(line => line.map(char => char.position.map(id => id.digit).join('')));
+  const digitLengthSum = idArray.reduce((acc, line) => {
+    return acc + line.reduce((acc, id) => {
+      numChars++;
+      return acc + id.length;
+    }, 0);
+  }, 0);
+
+  return Math.floor(digitLengthSum / numChars);
 }
 
 function avgPosLength(crdt) {
-  const posArray = crdt.struct.map(char => char.position.length);
-  const posLengthSum = posArray.reduce((acc, len) => { return acc + len }, 0);
+  let numChars = 0;
 
-  return Math.floor(posLengthSum / posArray.length);
+  const posArray = crdt.struct.map(line => line.map(char => char.position.length));
+  const posLengthSum = posArray.reduce((acc, line) => {
+    return acc + line.reduce((acc, len) => {
+      numChars++;
+      return acc + len;
+    }, 0);
+  }, 0);
+
+  return Math.floor(posLengthSum / numChars);
 }
 
 function average(time, operations) {
