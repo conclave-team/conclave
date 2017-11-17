@@ -158,11 +158,17 @@ function insertEnd(crdt, numberOfOperations) {
 }
 
 function deleteEnd(crdt) {
+  const totalChars = crdt.totalChars();
   const start = Date.now();
+  let line;
+  let ch;
 
-  for (let i = crdt.struct[0].length - 1; i >= 0; i--) {
-    let startPos = { line: 0, ch: i };
-    let endPos = { line: 0, ch: i + 1 };
+  for (let i = totalChars; i > 0; i--) {
+    line = this.struct[this.struct.length - 1];
+    ch = line[line.length - 1];
+    let startPos = { line: line, ch: ch };
+    let endPos = { line: line, ch: ch + 1};
+
     crdt.handleLocalDelete(startPos, endPos);
   }
 
