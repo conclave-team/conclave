@@ -45,6 +45,16 @@ p {
 Editor
 ****************/
 
+#conclave {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.header {
+  overflow: hidden;
+}
+
 textarea {
   width: 100%;
   height: 200px;
@@ -129,6 +139,7 @@ CodeMirror
   box-shadow: 0 2px 20px -2px rgba(17, 117, 232, 0.15);
   clear: both;
   padding: 0;
+  height: 400px;
 }
 
 .CodeMirror-focused {
