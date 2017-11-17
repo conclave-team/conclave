@@ -1,12 +1,15 @@
 import Broadcast from '../lib/broadcast';
 import UUID from 'uuid/v1';
+import { JSDOM } from 'jsdom';
 
-fdescribe('Broadcast', () => {
+describe('Broadcast', () => {
   const mockController = {
     siteId: UUID(),
     peer: {
+      id: 55,
       on: function() {},
-      connect: function(id) { return { on: function() {} } }
+      connect: function(id) { return { open: false, id: id, on: function() {} } },
+      call: function() {}
     },
     addToNetwork: function() {},
     removeFromNetwork: function() {}
@@ -120,45 +123,123 @@ fdescribe('Broadcast', () => {
     });
   });
 
-  describe('connectToTarget', () => {
+  describe('onError', () => {
     const broadcast = new Broadcast(12345);
     broadcast.controller = mockController;
     broadcast.peer = mockController.peer;
 
-    it('does not call "connect" on peer or "addToConnectionList" on controller when peerId "0"', () => {
-      spyOn(broadcast.peer, 'connect');
-      spyOn(broadcast, 'addToConnections');
-      broadcast.connectToTarget('0');
-      expect(broadcast.peer.connect).not.toHaveBeenCalled();
-      expect(broadcast.addToConnections).not.toHaveBeenCalled();
+    it('calls "on" on the peer property', () => {
+      spyOn(broadcast.peer, 'on');
+      broadcast.onError();
+      expect(broadcast.peer.on).toHaveBeenCalled();
     });
-
-    // it('does call "connect" on peer when peerId not "0"', () => {
-    //   spyOn(broadcast.peer, 'connect');
-    //   broadcast.connectToTarget("78vjkhjkasdf7");
-    //   expect(broadcast.peer.connect).toHaveBeenCalled();
-    // });
   });
 
-  describe("addToConnections", () => {
+  describe('requestConnection', () => {
     const broadcast = new Broadcast(12345);
     broadcast.controller = mockController;
     broadcast.peer = mockController.peer;
-    const conn = {
-      peer: "somebody"
-    };
+    broadcast.isAlreadyConnectedOut = function() {};
 
-    it("adds the connection to this list and calls addToNetwork with connection.peer", () => {
-      spyOn(broadcast.controller, "addToNetwork");
-      broadcast.addToConnections(conn);
-      expect(broadcast.connections.length).toEqual(1);
+    // it('connects the peer to the target', () => {
+    //   spyOn(broadcast.peer, 'connect');
+    //   broadcast.requestConnection(12);
+    //   expect(broadcast.peer.connect).toHaveBeenCalled();
+    // });
+
+    it('calls add the connection to the outgoing connections', () => {
+      spyOn(broadcast, 'addToOutConns');
+      broadcast.requestConnection(13);
+      expect(broadcast.addToOutConns).toHaveBeenCalled();
+    });
+  });
+
+  describe('redistribute', () => {
+    it('calls syncTo with the peerId and siteId if less than 5 connections', () => {
+      const bc = new Broadcast(12345);
+      bc.controller = mockController;
+      bc.controller.network = [1, 2, 3, 4, 5];
+      bc.inConns = [1, 2, 3, 4];
+      bc.outConns = [1, 2, 3, 4];
+      spyOn(bc, 'syncTo');
+      bc.redistribute(1, 2);
+      expect(bc.syncTo).toHaveBeenCalledWith(1, 2);
     });
 
-    it("doesn't call either of the functions if the connection is already in the list", () => {
-      spyOn(broadcast.controller, "addToNetwork");
-      broadcast.addToConnections(conn);
-      expect(broadcast.connections.length).toEqual(1);
-      expect(broadcast.controller.addToNetwork).not.toHaveBeenCalled();
+    it('calls forward message with the peerId and siteId if too many incoming connections', () => {
+      const bc = new Broadcast(12345);
+      bc.controller = mockController;
+      bc.controller.network = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      bc.inConns = [1, 2, 3, 4, 5, 6];
+      bc.outConns = [1, 2, 3, 4];
+      spyOn(bc, 'forwardMessage');
+      bc.redistribute(1, 2);
+      expect(bc.forwardMessage).toHaveBeenCalledWith(1, 2);
+    });
+
+    it('calls forward message with the peerId and siteId if too many outgoing connections', () => {
+      const bc = new Broadcast(12345);
+      bc.controller = mockController;
+      bc.controller.network = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      bc.inConns = [1, 2, 3, 4];
+      bc.outConns = [1, 2, 3, 4, 5, 6];
+      spyOn(bc, 'forwardMessage');
+      bc.redistribute(1, 2);
+      expect(bc.forwardMessage).toHaveBeenCalledWith(1, 2);
+    });
+
+    it('calls syncTo with the peerId and siteId otherwise', () => {
+      const bc = new Broadcast(12345);
+      bc.controller = mockController;
+      bc.controller.network = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+      bc.inConns = [1, 2, 3, 4, 5];
+      bc.outConns = [1, 2, 3, 4, 5];
+      spyOn(bc, 'syncTo');
+      bc.redistribute(1, 2);
+      expect(bc.syncTo).toHaveBeenCalledWith(1, 2);
+    });
+  });
+
+  describe('forwardMessage', () => {
+    const bc = new Broadcast(123);
+    bc.outConns = [{peer: 6, send: function() {}}];
+
+    it('calls send on one of its outgoing connections', () => {
+      spyOn(bc.outConns[0], 'send');
+      bc.forwardMessage(1, 2);
+      expect(bc.outConns[0].send).toHaveBeenCalled();
+    });
+  });
+
+  describe('addToOutConns', () => {
+    const bc = new Broadcast(123);
+
+    it('pushes the connection into the outgoing connections if not already there', () => {
+      bc.isAlreadyConnectedOut = function(conn) {return false}
+      bc.addToOutConns(5);
+      expect(bc.outConns).toContain(5);
+    });
+
+    it('does not push the connection into the list if it is already there', () => {
+      bc.isAlreadyConnectedOut = function(conn) {return true}
+      bc.addToOutConns(6);
+      expect(bc.outConns).not.toContain(6);
+    });
+  });
+
+  describe('addToInConns', () => {
+    const bc = new Broadcast(123);
+
+    it('pushes the connection into the incoming connections if not already there', () => {
+      bc.isAlreadyConnectedIn = function(conn) {return false}
+      bc.addToInConns(5);
+      expect(bc.inConns).toContain(5);
+    });
+
+    it('does not push the connection into the list if it is already there', () => {
+      bc.isAlreadyConnectedIn = function(conn) {return true}
+      bc.addToInConns(6);
+      expect(bc.inConns).not.toContain(6);
     });
   });
 
@@ -166,7 +247,7 @@ fdescribe('Broadcast', () => {
     const broadcast = new Broadcast(12345);
     broadcast.controller = mockController;
 
-    it("calls send with type 'add to network' and newPeer of id passed in", () => {
+    it("calls send with type 'add to network' and newPeer and siteId passed in", () => {
       spyOn(broadcast, "send");
       broadcast.addToNetwork(5, '10');
       expect(broadcast.send).toHaveBeenCalledWith({type:'add to network',newPeer:5, newSite: '10'});
@@ -179,8 +260,8 @@ fdescribe('Broadcast', () => {
 
     it("calls send with type 'remove to network' and oldPeer of id passed in", () => {
       spyOn(broadcast, "send");
-      broadcast.removeFromNetwork(5, '10');
-      expect(broadcast.send).toHaveBeenCalledWith({type:'remove from network', oldPeer:5, oldSite: '10'});
+      broadcast.removeFromNetwork(5);
+      expect(broadcast.send).toHaveBeenCalledWith({type:'remove from network', oldPeer:5});
     });
   });
 
@@ -193,22 +274,28 @@ fdescribe('Broadcast', () => {
     };
 
     beforeEach(() => {
-      broadcast.connections.push(conn);
+      broadcast.inConns.push(conn);
+      broadcast.outConns.push(conn);
     });
 
-    it("removes the connection from this.connections", () => {
+    it("removes the connection from incoming connections", () => {
       broadcast.removeFromConnections(conn.peer);
-      expect(broadcast.connections.length).toEqual(0);
+      expect(broadcast.inConns.length).toEqual(0);
     });
 
-    it("calls controller.removeFromNetwork with connection.peer", () => {
-      spyOn(broadcast.controller, "removeFromNetwork");
+    it("removes the connection from outgoing connections", () => {
       broadcast.removeFromConnections(conn.peer);
-      expect(broadcast.controller.removeFromNetwork).toHaveBeenCalledWith("somebody");
-    })
+      expect(broadcast.outConns.length).toEqual(0);
+    });
+
+    it("calls removeFromNetwork with connection.peer", () => {
+      spyOn(broadcast, "removeFromNetwork");
+      broadcast.removeFromConnections(conn.peer);
+      expect(broadcast.removeFromNetwork).toHaveBeenCalledWith("somebody");
+    });
   });
 
-  describe("isAlreadyConnected", () => {
+  describe("isAlreadyConnectedOut", () => {
     const broadcast = new Broadcast(12345);
     broadcast.controller = mockController;
     broadcast.peer = mockController.peer;
@@ -218,15 +305,38 @@ fdescribe('Broadcast', () => {
     const otherConn = {
       peer: "someone"
     };
-    broadcast.connections.push(conn);
+    broadcast.outConns.push(conn);
 
-    it("returns true if the connection is already in this.connections", () => {
-      const rVal = broadcast.isAlreadyConnected(conn);
+    it("returns true if the connection is already in this.outConns", () => {
+      const rVal = broadcast.isAlreadyConnectedOut(conn);
       expect(rVal).toBe(true);
     });
 
-    it("returns false if the connection is not in this.connections", () => {
-      const rVal = broadcast.isAlreadyConnected(otherConn);
+    it("returns false if the connection is not in this.outConns", () => {
+      const rVal = broadcast.isAlreadyConnectedOut(otherConn);
+      expect(rVal).toBe(false);
+    });
+  });
+
+  describe("isAlreadyConnectedIn", () => {
+    const broadcast = new Broadcast(12345);
+    broadcast.controller = mockController;
+    broadcast.peer = mockController.peer;
+    const conn = {
+      peer: "somebody"
+    };
+    const otherConn = {
+      peer: "someone"
+    };
+    broadcast.inConns.push(conn);
+
+    it("returns true if the connection is already in this.inConns", () => {
+      const rVal = broadcast.isAlreadyConnectedIn(conn);
+      expect(rVal).toBe(true);
+    });
+
+    it("returns false if the connection is not in this.inConns", () => {
+      const rVal = broadcast.isAlreadyConnectedIn(otherConn);
       expect(rVal).toBe(false);
     });
   });
@@ -243,19 +353,116 @@ fdescribe('Broadcast', () => {
     });
   });
 
+  describe('syncTo', () => {
+    const bc = new Broadcast(123);
+    bc.controller = mockController;
+    bc.peer = mockController.peer;
+    bc.controller.crdt = { struct: [] };
+    bc.controller.vector = { versions: []};
+    bc.isAlreadyConnectedOut = function() {};
+
+    // it('calls connect with the peerId passed in on this.peer', () => {
+    //   spyOn(bc.peer, 'connect');
+    //   bc.syncTo(1, 2);
+    //   expect(bc.peer.connect).toHaveBeenCalledWith(1);
+    // });
+
+    it('calls addToOutConns', () => {
+      spyOn(bc, 'addToOutConns');
+      bc.syncTo(1, 2);
+      expect(bc.addToOutConns).toHaveBeenCalled();
+    });
+
+    it('calls controller addToNetwork with the peerId and siteId passed in', () => {
+      spyOn(bc.controller, 'addToNetwork');
+      bc.syncTo(1, 2);
+      expect(bc.controller.addToNetwork).toHaveBeenCalledWith(1, 2);
+    });
+  });
+
+  describe('videoCall', () => {
+    const bc = new Broadcast(123);
+    bc.controller = mockController;
+    bc.peer = mockController.peer;
+
+    // it('calls the call method on this.peer with the id and ms passed in', () => {
+    //   spyOn(bc.peer, 'call');
+    //   bc.videoCall('id', 'ms', 'color');
+    //   expect(bc.peer.call).toHaveBeenCalledWith('id', 'ms');
+    // });
+
+    it('calls onStream', () => {
+      spyOn(bc, 'onStream');
+      bc.videoCall('id', 'ms', 'color');
+      expect(bc.onStream).toHaveBeenCalled();
+    });
+  });
+
   describe('onConnection', () => {
     const broadcast = new Broadcast(12345);
-    broadcast.controller = mockController;
-    broadcast.peer = mockController.peer;
+
     const conn = {
       peer: "somebody",
       on: function() {}
     };
 
-    it('calls "on" on the connection passed in', () => {
-      spyOn(conn, 'on');
+    it('calls adds the connection to the incoming connections list', () => {
+      spyOn(broadcast, 'addToInConns');
       broadcast.onConnection(conn);
-      expect(conn.on).toHaveBeenCalled();
+      expect(broadcast.addToInConns).toHaveBeenCalledWith(conn);
+    });
+  });
+
+  describe('onVideoCall', () => {
+    const bc = new Broadcast(123);
+    bc.controller = mockController;
+    bc.peer = mockController.peer;
+
+    it('calls the on method on this.peer', () => {
+      spyOn(bc.peer, 'on');
+      bc.onVideoCall();
+      expect(bc.peer.on).toHaveBeenCalled();
+    });
+  });
+
+  describe('onStream', () => {
+    const bc = new Broadcast(123);
+    const obj = { on: function() {} };
+
+    it('calls the on method on the object passed in', () => {
+      spyOn(obj, 'on');
+      bc.onStream(obj, 'color');
+      expect(obj.on).toHaveBeenCalled();
+    });
+  });
+
+  describe('onStreamClose', () => {
+    const bc = new Broadcast(123);
+    const vid = {style: { visibility: 'visible' } };
+    const dom = new JSDOM(`<!DOCTYPE html><li id="7"><span id="test"></a>`);
+    const mockDoc = dom.window.document;
+
+    beforeEach(() => {
+      bc.currentStream = {
+        localStream: {
+          getTracks: function() {return [{stop: function() {}}, {stop: function() {}}]}
+        }
+      }
+    });
+
+    it('sets the visibility property on the vid element passed in to hidden', () => {
+      bc.onStreamClose(vid, 7, mockDoc);
+      expect(vid.style.visibility).toEqual('hidden');
+    });
+
+    it('sets the current stream to null', () => {
+      bc.onStreamClose(vid, 7, mockDoc);
+      expect(bc.currentStream).toBeNull();
+    })
+
+    it('sets the onclick property on the correct peer span', () => {
+      bc.onStreamClose(vid, 7, mockDoc);
+      expect(mockDoc.getElementById('test').onclick).toBeTruthy();
     });
   });
 
@@ -272,6 +479,23 @@ fdescribe('Broadcast', () => {
       spyOn(conn, 'on');
       broadcast.onData(conn);
       expect(conn.on).toHaveBeenCalled();
+    });
+  });
+
+  describe('randomId', () => {
+    const bc = new Broadcast(123);
+    bc.controller = mockController;
+    bc.peer = mockController.peer;
+
+    it('returns a random peer id from incoming connections list', () => {
+      bc.inConns = [{peer: 1}, {peer: 2}];
+      const rVal = bc.randomId();
+      expect(1 <= rVal <= 2).toBeTruthy();
+    });
+
+    it('returns false if there are no possible connections', () => {
+      bc.inConns = [{peer: 55}];
+      expect(bc.randomId()).toBeFalsy();
     });
   });
 
