@@ -113,6 +113,7 @@ label, button {
   line-height: 32px;
   color: rgb(17, 117, 232);
   cursor: pointer;
+  background-color: white;
 }
 
 li {
