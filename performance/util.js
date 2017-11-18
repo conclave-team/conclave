@@ -54,8 +54,8 @@ function deleteRandom(crdt) {
   let line, ch, startPos, endPos;
 
   for(let i = totalChars; i > 0; i--) {
-    line = Math.floor(Math.random() * this.struct.length)
-    ch = Math.floor(Math.random() * this.struct[line].length);
+    line = Math.floor(Math.random() * crdt.struct.length)
+    ch = Math.floor(Math.random() * crdt.struct[line].length);
     startPos = { line: line, ch: ch }
     endPos = { line: line, ch: ch + 1 }
     crdt.handleLocalDelete(startPos, endPos);
@@ -162,13 +162,15 @@ function deleteEnd(crdt) {
   const start = Date.now();
   let line;
   let ch;
+  let lineNum;
 
   for (let i = totalChars; i > 0; i--) {
-    line = this.struct[this.struct.length - 1];
+    lineNum = crdt.struct.length - 1;
+    line = crdt.struct[lineNum];
     ch = line[line.length - 1];
-    let startPos = { line: line, ch: ch };
-    let endPos = { line: line, ch: ch + 1};
-
+    let startPos = { line: lineNum, ch: ch };
+    let endPos = { line: lineNum, ch: ch + 1};
+    
     crdt.handleLocalDelete(startPos, endPos);
   }
 
