@@ -21,10 +21,6 @@ animations
   to { opacity: 0; }
 }
 
-.connecting {
-  animation: blinker 1.5s cubic-bezier(.5, 0, 1, 1) infinite alternate;
-}
-
 /****************
 General
 ****************/
@@ -67,6 +63,7 @@ Editor
   overflow: hidden;
   max-width: 1265px;
   width: 100%;
+  min-width: 600px;
   margin-right: 100px;
   padding-right: 65px;
   box-sizing: border-box;
@@ -96,7 +93,11 @@ Editor
 
 #peerId li {
   list-style-type: none;
-  margin: 3px 3px 0;
+  margin: 3px 3px 11px 0px;
+}
+
+#peerId span {
+  padding: 3px;
 }
 
 label, button {
@@ -206,16 +207,33 @@ Cursors
 }
 
 /********************
-Cursors
+Calling Peer
 ********************/
 
-.peer {
-  margin-left: 20px;
+.calling:after,
+.answered:after,
+.beingCalled:after {
+  content: '';
+  display: inline-block;
+  margin-left: 5px;
+  border-radius: 50%;
+  width: 6px;
+  height: 6px;
+  vertical-align: -1px;
 }
 
-.light {
-  background-image: url("../assets/img/call.png");
-  background-repeat: no-repeat;
-  background-size: 16px;
-  background-position: 0;
+.beingCalled:after {
+  border: 2px solid black;
+  animation: blinker 1s cubic-bezier(.5, 0, 1, 1) infinite alternate;
+}
+
+.calling:after {
+  background-color: black;
+  border: 2px solid black;
+  animation: blinker 1s cubic-bezier(.5, 0, 1, 1) infinite alternate;
+}
+
+.answered:after {
+  background-color: black;
+  border: 2px solid black;
 }
