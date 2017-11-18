@@ -10,14 +10,18 @@ html(lang="en")
     block header
 
     #conclave.hide
-      .header
-        p(id='ownName') You are the
-        button(type='button' id='download') Save
-        label(for='file' id='upload') Upload
-        input(type='file' id='file' accept='.txt, .js, .rb, .md')
+
       .text-wrapper
         p(id='peerId') Peers:
-        textarea(row='10' col='20')
+        .editor
+          .header
+            p(id='ownName') You are the
+            button(type='button' id='download') Save
+            label(for='file' id='upload') Upload
+            input(type='file' id='file' accept='.txt, .js, .rb, .md')
+          textarea(row='10' col='20')
+          p Sharing Link:
+            a(id='myLink' target="_blank")
       video
 
     block footer
