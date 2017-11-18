@@ -1,3 +1,7 @@
+/****************
+Fonts
+****************/
+
 @font-face {
   font-family: "InputLight";
   src: url('../assets/fonts/InputSans-Light.ttf');
@@ -7,6 +11,23 @@
   font-family: "InputMedium";
   src: url('../assets/fonts/InputSans-Medium.ttf');
 }
+
+/****************
+animations
+****************/
+
+@keyframes blinker {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.connecting {
+  animation: blinker 1.5s cubic-bezier(.5, 0, 1, 1) infinite alternate;
+}
+
+/****************
+General
+****************/
 
 body {
   font-family: "InputLight";
@@ -21,9 +42,61 @@ h1 {
   margin-bottom: 0;
 }
 
+p {
+  font-size: 14px;
+}
+
+.hide * {
+  visibility: hidden;
+}
+
+.disappear {
+  display: none;
+}
+
+/****************
+Editor
+****************/
+
+#conclave {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.header {
+  overflow: hidden;
+  max-width: 1265px;
+  width: 100%;
+  margin-right: 100px;
+  padding-right: 65px;
+  box-sizing: border-box;
+}
+
+.text-wrapper {
+  display: flex;
+  flex-direction: row-reverse;
+  min-width: 600px;
+  justify-content: space-between;
+}
+
 #ownName {
   float: left;
   margin-left: 5px;
+}
+
+#ownName span {
+  padding: 2px;
+  margin-left: 8px;
+}
+
+#peerId {
+  margin-left: 10px;
+  flex-grow: 1;
+}
+
+#peerId li {
+  list-style-type: none;
+  margin: 3px 3px 0;
 }
 
 label, button {
@@ -56,9 +129,10 @@ button:hover {
   cursor: pointer;
 }
 
-p {
-  font-size: 14px;
+li span:hover {
+  cursor: pointer;
 }
+
 
 #newRoot, #newRoot2, #newLink {
   margin: 5px auto;
@@ -68,18 +142,9 @@ p {
   visibility: hidden;
 }
 
-textarea {
-  width: 100%;
-  height: 200px;
-}
-
-li {
-  margin-bottom: 5px;
-}
-
-li span:hover {
-  cursor: pointer;
-}
+/****************
+Video
+****************/
 
 video {
   width: 25%;
@@ -96,6 +161,10 @@ video:hover {
   cursor: pointer;
 }
 
+/********************
+CodeMirror
+********************/
+
 .CodeMirror {
   font-family: 'InputLight';
   border-radius: 8px;
@@ -104,6 +173,10 @@ video:hover {
   box-shadow: 0 2px 20px -2px rgba(17, 117, 232, 0.15);
   clear: both;
   padding: 0;
+  height: 400px;
+  width: 100%;
+  min-width: 500px;
+  max-width: 1200px;
 }
 
 .CodeMirror-focused {
@@ -113,6 +186,10 @@ video:hover {
 .CodeMirror-scroll {
   padding: 10px;
 }
+
+/********************
+Cursors
+********************/
 
 .remote-cursor {
   width: 2px;
@@ -128,6 +205,10 @@ video:hover {
   line-height: 15px;
 }
 
+/********************
+Cursors
+********************/
+
 .peer {
   margin-left: 20px;
 }
@@ -137,12 +218,4 @@ video:hover {
   background-repeat: no-repeat;
   background-size: 16px;
   background-position: 0;
-}
-
-.hide * {
-  visibility: hidden;
-}
-
-.disappear {
-  display: none;
 }

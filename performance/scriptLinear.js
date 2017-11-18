@@ -35,7 +35,7 @@ const crdt5 = new CRDT(mockController());
 });
 
 let table = `
-#### PERFORMANCE METRICS
+#### PERFORMANCE METRICS (Linear)
 Base: ${crdt1.base} | Boundary: ${crdt1.boundary} | Strategy: ${crdt1.strategy}
 ================================================================================================
 
