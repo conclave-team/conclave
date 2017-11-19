@@ -178,10 +178,10 @@ Video
   z-index: 10;
   top: 0;
   right: 0;
-  /*visibility: hidden;*/
   border-radius: 6px;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 }
 
 .video-bar {
@@ -197,6 +197,10 @@ Video
   padding: 0 15px;
 }
 
+.video-bar.mini {
+  border-radius: 6px;
+}
+
 .exit, .minimize {
   cursor: pointer;
 }
@@ -207,9 +211,6 @@ video {
   border-bottom-right-radius: 6px;
 }
 
-video:hover {
-  cursor: pointer;
-}
 
 /********************
 CodeMirror
