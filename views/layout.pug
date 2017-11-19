@@ -5,16 +5,21 @@ html(lang="en")
     link(rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css")
     link(rel='stylesheet' href='css/style.css')
   body
-    h1= title
+    .navbar
+      h1.logo= title
+      .nav-items
+        a.home(href='/') Home
+        a.about(href='/about') About
+        a.bots(href='/bots') Talk to Bots
     #conclave.hide
       .text-wrapper
-        p(id='peerId') Peers:
+        p#peerId Peers:
         .editor
           .header
-            p(id='ownName') You are the
-            button(type='button' id='download') Save
-            label(for='file' id='upload') Upload
-            input(type='file' id='file' accept='.txt, .js, .rb, .md')
+            p#ownName You are the
+            button#download(type='button') Save
+            label#upload(for='file') Upload
+            input#file(type='file' accept='.txt, .js, .rb, .md')
           textarea(row='10' col='20')
           block link
       video

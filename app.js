@@ -11,8 +11,12 @@ app.get('/', function (req, res) {
   res.render('index', {title: 'Conclave'});
 });
 
-app.get('/demo', function (req, res) {
-  res.render('demo', {title: 'About'});
+app.get('/about', function (req, res) {
+  res.render('about', {title: 'About'});
+});
+
+app.get('/bots', function(req, res) {
+  res.render('about', {title: 'Talk to Bots'});
 });
 
 app.get('/idLength', function (req, res) {
