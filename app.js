@@ -16,7 +16,7 @@ app.get('/about', function (req, res) {
 });
 
 app.get('/bots', function(req, res) {
-  res.render('about', {title: 'Talk to Bots'});
+  res.render('bots', {title: 'Talk to Bots'});
 });
 
 app.get('/idLength', function (req, res) {
