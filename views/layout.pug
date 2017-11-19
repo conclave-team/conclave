@@ -5,19 +5,30 @@ html(lang="en")
     link(rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css")
     link(rel='stylesheet' href='css/style.css')
   body
-    h1= title
-
-    block header
-
+    .navbar
+      h1.logo= title
+      .nav-items
+        a.home(href='/') Home
+        a.about(href='/about') About
+        a.bots(href='/bots') Talk to Bots
     #conclave.hide
-      .header
-        p(id='ownName') You are the
-        button(type='button' id='download') Save
-        label(for='file' id='upload') Upload
-        input(type='file' id='file' accept='.txt, .js, .rb, .md')
       .text-wrapper
-        p(id='peerId') Peers:
-        textarea(row='10' col='20')
-      video
+        p#peerId Peers:
+        .editor
+          .header
+            p#ownName You are the
+            button#download(type='button') Save
+            label#upload(for='file') Upload
+            input#file(type='file' accept='.txt, .js, .rb, .md')
+          textarea(row='10' col='20')
+          block link
+      .video-modal.hide
+        .video-bar
+            i(data-feather="minus" class="minimize")
+            i(data-feather='x' class="exit")
+        video
 
-    block footer
+    script(src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js")
+    script.
+      feather.replace({ color: 'white', 'stroke-width': 3 });
+    block scripts

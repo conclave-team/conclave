@@ -21,10 +21,6 @@ animations
   to { opacity: 0; }
 }
 
-.connecting {
-  animation: blinker 1.5s cubic-bezier(.5, 0, 1, 1) infinite alternate;
-}
-
 /****************
 General
 ****************/
@@ -32,7 +28,7 @@ General
 body {
   font-family: "InputLight";
   margin: 0;
-  padding: 40px;
+  padding: 15px;
 }
 
 h1 {
@@ -46,12 +42,32 @@ p {
   font-size: 14px;
 }
 
-.hide * {
+.hide, .hide * {
   visibility: hidden;
 }
 
 .disappear {
   display: none;
+}
+
+/****************
+NavBar
+****************/
+
+.navbar {
+  display: flex;
+  justify-content: left;
+  min-width: 710px;
+}
+
+.logo {
+  flex-grow: 1;
+}
+
+.nav-items {
+  flex-grow: 1;
+  display: flex;
+  justify-content: space-around;
 }
 
 /****************
@@ -63,18 +79,23 @@ Editor
   margin: 0 auto;
 }
 
-.header {
+.editor {
+  display:flex;
+  flex-direction: column;
   overflow: hidden;
-  max-width: 1265px;
+  max-width: 1250px;
   width: 100%;
-  margin-right: 100px;
-  padding-right: 65px;
-  box-sizing: border-box;
+  min-width: 600px;
+  justify-content: flex-start;
+  padding: 0 10px;
+}
+
+.header {
+  width: 100%;
 }
 
 .text-wrapper {
   display: flex;
-  flex-direction: row-reverse;
   min-width: 600px;
   justify-content: space-between;
 }
@@ -90,13 +111,17 @@ Editor
 }
 
 #peerId {
-  margin-left: 10px;
+  min-width: 120px;
   flex-grow: 1;
 }
 
 #peerId li {
   list-style-type: none;
-  margin: 3px 3px 0;
+  margin: 3px 3px 11px 0px;
+}
+
+#peerId span {
+  padding: 3px;
 }
 
 label, button {
@@ -110,6 +135,7 @@ label, button {
   line-height: 32px;
   color: rgb(17, 117, 232);
   cursor: pointer;
+  background-color: white;
 }
 
 li {
@@ -134,7 +160,7 @@ li span:hover {
 }
 
 
-#newRoot, #newRoot2, #newLink {
+#newRoot, #newRoot2, #newRoot3, #newLink {
   margin: 5px auto;
   text-align: center;
   font-size: 12px;
@@ -146,20 +172,45 @@ li span:hover {
 Video
 ****************/
 
-video {
-  width: 25%;
-  height: auto;
-  float: right;
-  margin-right: 10%;
-  visibility: hidden;
-  border-bottom: 13px solid;
-  border-right: 13px solid;
+.video-modal {
+  width: 250px;
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  right: 0;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.video-bar {
+  height: 36px;
+  border-top-right-radius: 6px;
+  border-top-left-radius: 6px;
+  width: 100%;
+  background-color: black;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 0 15px;
+}
+
+.video-bar.mini {
   border-radius: 6px;
 }
 
-video:hover {
+.exit, .minimize {
   cursor: pointer;
 }
+
+video {
+  width: 100%;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
 
 /********************
 CodeMirror
@@ -175,12 +226,10 @@ CodeMirror
   padding: 0;
   height: 400px;
   width: 100%;
-  min-width: 500px;
-  max-width: 1200px;
 }
 
 .CodeMirror-focused {
-  box-shadow: 0 2px 20px -2px rgba(17, 117, 232, 0.3);
+  box-shadow: 0 2px 20px -2px rgba(17, 117, 232, 0.4);
 }
 
 .CodeMirror-scroll {
@@ -206,14 +255,37 @@ Cursors
 }
 
 /********************
-Cursors
+Calling Peer
 ********************/
 
-.peer {
-  margin-left: 20px;
+.calling:after,
+.answered:after,
+.beingCalled:after {
+  content: '';
+  display: inline-block;
+  margin-left: 5px;
+  border-radius: 50%;
+  width: 6px;
+  height: 6px;
+  vertical-align: -1px;
 }
 
-.light {
+.beingCalled:after {
+  border: 2px solid black;
+  animation: blinker 1s cubic-bezier(.5, 0, 1, 1) infinite alternate;
+}
+
+.calling:after {
+  background-color: black;
+  border: 2px solid black;
+  animation: blinker 1s cubic-bezier(.5, 0, 1, 1) infinite alternate;
+}
+
+.answered:after {
+  width: 16px;
+  height: 16px;
+  border-radius: 0;
+  vertical-align: -3px;
   background-image: url("../assets/img/call.png");
   background-repeat: no-repeat;
   background-size: 16px;
