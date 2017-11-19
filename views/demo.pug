@@ -1,10 +1,14 @@
 extends layout.pug
 
 block header
-  p.disappear(id='newRoot') The host has left the room. Do NOT refresh your page! Follow this link instead.
+  p.disappear(id='newRoot') The user you originally connected to has left the network.
+  p.disappear(id='newRoot2') Don't panic, you're being reconnected.
+  p.disappear(id='newRoot3') For immediate reconnection, follow this link:
   a.disappear(id='newLink') placeholder
+  
+block link
+  p.disappear Sharing Link:
+    a(id='myLink' target="_blank")
 
 block footer
-  p.disappear Sharing Link:
-    a(id='myLink')
   script(src='js/demo-bundle.js')

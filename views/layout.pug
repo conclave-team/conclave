@@ -6,11 +6,10 @@ html(lang="en")
     link(rel='stylesheet' href='css/style.css')
   body
     h1= title
-
+    
     block header
-
+    
     #conclave.hide
-
       .text-wrapper
         p(id='peerId') Peers:
         .editor
@@ -20,8 +19,7 @@ html(lang="en")
             label(for='file' id='upload') Upload
             input(type='file' id='file' accept='.txt, .js, .rb, .md')
           textarea(row='10' col='20')
-          p Sharing Link:
-            a(id='myLink' target="_blank")
+          block link
       video
 
     block footer
