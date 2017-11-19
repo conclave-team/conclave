@@ -13,6 +13,7 @@ export function mockController() {
     insertIntoEditor: function() {},
     deleteFromEditor: function() {},
     vector: {
+      getLocalVersion: () => {},
       localVersion: {
         counter: 0
       },
@@ -28,9 +29,10 @@ const crdt2 = new CRDT(mockController());
 const crdt3 = new CRDT(mockController());
 const crdt4 = new CRDT(mockController());
 const crdt5 = new CRDT(mockController());
+const crdt6 = new CRDT(mockController());
 
 let table = `
-#### PERFORMANCE METRICS
+#### PERFORMANCE METRICS (Array of Arrays)
 Base: ${crdt1.base} | Boundary: ${crdt1.boundary} | Strategy: ${crdt1.strategy}
 ================================================================================================
 
@@ -49,6 +51,7 @@ ${Util.addRowWithId(1000, crdt3, Util.insertRandom)}
 ${Util.addRowWithId(10000, crdt4, Util.insertRandom)}
 ${Util.addRowWithId(100000, crdt5, Util.insertRandom)}
 
+
 # LOCAL DELETIONS
 --------------------------------------------------------------
 | # of Operations | Total Execute Time | Avg. Operation Time |
@@ -59,6 +62,7 @@ ${Util.addRow(100, crdt2, Util.deleteRandom)}
 ${Util.addRow(1000, crdt3, Util.deleteRandom)}
 ${Util.addRow(10000, crdt4, Util.deleteRandom)}
 ${Util.addRow(100000, crdt5, Util.deleteRandom)}
+
 
 # REMOTE INSERTIONS
 --------------------------------------------------------------
@@ -71,6 +75,7 @@ ${Util.addRow(1000, crdt3, Util.remoteInsertRandom)}
 ${Util.addRow(10000, crdt4, Util.remoteInsertRandom)}
 ${Util.addRow(100000, crdt5, Util.remoteInsertRandom)}
 
+
 # REMOTE DELETIONS
 --------------------------------------------------------------
 | # of Operations | Total Execute Time | Avg. Operation Time |
@@ -81,6 +86,7 @@ ${Util.addRow(100, crdt2, Util.remoteDeleteRandom)}
 ${Util.addRow(1000, crdt3, Util.remoteDeleteRandom)}
 ${Util.addRow(10000, crdt4, Util.remoteDeleteRandom)}
 ${Util.addRow(100000, crdt5, Util.remoteDeleteRandom)}
+
 
 
 ## AT THE BEGINNING
@@ -97,6 +103,7 @@ ${Util.addRowWithId(1000, crdt3, Util.insertBeginning)}
 ${Util.addRowWithId(10000, crdt4, Util.insertBeginning)}
 ${Util.addRowWithId(100000, crdt5, Util.insertBeginning)}
 
+
 # LOCAL DELETIONS
 --------------------------------------------------------------
 | # of Operations | Total Execute Time | Avg. Operation Time |
@@ -107,6 +114,7 @@ ${Util.addRow(100, crdt2, Util.deleteBeginning)}
 ${Util.addRow(1000, crdt3, Util.deleteBeginning)}
 ${Util.addRow(10000, crdt4, Util.deleteBeginning)}
 ${Util.addRow(100000, crdt5, Util.deleteBeginning)}
+
 
 # REMOTE INSERTIONS
 --------------------------------------------------------------
@@ -119,6 +127,7 @@ ${Util.addRow(1000, crdt3, Util.remoteInsertBeginning)}
 ${Util.addRow(10000, crdt4, Util.remoteInsertBeginning)}
 ${Util.addRow(100000, crdt5, Util.remoteInsertBeginning)}
 
+
 # REMOTE DELETIONS
 --------------------------------------------------------------
 | # of Operations | Total Execute Time | Avg. Operation Time |
@@ -129,6 +138,7 @@ ${Util.addRow(100, crdt2, Util.remoteDeleteBeginning)}
 ${Util.addRow(1000, crdt3, Util.remoteDeleteBeginning)}
 ${Util.addRow(10000, crdt4, Util.remoteDeleteBeginning)}
 ${Util.addRow(100000, crdt5, Util.remoteDeleteBeginning)}
+
 
 
 ## AT THE END
@@ -145,6 +155,7 @@ ${Util.addRowWithId(1000, crdt3, Util.insertEnd)}
 ${Util.addRowWithId(10000, crdt4, Util.insertEnd)}
 ${Util.addRowWithId(100000, crdt5, Util.insertEnd)}
 
+
 # LOCAL DELETIONS
 --------------------------------------------------------------
 | # of Operations | Total Execute Time | Avg. Operation Time |
@@ -155,6 +166,7 @@ ${Util.addRow(100, crdt2, Util.deleteEnd)}
 ${Util.addRow(1000, crdt3, Util.deleteEnd)}
 ${Util.addRow(10000, crdt4, Util.deleteEnd)}
 ${Util.addRow(100000, crdt5, Util.deleteEnd)}
+
 
 # REMOTE INSERTIONS
 --------------------------------------------------------------
@@ -167,6 +179,7 @@ ${Util.addRow(1000, crdt3, Util.remoteInsertEnd)}
 ${Util.addRow(10000, crdt4, Util.remoteInsertEnd)}
 ${Util.addRow(100000, crdt5, Util.remoteInsertEnd)}
 
+
 # REMOTE DELETIONS
 --------------------------------------------------------------
 | # of Operations | Total Execute Time | Avg. Operation Time |
@@ -177,6 +190,7 @@ ${Util.addRow(100, crdt2, Util.remoteDeleteEnd)}
 ${Util.addRow(1000, crdt3, Util.remoteDeleteEnd)}
 ${Util.addRow(10000, crdt4, Util.remoteDeleteEnd)}
 ${Util.addRow(100000, crdt5, Util.remoteDeleteEnd)}
+
 `;
 
 fs.writeFile(`${logPath}/${Util.getTimestamp()}.log`, table, function(err) {

@@ -8,11 +8,11 @@ app.set('views', './views');
 app.set('view engine', 'pug');
 
 app.get('/', function (req, res) {
-  res.render('index');
+  res.render('index', {title: 'Conclave'});
 });
 
 app.get('/demo', function (req, res) {
-  res.render('demo');
+  res.render('demo', {title: 'About'});
 });
 
 app.get('/idLength', function (req, res) {
