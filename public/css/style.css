@@ -42,7 +42,7 @@ p {
   font-size: 14px;
 }
 
-.hide * {
+.hide, .hide * {
   visibility: hidden;
 }
 
@@ -172,12 +172,39 @@ li span:hover {
 Video
 ****************/
 
-video {
-  width: 200px;
-  visibility: hidden;
-  border-top: 8px solid;
-  border-right: 8px solid;
+.video-modal {
+  width: 250px;
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  right: 0;
+  /*visibility: hidden;*/
   border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-bar {
+  height: 36px;
+  border-top-right-radius: 6px;
+  border-top-left-radius: 6px;
+  width: 100%;
+  background-color: black;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 0 15px;
+}
+
+.exit, .minimize {
+  cursor: pointer;
+}
+
+video {
+  width: 100%;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
 video:hover {
