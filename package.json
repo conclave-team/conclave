@@ -7,7 +7,7 @@
     "test": "jasmine",
     "start": "node app.js",
     "build": "babel lib -d build",
-    "compile": "browserify build/main.js -o public/js/bundle.js && browserify build/demo.js -o public/js/demo-bundle.js && browserify build/idGraph.js -o public/js/idGraph-bundle.js && browserify build/timeGraph.js -o public/js/timeGraph-bundle.js",
+    "compile": "browserify build/main.js -o public/js/bundle.js && browserify build/demo.js -o public/js/demo-bundle.js && browserify build/idGraph.js -o public/js/idGraph-bundle.js && browserify build/timeGraph.js -o public/js/timeGraph-bundle.js && browserify build/arraysGraph.js -o public/js/arraysGraph-bundle.js",
     "postinstall": "npm run build && npm run compile",
     "local": "npm run build && npm run compile && npm start",
     "perform": "babel-node performance/script.js",

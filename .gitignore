@@ -3,6 +3,7 @@
 /public/js/demo-bundle.js
 /public/js/idGraph-bundle.js
 /public/js/timeGraph-bundle.js
+/public/js/arraysGraph-bundle.js
 /build
 debug.js
 .DS_Store

@@ -27,6 +27,10 @@ app.get('/opTime', function (req, res) {
   res.render('timeGraph');
 })
 
+app.get('/arraysGraph', function (req, res) {
+  res.render('arraysGraph');
+})
+
 var srv = app.listen(port, function() {
 	console.log('Listening on '+port)
 })
