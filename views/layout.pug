@@ -4,6 +4,7 @@ html(lang="en")
     title= title
     link(rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css")
     link(rel='stylesheet' href='css/style.css')
+    link(rel='shortcut icon' href='assets/img/shhh.ico' type='image/x-icon')
   body
     .navbar
       h1.logo Conclave
@@ -11,7 +12,6 @@ html(lang="en")
         block nav
     #conclave.hide
       .text-wrapper
-        p#peerId Peers:
         .editor
           .header
             p#ownName You are the
@@ -20,6 +20,7 @@ html(lang="en")
             input#file(type='file' accept='.txt, .js, .rb, .md')
           textarea(row='10' col='20')
           block link
+        p#peerId Peers:
       .video-modal.hide
         .video-bar
             i(data-feather="minus" class="minimize")
@@ -28,5 +29,5 @@ html(lang="en")
 
     script(src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js")
     script.
-      feather.replace({ color: 'white', 'stroke-width': 3 });
+      feather.replace({ 'stroke-width': 3 });
     block scripts

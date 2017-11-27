@@ -87,14 +87,10 @@ NavBar
   min-width: 710px;
 }
 
-.logo {
-  flex-grow: 1;
-}
-
 .nav-items {
-  flex-grow: 1;
+  flex-grow: .75;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-evenly;
 }
 
 /****************
@@ -107,7 +103,7 @@ Editor
 }
 
 .editor {
-  display:flex;
+  display: flex;
   flex-direction: column;
   overflow: hidden;
   max-width: 1250px;
@@ -140,6 +136,7 @@ Editor
 #peerId {
   min-width: 150px;
   flex-grow: 1;
+  margin: 50px 0 0 10px;
 }
 
 #peerId li {
@@ -166,10 +163,6 @@ label, button {
   background-color: white;
 }
 
-li {
-  list-style: none;
-}
-
 #file {
   width: 0.1px;
   height: 0.1px;
@@ -185,15 +178,6 @@ button:hover {
 
 li span:hover {
   cursor: pointer;
-}
-
-
-#newRoot, #newRoot2, #newRoot3, #newLink {
-  margin: 5px auto;
-  text-align: center;
-  font-size: 12px;
-  display: block;
-  visibility: hidden;
 }
 
 /****************
