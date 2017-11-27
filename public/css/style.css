@@ -59,15 +59,15 @@ NavBar
   justify-content: left;
   min-width: 710px;
 }
-
+/*
 .logo {
   flex-grow: 1;
 }
-
+*/
 .nav-items {
-  flex-grow: 1;
+  flex-grow: .75;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-evenly;
 }
 
 /****************
@@ -80,7 +80,7 @@ Editor
 }
 
 .editor {
-  display:flex;
+  display: flex;
   flex-direction: column;
   overflow: hidden;
   max-width: 1250px;
@@ -113,6 +113,7 @@ Editor
 #peerId {
   min-width: 120px;
   flex-grow: 1;
+  margin: 50px 0 0 10px;
 }
 
 #peerId li {
@@ -137,11 +138,11 @@ label, button {
   cursor: pointer;
   background-color: white;
 }
-
+/*
 li {
   list-style: none;
 }
-
+*/
 #file {
   width: 0.1px;
   height: 0.1px;
@@ -159,7 +160,7 @@ li span:hover {
   cursor: pointer;
 }
 
-
+/*
 #newRoot, #newRoot2, #newRoot3, #newLink {
   margin: 5px auto;
   text-align: center;
@@ -167,7 +168,7 @@ li span:hover {
   display: block;
   visibility: hidden;
 }
-
+*/
 /****************
 Video
 ****************/
