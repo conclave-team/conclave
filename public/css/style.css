@@ -111,13 +111,14 @@ Editor
 }
 
 #peerId {
-  min-width: 120px;
+  min-width: 150px;
   flex-grow: 1;
 }
 
 #peerId li {
   list-style-type: none;
   margin: 3px 3px 11px 0px;
+  font-size: 14px;
 }
 
 #peerId span {
@@ -258,36 +259,42 @@ Cursors
 Calling Peer
 ********************/
 
-.calling:after,
-.answered:after,
-.beingCalled:after {
-  content: '';
+.phone {
   display: inline-block;
+}
+
+.phone-in,
+.phone-out,
+.phone-call {
+  display: none;
+}
+
+.calling .phone,
+.beingCalled .phone,
+.answered .phone {
+  display: none;
+}
+
+.calling .phone-out {
+  display: inline-block;
+  animation: blinker 1s cubic-bezier(.5, 0, 1, 1) infinite alternate;
+}
+
+.beingCalled .phone-in {
+  display: inline-block;
+  animation: blinker 1s cubic-bezier(.5, 0, 1, 1) infinite alternate;
+}
+
+.answered .phone-call {
+  display: inline-block;
+}
+
+.phone,
+.phone-in,
+.phone-out,
+.phone-call {
   margin-left: 5px;
-  border-radius: 50%;
-  width: 6px;
-  height: 6px;
-  vertical-align: -1px;
-}
-
-.beingCalled:after {
-  border: 2px solid black;
-  animation: blinker 1s cubic-bezier(.5, 0, 1, 1) infinite alternate;
-}
-
-.calling:after {
-  background-color: black;
-  border: 2px solid black;
-  animation: blinker 1s cubic-bezier(.5, 0, 1, 1) infinite alternate;
-}
-
-.answered:after {
-  width: 16px;
-  height: 16px;
-  border-radius: 0;
-  vertical-align: -3px;
-  background-image: url("../assets/img/call.png");
-  background-repeat: no-repeat;
-  background-size: 16px;
-  background-position: 0;
+  height: 20px;
+  vertical-align: -5px;
+  cursor: pointer;
 }
