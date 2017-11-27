@@ -59,11 +59,7 @@ NavBar
   justify-content: left;
   min-width: 710px;
 }
-/*
-.logo {
-  flex-grow: 1;
-}
-*/
+
 .nav-items {
   flex-grow: .75;
   display: flex;
@@ -139,11 +135,7 @@ label, button {
   cursor: pointer;
   background-color: white;
 }
-/*
-li {
-  list-style: none;
-}
-*/
+
 #file {
   width: 0.1px;
   height: 0.1px;
@@ -161,15 +153,6 @@ li span:hover {
   cursor: pointer;
 }
 
-/*
-#newRoot, #newRoot2, #newRoot3, #newLink {
-  margin: 5px auto;
-  text-align: center;
-  font-size: 12px;
-  display: block;
-  visibility: hidden;
-}
-*/
 /****************
 Video
 ****************/
