@@ -1,4 +1,10 @@
-extends layout.pug  
+extends layout.pug
+
+block nav
+  .home.selected
+    a(href='/') Home
+  .about
+    a(href='/about') About
 
 block link
   p Sharing Link:

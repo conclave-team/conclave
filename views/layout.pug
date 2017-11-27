@@ -6,10 +6,9 @@ html(lang="en")
     link(rel='stylesheet' href='css/style.css')
   body
     .navbar
-      h1.logo= title
+      h1.logo Conclave
       .nav-items
-        a.home(href='/') Home
-        a.about(href='/about') About
+        block nav
     #conclave.hide
       .text-wrapper
         p#peerId Peers:

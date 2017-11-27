@@ -1,5 +1,11 @@
 extends layout.pug
 
+block nav
+  .home
+    a(href='/') Home
+  .about.selected
+    a(href='/about') About
+
 block link
   p.disappear Sharing Link:
     a(id='myLink' target="_blank")
