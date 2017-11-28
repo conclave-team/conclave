@@ -33,10 +33,9 @@ body {
 }
 
 h1 {
-  margin: 0;
+  margin: 0 0 0 10px;
   padding-bottom: 20px;
   font-family: "InputMedium";
-  margin-bottom: 0;
 }
 
 p {
@@ -237,7 +236,7 @@ CodeMirror
   box-shadow: 0 2px 20px -2px rgba(17, 117, 232, 0.15);
   clear: both;
   padding: 0;
-  height: 400px;
+  height: 560px;
   width: 100%;
 }
 
