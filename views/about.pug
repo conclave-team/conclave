@@ -2,13 +2,13 @@ extends layout.pug
 
 block nav
   .home
-    a(href='/') Home
+    a.link(href='/') Home
   .about.selected
-    a(href='/about') About
+    a.link(href='/about') About
 
 block link
   p.disappear Sharing Link:
-    a(id='myLink' target="_blank")
+    a.link(id='myLink' target="_blank")
 
 block scripts
   script(src='js/demo-bundle.js')

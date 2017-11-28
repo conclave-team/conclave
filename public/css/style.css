@@ -44,11 +44,15 @@ p {
 
 a {
   text-decoration: none;
+  color: black;
+}
+
+a.link {
   color: rgb(17, 117, 232);
   position: relative;
 }
 
-a:before {
+a.link:before {
   content: "";
   position: absolute;
   width: 100%;
@@ -63,7 +67,7 @@ a:before {
   transition: all 0.3s ease-in-out 0s;
 }
 
-a:hover:before, .selected a:before {
+a.link:hover:before, .selected a.link:before {
   visibility: visible;
   -webkit-transform: scaleX(1);
   transform: scaleX(1);
