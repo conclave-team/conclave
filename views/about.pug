@@ -2,10 +2,13 @@ extends layout.pug
 
 block nav
   .home
-    a.link(href='/') Home
+    a.link(href='/') New Document
   .about.selected
     a.link(href='/about') About
-
+  .team
+    a.link(href='https://super-nes.github.io/conclave-site/team/' target="_blank") Our Team
+  .github
+    a.link(href='https://github.com/Super-NES/conclave' target="_blank") GitHub
 block link
   p.disappear Sharing Link:
     a.link(id='myLink' target="_blank")
