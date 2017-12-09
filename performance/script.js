@@ -50,6 +50,7 @@ ${Util.addRowWithId(100, crdt2, Util.insertRandom)}
 ${Util.addRowWithId(1000, crdt3, Util.insertRandom)}
 ${Util.addRowWithId(10000, crdt4, Util.insertRandom)}
 ${Util.addRowWithId(100000, crdt5, Util.insertRandom)}
+${Util.addRowWithId(1000000, crdt6, Util.insertRandom)}
 
 
 # LOCAL DELETIONS
@@ -62,6 +63,7 @@ ${Util.addRow(100, crdt2, Util.deleteRandom)}
 ${Util.addRow(1000, crdt3, Util.deleteRandom)}
 ${Util.addRow(10000, crdt4, Util.deleteRandom)}
 ${Util.addRow(100000, crdt5, Util.deleteRandom)}
+${Util.addRow(1000000, crdt6, Util.deleteRandom)}
 
 
 # REMOTE INSERTIONS
