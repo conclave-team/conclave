@@ -1,4 +1,4 @@
-![Conclave Logo](/public/assets/img/conclave-mask-300.jpg)
+![Conclave Logo](/public/assets/img/conclave-mask-small.jpg)
 
 # Conclave: Collaborate in private
 
