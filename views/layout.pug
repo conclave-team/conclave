@@ -16,12 +16,11 @@ html(lang="en")
       .text-wrapper
         .editor
           .header
-            p#ownName You are the
+            block link
             button#download(type='button') Save
             label#upload(for='file') Upload
             input#file(type='file' accept='.txt, .js, .rb, .md')
           textarea(row='10' col='20')
-          block link
         p#peerId Peers:
       .video-modal.hide
         .video-bar
