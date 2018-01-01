@@ -399,7 +399,7 @@ describe("CRDT", () => {
       crdt.handleRemoteInsert(char1);
       crdt.handleRemoteInsert(char3);
       const index = crdt.findIndexInLine(char2, line1);
-      expect(index).toBe(1);
+      expect(index).toBeFalsy();
     });
   });
 });

@@ -28,12 +28,38 @@ describe("Controller", () => {
     replaceText: function() {},
     insertText: function() {},
     deleteText: function() {},
-    removeCursor: function() {}
+    removeCursor: function() {},
+    bindButtons: function() {}
   };
 
   const host = "https://localhost:3000";
   const siteId = UUID();
   const targetPeerId = UUID();
+
+  describe('attachEvents', () => {
+
+  });
+  // attachEvents(doc=document, win=window) {
+  //   let xPos = 0;
+  //   let yPos = 0;
+  //   const modal = doc.querySelector('.video-modal');
+  //   const dragModal = e => {
+  //     xPos = e.clientX - modal.offsetLeft;
+  //     yPos = e.clientY - modal.offsetTop;
+  //     win.addEventListener('mousemove', modalMove, true);
+  //   }
+  //   const setModal = () => { win.removeEventListener('mousemove', modalMove, true); }
+  //   const modalMove = e => {
+  //     modal.style.position = 'absolute';
+  //     modal.style.top = (e.clientY - yPos) + 'px';
+  //     modal.style.left = (e.clientX - xPos) + 'px';
+  //   };
+  //
+  //   doc.querySelector('.video-modal').addEventListener('mousedown', dragModal, false);
+  //   win.addEventListener('mouseup', setModal, false);
+  //
+  //   this.bindCopyEvent();
+  // }
 
   describe("updateShareLink", () => {
     let controller, mockDoc, link;
@@ -62,6 +88,18 @@ describe("Controller", () => {
       const href = mockDoc.querySelector("#myLink").getAttribute('href');
       expect(href).toEqual(host+"/?id=" + targetPeerId);
     });
+  });
+
+  describe('updatePageURL', () => {
+
+  });
+
+  describe('updateRootUrl', () => {
+
+  });
+
+  describe('enableEditor', () => {
+
   });
 
   describe("populateCRDT", () => {
@@ -194,6 +232,10 @@ describe("Controller", () => {
     });
   });
 
+  describe('makeOwnName', () => {
+
+  });
+
   describe("addToListOfPeers", () => {
     let controller, mockDoc, connList;
 
@@ -208,6 +250,46 @@ describe("Controller", () => {
       const updatedConnList = mockDoc.querySelector("#peerId").textContent;
       expect(connList).not.toEqual(updatedConnList);
     });
+  });
+
+  describe('getPeerElemById', () => {
+
+  });
+
+  describe('beingCalled', () => {
+
+  });
+
+  describe('getPeerFlagById', () => {
+
+  });
+
+  describe('addBeingCalledClass', () => {
+
+  });
+
+  describe('addCallingClass', () => {
+
+  });
+
+  describe('streamVideo', () => {
+
+  });
+
+  describe('bindVideoEvents', () => {
+
+  });
+
+  describe('answerCall', () => {
+
+  });
+
+  describe('closeVideo', () => {
+
+  });
+
+  describe('attachVideoEvent', () => {
+
   });
 
   describe("removeFromListOfPeers", () => {
@@ -310,6 +392,10 @@ describe("Controller", () => {
       expect(controller.addToNetwork).toHaveBeenCalledWith('2', '4', mockDoc);
       expect(controller.addToNetwork).toHaveBeenCalledWith('3', '5', mockDoc);
     });
+  });
+
+  describe('syncCompleted', () => {
+
   });
 
   describe("handleRemoteOperation", () => {
@@ -583,8 +669,6 @@ describe("Controller", () => {
     });
   });
 
-
-// Didn't flush out these 2 tests since they'll be changing a lot with array of arrays
   describe("insertIntoEditor", () => {
     let controller;
 

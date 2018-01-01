@@ -11,8 +11,17 @@ describe('Broadcast', () => {
       connect: function(id) { return { open: false, id: id, on: function() {} } },
       call: function() {}
     },
+    crdt: {
+      struct: []
+    },
+    vector: {
+      versions: []
+    },
     addToNetwork: function() {},
-    removeFromNetwork: function() {}
+    removeFromNetwork: function() {},
+    updateRootUrl: function() {},
+    closeVideo: function() {},
+    answerCall: function() {}
   };
 
   const targetId = UUID();
@@ -69,7 +78,8 @@ describe('Broadcast', () => {
     const bc = new Broadcast(12345);
     bc.outgoingBuffer = [
       0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4,
-      5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+      5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9
     ];
     bc.addToOutgoingBuffer(5);
 
@@ -97,6 +107,7 @@ describe('Broadcast', () => {
   describe('bindServerEvents', () => {
     const broadcast = new Broadcast(12345);
     broadcast.controller = mockController;
+    broadcast.startPeerHeartBeat = function(peer) {};
 
     it("set this.peer to the peer passed in from the controller", () => {
       expect(broadcast.peer).toBeNull();
@@ -108,6 +119,22 @@ describe('Broadcast', () => {
       spyOn(broadcast, "onOpen");
       broadcast.bindServerEvents(targetId, mockController.peer);
       expect(broadcast.onOpen).toHaveBeenCalledWith(targetId);
+    });
+  });
+
+  describe('startPeerHeartBeat', () => {
+    const bc = new Broadcast(12345);
+    const peer = {
+      socket: {
+        _wsOpen: function() {},
+        send: function() {}
+      }
+    };
+
+    it('returns start and stop methods', () => {
+      const returnVal = bc.startPeerHeartBeat(peer);
+      expect(Object.keys(returnVal)).toContain('start');
+      expect(Object.keys(returnVal)).toContain('stop');
     });
   });
 
@@ -135,17 +162,24 @@ describe('Broadcast', () => {
     });
   });
 
+  describe('onDisconnect', () => {
+    const bc = new Broadcast(12345);
+    bc.peer = {
+      on: function() {}
+    };
+
+    it('calls on on this.peer', () => {
+      spyOn(bc.peer, 'on');
+      bc.onDisconnect();
+      expect(bc.peer.on).toHaveBeenCalled();
+    });
+  });
+
   describe('requestConnection', () => {
     const broadcast = new Broadcast(12345);
     broadcast.controller = mockController;
     broadcast.peer = mockController.peer;
     broadcast.isAlreadyConnectedOut = function() {};
-
-    // it('connects the peer to the target', () => {
-    //   spyOn(broadcast.peer, 'connect');
-    //   broadcast.requestConnection(12);
-    //   expect(broadcast.peer.connect).toHaveBeenCalled();
-    // });
 
     it('calls add the connection to the outgoing connections', () => {
       spyOn(broadcast, 'addToOutConns');
@@ -154,60 +188,68 @@ describe('Broadcast', () => {
     });
   });
 
-  describe('redistribute', () => {
-    it('calls syncTo with the peerId and siteId if less than 5 connections', () => {
-      const bc = new Broadcast(12345);
-      bc.controller = mockController;
-      bc.controller.network = [1, 2, 3, 4, 5];
-      bc.inConns = [1, 2, 3, 4];
-      bc.outConns = [1, 2, 3, 4];
-      spyOn(bc, 'syncTo');
-      bc.redistribute(1, 2);
-      expect(bc.syncTo).toHaveBeenCalledWith(1, 2);
+  describe('evaluateRequest', () => {
+    const bc = new Broadcast(12345);
+    const peerId = '123';
+    const siteId = 'abc';
+
+    it('forwards the connection request if max has been reached', () => {
+      bc.hasReachedMax = function() { return true };
+      spyOn(bc, 'forwardConnRequest');
+      bc.evaluateRequest(peerId, siteId);
+      expect(bc.forwardConnRequest).toHaveBeenCalledWith(peerId, siteId);
     });
 
-    it('calls forward message with the peerId and siteId if too many incoming connections', () => {
-      const bc = new Broadcast(12345);
-      bc.controller = mockController;
-      bc.controller.network = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-      bc.inConns = [1, 2, 3, 4, 5, 6];
-      bc.outConns = [1, 2, 3, 4];
-      spyOn(bc, 'forwardMessage');
-      bc.redistribute(1, 2);
-      expect(bc.forwardMessage).toHaveBeenCalledWith(1, 2);
-    });
-
-    it('calls forward message with the peerId and siteId if too many outgoing connections', () => {
-      const bc = new Broadcast(12345);
-      bc.controller = mockController;
-      bc.controller.network = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-      bc.inConns = [1, 2, 3, 4];
-      bc.outConns = [1, 2, 3, 4, 5, 6];
-      spyOn(bc, 'forwardMessage');
-      bc.redistribute(1, 2);
-      expect(bc.forwardMessage).toHaveBeenCalledWith(1, 2);
-    });
-
-    it('calls syncTo with the peerId and siteId otherwise', () => {
-      const bc = new Broadcast(12345);
-      bc.controller = mockController;
-      bc.controller.network = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-      bc.inConns = [1, 2, 3, 4, 5];
-      bc.outConns = [1, 2, 3, 4, 5];
-      spyOn(bc, 'syncTo');
-      bc.redistribute(1, 2);
-      expect(bc.syncTo).toHaveBeenCalledWith(1, 2);
+    it('accepts the connection request otherwise', () => {
+      bc.hasReachedMax = function() { return false };
+      spyOn(bc, 'acceptConnRequest');
+      bc.evaluateRequest(peerId, siteId);
+      expect(bc.acceptConnRequest).toHaveBeenCalledWith(peerId, siteId);
     });
   });
 
-  describe('forwardMessage', () => {
-    const bc = new Broadcast(123);
-    bc.outConns = [{peer: 6, send: function() {}}];
+  describe('hasReachedMax', () => {
+    const bc = new Broadcast(12345);
+    bc.controller = mockController;
 
-    it('calls send on one of its outgoing connections', () => {
-      spyOn(bc.outConns[0], 'send');
-      bc.forwardMessage(1, 2);
-      expect(bc.outConns[0].send).toHaveBeenCalled();
+    it('returns true if incoming connections more than half the network', () => {
+      bc.controller.network = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+      bc.inConns = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      bc.outConns = [];
+      const returnVal = bc.hasReachedMax();
+      expect(returnVal).toBeTruthy();
+    });
+
+    it('returns true if outgoing connections more than half the network', () => {
+      bc.controller.network = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+      bc.outConns = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      bc.inConns = [];
+      const returnVal = bc.hasReachedMax();
+      expect(returnVal).toBeTruthy();
+    });
+
+    it('returns false if less than 5 incoming and outgoing connections', () => {
+      bc.controller.network = [1, 2, 3, 4, 5];
+      bc.inConns = [1];
+      bc.outConns = [1];
+      const returnVal = bc.hasReachedMax();
+      expect(returnVal).toBeFalsy();
+    });
+  });
+
+  describe('forwardConnRequest', () => {
+    const bc = new Broadcast(12345);
+    const peerId = 'a1b2';
+    const peer = {
+      peer: 'abc',
+      send: function() {}
+    };
+    bc.outConns.push(peer);
+
+    it('calls the send method on a randomly selected outgoing connection', () => {
+      spyOn(peer, 'send');
+      bc.forwardConnRequest(peerId, '123');
+      expect(peer.send).toHaveBeenCalled();
     });
   });
 
@@ -353,30 +395,23 @@ describe('Broadcast', () => {
     });
   });
 
-  describe('syncTo', () => {
-    const bc = new Broadcast(123);
+  describe('acceptConnRequest', () => {
+    const bc = new Broadcast(12345);
     bc.controller = mockController;
-    bc.peer = mockController.peer;
-    bc.controller.crdt = { struct: [] };
-    bc.controller.vector = { versions: []};
-    bc.isAlreadyConnectedOut = function() {};
+    bc.peer = {
+      connect: function(id) { return { id: id, on: function() {} } }
+    };
 
-    // it('calls connect with the peerId passed in on this.peer', () => {
-    //   spyOn(bc.peer, 'connect');
-    //   bc.syncTo(1, 2);
-    //   expect(bc.peer.connect).toHaveBeenCalledWith(1);
-    // });
-
-    it('calls addToOutConns', () => {
+    it('calls addToOutConns with the connection back', () => {
       spyOn(bc, 'addToOutConns');
-      bc.syncTo(1, 2);
+      bc.acceptConnRequest('abc', '123');
       expect(bc.addToOutConns).toHaveBeenCalled();
     });
 
-    it('calls controller addToNetwork with the peerId and siteId passed in', () => {
+    it('calls controller.addToNetwork with the peer and site ids passed in', () => {
       spyOn(bc.controller, 'addToNetwork');
-      bc.syncTo(1, 2);
-      expect(bc.controller.addToNetwork).toHaveBeenCalledWith(1, 2);
+      bc.acceptConnRequest('abc', '123');
+      expect(bc.controller.addToNetwork).toHaveBeenCalledWith('abc', '123');
     });
   });
 
@@ -384,12 +419,6 @@ describe('Broadcast', () => {
     const bc = new Broadcast(123);
     bc.controller = mockController;
     bc.peer = mockController.peer;
-
-    // it('calls the call method on this.peer with the id and ms passed in', () => {
-    //   spyOn(bc.peer, 'call');
-    //   bc.videoCall('id', 'ms', 'color');
-    //   expect(bc.peer.call).toHaveBeenCalledWith('id', 'ms');
-    // });
 
     it('calls onStream', () => {
       spyOn(bc, 'onStream');
@@ -400,6 +429,7 @@ describe('Broadcast', () => {
 
   describe('onConnection', () => {
     const broadcast = new Broadcast(12345);
+    broadcast.controller = mockController;
 
     const conn = {
       peer: "somebody",
@@ -425,6 +455,25 @@ describe('Broadcast', () => {
     });
   });
 
+  describe('answerCall', () => {
+    const bc = new Broadcast(12345);
+    bc.controller = mockController;
+
+    it('answers, calls controller.answerCall, and calls onStream when no current stream', () => {
+      const obj = {
+        peer: '123',
+        answer: function() {}
+      };
+      spyOn(obj, 'answer');
+      spyOn(bc.controller, 'answerCall');
+      spyOn(bc, 'onStream');
+      bc.answerCall(obj, 'ms');
+      expect(obj.answer).toHaveBeenCalledWith('ms');
+      expect(bc.controller.answerCall).toHaveBeenCalledWith('123');
+      expect(bc.onStream).toHaveBeenCalledWith(obj);
+    });
+  });
+
   describe('onStream', () => {
     const bc = new Broadcast(123);
     const obj = { on: function() {} };
@@ -438,9 +487,11 @@ describe('Broadcast', () => {
 
   describe('onStreamClose', () => {
     const bc = new Broadcast(123);
-    const vid = {style: { visibility: 'visible' } };
-    const dom = new JSDOM(`<!DOCTYPE html><li id="7"><span id="test"></a>`);
-    const mockDoc = dom.window.document;
+    bc.controller = mockController;
+    // const vid = {style: { visibility: 'visible' } };
+    // const dom = new JSDOM(`<!DOCTYPE html><li id="7"><span id="test"></a>`);
+    // const mockDoc = dom.window.document;
+    const peerId = 'a1b2';
 
     beforeEach(() => {
       bc.currentStream = {
@@ -450,20 +501,26 @@ describe('Broadcast', () => {
       }
     });
 
-    it('sets the visibility property on the vid element passed in to hidden', () => {
-      bc.onStreamClose(vid, 7, mockDoc);
-      expect(vid.style.visibility).toEqual('hidden');
+    it('calls controller.closeVideo with the peer id passed in', () => {
+      spyOn(bc.controller, 'closeVideo');
+      bc.onStreamClose(peerId);
+      expect(bc.controller.closeVideo).toHaveBeenCalledWith(peerId);
     });
 
-    it('sets the current stream to null', () => {
-      bc.onStreamClose(vid, 7, mockDoc);
-      expect(bc.currentStream).toBeNull();
-    })
-
-    it('sets the onclick property on the correct peer span', () => {
-      bc.onStreamClose(vid, 7, mockDoc);
-      expect(mockDoc.getElementById('test').onclick).toBeTruthy();
-    });
+    // it('sets the visibility property on the vid element passed in to hidden', () => {
+    //   bc.onStreamClose(vid, 7, mockDoc);
+    //   expect(vid.style.visibility).toEqual('hidden');
+    // });
+    //
+    // it('sets the current stream to null', () => {
+    //   bc.onStreamClose(vid, 7, mockDoc);
+    //   expect(bc.currentStream).toBeNull();
+    // })
+    //
+    // it('sets the onclick property on the correct peer span', () => {
+    //   bc.onStreamClose(vid, 7, mockDoc);
+    //   expect(mockDoc.getElementById('test').onclick).toBeTruthy();
+    // });
   });
 
   describe('onData', () => {
@@ -514,4 +571,88 @@ describe('Broadcast', () => {
       expect(conn.on).toHaveBeenCalled();
     });
   });
+
+  // describe('redistribute', () => {
+  //   it('calls syncTo with the peerId and siteId if less than 5 connections', () => {
+  //     const bc = new Broadcast(12345);
+  //     bc.controller = mockController;
+  //     bc.controller.network = [1, 2, 3, 4, 5];
+  //     bc.inConns = [1, 2, 3, 4];
+  //     bc.outConns = [1, 2, 3, 4];
+  //     spyOn(bc, 'syncTo');
+  //     bc.redistribute(1, 2);
+  //     expect(bc.syncTo).toHaveBeenCalledWith(1, 2);
+  //   });
+  //
+  //   it('calls forward message with the peerId and siteId if too many incoming connections', () => {
+  //     const bc = new Broadcast(12345);
+  //     bc.controller = mockController;
+  //     bc.controller.network = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  //     bc.inConns = [1, 2, 3, 4, 5, 6];
+  //     bc.outConns = [1, 2, 3, 4];
+  //     spyOn(bc, 'forwardMessage');
+  //     bc.redistribute(1, 2);
+  //     expect(bc.forwardMessage).toHaveBeenCalledWith(1, 2);
+  //   });
+  //
+  //   it('calls forward message with the peerId and siteId if too many outgoing connections', () => {
+  //     const bc = new Broadcast(12345);
+  //     bc.controller = mockController;
+  //     bc.controller.network = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  //     bc.inConns = [1, 2, 3, 4];
+  //     bc.outConns = [1, 2, 3, 4, 5, 6];
+  //     spyOn(bc, 'forwardMessage');
+  //     bc.redistribute(1, 2);
+  //     expect(bc.forwardMessage).toHaveBeenCalledWith(1, 2);
+  //   });
+  //
+  //   it('calls syncTo with the peerId and siteId otherwise', () => {
+  //     const bc = new Broadcast(12345);
+  //     bc.controller = mockController;
+  //     bc.controller.network = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+  //     bc.inConns = [1, 2, 3, 4, 5];
+  //     bc.outConns = [1, 2, 3, 4, 5];
+  //     spyOn(bc, 'syncTo');
+  //     bc.redistribute(1, 2);
+  //     expect(bc.syncTo).toHaveBeenCalledWith(1, 2);
+  //   });
+  // });
+  //
+  // describe('forwardMessage', () => {
+  //   const bc = new Broadcast(123);
+  //   bc.outConns = [{peer: 6, send: function() {}}];
+  //
+  //   it('calls send on one of its outgoing connections', () => {
+  //     spyOn(bc.outConns[0], 'send');
+  //     bc.forwardMessage(1, 2);
+  //     expect(bc.outConns[0].send).toHaveBeenCalled();
+  //   });
+  // });
+
+  // describe('syncTo', () => {
+  //   const bc = new Broadcast(123);
+  //   bc.controller = mockController;
+  //   bc.peer = mockController.peer;
+  //   bc.controller.crdt = { struct: [] };
+  //   bc.controller.vector = { versions: []};
+  //   bc.isAlreadyConnectedOut = function() {};
+  //
+  //   // it('calls connect with the peerId passed in on this.peer', () => {
+  //   //   spyOn(bc.peer, 'connect');
+  //   //   bc.syncTo(1, 2);
+  //   //   expect(bc.peer.connect).toHaveBeenCalledWith(1);
+  //   // });
+  //
+  //   it('calls addToOutConns', () => {
+  //     spyOn(bc, 'addToOutConns');
+  //     bc.syncTo(1, 2);
+  //     expect(bc.addToOutConns).toHaveBeenCalled();
+  //   });
+  //
+  //   it('calls controller addToNetwork with the peerId and siteId passed in', () => {
+  //     spyOn(bc.controller, 'addToNetwork');
+  //     bc.syncTo(1, 2);
+  //     expect(bc.controller.addToNetwork).toHaveBeenCalledWith(1, 2);
+  //   });
+  // });
 });
