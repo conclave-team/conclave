@@ -10,13 +10,12 @@ block nav
   .github
     a.link(href='https://github.com/conclave-team/conclave' target="_blank") Fork on GitHub
 block link
-  block link
-    p.sharing-link.disappear
-      a.link(id='myLink' target="_blank") Sharing Link
-      span(id="myLinkInput" class="aside disappear")
-      span(class="copy-container" data-tooltip="Copy to Clipboard")
-        i(data-feather="copy" class="copy-link" color="rgb(17, 117, 232)")
-      span(class="copy-status") Copied!
+  p.sharing-link.disappear
+    a.link(id='myLink' target="_blank") Sharing Link
+    span(id="myLinkInput" class="aside disappear")
+    span(class="copy-container" data-tooltip="Copy to Clipboard")
+      i(data-feather="copy" class="copy-link" color="rgb(17, 117, 232)")
+    span(class="copy-status") Copied!
 
 block scripts
   script(src='js/demo-bundle.js')
