@@ -4,7 +4,7 @@ import Controller from '../lib/controller';
 import Char from '../lib/char';
 import Identifier from '../lib/identifier';
 
-describe("Controller", () => {
+fdescribe("Controller", () => {
   const mockPeer = {
     id: 8,
     on: function() {},
@@ -37,65 +37,87 @@ describe("Controller", () => {
   const targetPeerId = UUID();
 
   describe('attachEvents', () => {
+    const mockWin = new JSDOM(`<!DOCTYPE html><p id="peerId"><p class="copy-container"></p><p class='video-modal'></p>`).window;
+    const mockDoc = mockWin.document;
+    const controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor, mockDoc, mockWin);
 
+    it('calls bindCopyEvent', () => {
+      spyOn(controller, 'bindCopyEvent');
+      controller.attachEvents(mockDoc, mockWin);
+      expect(controller.bindCopyEvent).toHaveBeenCalled();
+    });
   });
-  // attachEvents(doc=document, win=window) {
-  //   let xPos = 0;
-  //   let yPos = 0;
-  //   const modal = doc.querySelector('.video-modal');
-  //   const dragModal = e => {
-  //     xPos = e.clientX - modal.offsetLeft;
-  //     yPos = e.clientY - modal.offsetTop;
-  //     win.addEventListener('mousemove', modalMove, true);
-  //   }
-  //   const setModal = () => { win.removeEventListener('mousemove', modalMove, true); }
-  //   const modalMove = e => {
-  //     modal.style.position = 'absolute';
-  //     modal.style.top = (e.clientY - yPos) + 'px';
-  //     modal.style.left = (e.clientX - xPos) + 'px';
-  //   };
-  //
-  //   doc.querySelector('.video-modal').addEventListener('mousedown', dragModal, false);
-  //   win.addEventListener('mouseup', setModal, false);
-  //
-  //   this.bindCopyEvent();
-  // }
 
   describe("updateShareLink", () => {
-    let controller, mockDoc, link;
+    let controller, mockDoc, mockWin, link;
 
     beforeEach(() => {
-      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor);
-      mockDoc = new JSDOM(`<!DOCTYPE html><a id="myLink"></a>`).window.document;
+      mockWin = new JSDOM(`<!DOCTYPE html>
+        <a id="myLink"></a>
+        <p id='myLinkInput'></p>
+        <p id="peerId"></p>
+        <p class="copy-container"></p>
+        <p class='video-modal'></p>`).window;
+      mockDoc = mockWin.document;
+      controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor, mockDoc, mockWin);
       link = mockDoc.querySelector("#myLink").textContent;
-    })
-
-    it("changes the link value", () => {
-      controller.updateShareLink(targetPeerId, mockDoc);
-      const updatedLink = mockDoc.querySelector("#myLink").textContent;
-
-      expect(link).not.toEqual(updatedLink);
     });
 
-    it("sets the link's text content", () => {
+    it("sets the link input's text content", () => {
       controller.updateShareLink(targetPeerId, mockDoc);
-      const updatedLink = mockDoc.querySelector("#myLink").textContent;
-      expect(updatedLink).toEqual(host+"/?id=" + targetPeerId);
+      const updatedLink = mockDoc.querySelector("#myLinkInput").textContent;
+      expect(updatedLink).toEqual(host+"?" + targetPeerId);
     });
 
     it("sets the link's href attribute", () => {
       controller.updateShareLink(targetPeerId, mockDoc);
       const href = mockDoc.querySelector("#myLink").getAttribute('href');
-      expect(href).toEqual(host+"/?id=" + targetPeerId);
+      expect(href).toEqual(host+"?" + targetPeerId);
     });
   });
 
   describe('updatePageURL', () => {
+    const mockWin = new JSDOM(`<!DOCTYPE html><p id="peerId"></p><p class='video-modal'></p><p class="copy-container"></p>`).window;
+    mockWin.history.pushState = function(one, two, three) {};
+    const controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor, mockWin.document, mockWin);
 
+    it('sets its urlId', () => {
+      expect(controller.urlId).toEqual(targetPeerId);
+      controller.updatePageURL(12345, mockWin);
+      expect(controller.urlId).toEqual(12345);
+    });
+
+    it('creates a new URL from the id passed in', () => {
+      spyOn(mockWin.history, 'pushState');
+      controller.updatePageURL(12345, mockWin);
+      expect(mockWin.history.pushState).toHaveBeenCalledWith({}, '', host + '?12345');
+    });
+
+    it('redirects the window to the new url', () => {
+      spyOn(mockWin.history, 'pushState');
+      controller.updatePageURL(12345, mockWin);
+      expect(mockWin.history.pushState).toHaveBeenCalled();
+    });
   });
 
-  describe('updateRootUrl', () => {
+  fdescribe('updateRootUrl', () => {
+    const mockWin = new JSDOM(`<!DOCTYPE html><p id="peerId"></p><p class='video-modal'></p><p class="copy-container"></p>`).window;
+    mockWin.history.pushState = function(one, two, three) {};
+    const controller = new Controller(targetPeerId, host, mockPeer, mockBroadcast, mockEditor, mockWin.document, mockWin);
 
+    it('calls updatePageURL with the id passed in if urlId is 0', () => {
+      spyOn(controller, 'updatePageURL');
+      controller.urlId = 0;
+      controller.updateRootUrl(123);
+      expect(controller.updatePageURL).toHaveBeenCalledWith(123);
+    });
+
+    it('does not call updatePageURL otherwise', () => {
+      spyOn(controller, 'updatePageURL');
+      controller.urlId = 12345
+      controller.updateRootUrl(123);
+      expect(controller.updatePageURL).not.toHaveBeenCalled();
+    });
   });
 
   describe('enableEditor', () => {
