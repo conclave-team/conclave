@@ -426,7 +426,7 @@ ToolTip
   display: none;
   color: rgb(17, 117, 232);
   position: absolute;
-  top: 30%;
+  top: 20%;
   left: 50%;
   transform: translate(-50%);
   z-index: 1000;
@@ -438,7 +438,7 @@ ToolTip
 }
 
 .sk-fading-circle {
-  margin: 100px auto;
+  margin: 50px auto 100px auto;
   width: 40px;
   height: 40px;
   position: relative;
