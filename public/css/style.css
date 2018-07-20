@@ -197,9 +197,11 @@ button:hover {
   cursor: pointer;
 }
 
-li span:hover {
+
+/* COMMENTED OUT: Phone icons have been removed so removing pointer cursor */
+/* li span:hover {
   cursor: pointer;
-}
+} */
 
 /****************
 Video
