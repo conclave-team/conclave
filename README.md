@@ -2,6 +2,12 @@
 
 # Conclave: Collaborate in private
 
+# No Longer Maintained
+
+Conclave was made for fun and educational purposes but it is no longer actively maintained. The creators have since moved onto other projects and work. It will remain open so that developers can ask questions and fork it. The demo at [https://conclave.tech](https://conclave.tech) will also stay up. However, no feature requests will not be worked on by the creators at this time.
+
+Thanks again to all the developers who found this project interesting. Feel free ask questions to learn more about how it works and its internals. Hopefully you will venture off and create your own version of Conclave as well.
+
 ## Summary
 
 Conclave is an open-source, real-time, collaborative text editor for the browser built from scratch in JavaScript.
