@@ -15,3 +15,27 @@ Conclave is an open-source, real-time, collaborative text editor for the browser
 Intrigued by collaboration tools like Google Docs, we set out to build one from scratch. Conclave uses **Conflict-Free Replicated Data Types** (CRDT) to make sure all users stay in-sync and **WebRTC** to allow users to send messages directly to one another. The result is a private and decentralized way to collaborate on documents.
 
 For more details on how we designed and built Conclave, read our [case study](https://conclave-team.github.io/conclave-site/).
+
+# How to Run Locally
+
+You will need node and npm. First download the dependencies.
+
+```
+npm install
+```
+
+Next, you will need to build and compile the assets and start the server. You can do that all in an npm command.
+
+```
+npm run local
+```
+
+We've added a Makefile and Dockerfile to make this easier. I highly recommend using them.
+
+Simply run:
+
+```
+make run-local
+```
+
+And you will be good to go.
