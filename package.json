@@ -31,7 +31,7 @@
     "browserify": "^16.2.3",
     "express": "^4.16.2",
     "feather-icons": "^4.0.0",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "peer": "^0.2.10",
     "peerjs": "^0.3.14",
     "pug": "^2.0.3",
