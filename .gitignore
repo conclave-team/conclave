@@ -1,9 +1,5 @@
 /node_modules
-/public/js/bundle.js
-/public/js/demo-bundle.js
-/public/js/idGraph-bundle.js
-/public/js/timeGraph-bundle.js
-/public/js/arraysGraph-bundle.js
+/public/js
 /build
 debug.js
 .DS_Store

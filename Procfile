@@ -1,1 +1,1 @@
-web: babel-node app.js
+web: npm run local
