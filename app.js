@@ -42,47 +42,10 @@ var srv = app.listen(port, function() {
 /***** PeerServer *****/
 
 app.use('/peerjs', require('peer').ExpressPeerServer(srv, {
+  port: 9000,
+  path: '/myapp',
 	debug: true
 }))
-
-/*******
-
-const { ExpressPeerServer } = require('peer');
-
-const server = app.listen(9000);
-
-const peerServer = ExpressPeerServer(server, {
-  path: '/myapp'
-});
-
-app.use('/peerjs', peerServer);
-
-/*******
-
-const { ExpressPeerServer } = require('peer');
-
-const peerjsPort = 9000
-const peerServer = ExpressPeerServer({port: peerjsPort, path: '/myapp'});
-
-app.listen(peerjsPort);
-app.use('/peerjs', peerServer);
-
-/*******
-
-const { ExpressPeerServer } = require('peer');
-const http = require('http');
-
-const server = http.createServer(app);
-const peerServer = ExpressPeerServer(server, {
-  debug: true,
-  path: '/myapp'
-});
-
-app.use('/peerjs', peerServer);
-
-server.listen(9000);
-
-*/
 
 /***** WebSocket Server *****/ 
 
