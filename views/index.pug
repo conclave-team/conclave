@@ -4,7 +4,7 @@ block nav
   .about
     a.link(href='/about' target="_blank") What is Conclave?
   .case-study
-    a.link(href='https://conclave-team.github.io/conclave-site/' target="_blank") Case Study
+    a.link(href='/peers' target="_self") Active Peers
   .team
     a.link(href='https://conclave-team.github.io/conclave-site/team/' target="_blank") Our Team
   .github
@@ -19,4 +19,8 @@ block link
     span(class="copy-status") Copied!
 
 block scripts
+  footer 
+    #displayName(placeholder='Start collaborating now')
+    #errorPrompt You can be discovered by everyone on this network
   script(src='js/main.js')
+  script(src='js/peerDiscovery.js')

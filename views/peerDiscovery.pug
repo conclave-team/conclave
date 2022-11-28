@@ -1,0 +1,37 @@
+doctype html
+html(lang="en")
+    head
+        title= title
+        link(rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css")
+        link(rel='stylesheet' href='css/style.css')
+        link(rel='stylesheet' href='css/style2.css')
+        link(rel='shortcut icon' href='assets/img/favicon.ico' type='image/x-icon')
+    body
+        .navbar
+            a(href='/' target="_blank")
+                h1.logo Conclave
+            .nav-items
+                .about
+                    a.link(href='/about' target="_blank") What is Conclave?
+                .case-study
+                    a.link(href='https://conclave-team.github.io/conclave-site/' target="_blank") Case Study
+                .team
+                    a.link(href='https://conclave-team.github.io/conclave-site/team/' target="_blank") Our Team
+                .github
+                    a.link(href='https://github.com/conclave-team/conclave' target="_blank") Fork on GitHub
+
+        h2 Open Conclave on other devices to start collaborating
+        x-peers.center
+        h2 
+            a(href='/' target="_self")
+                button#new New Document
+        x-instructions(desktop='Click to connect with another user')
+        // Icon
+        svg(style='display: none;')
+            symbol#user-pic(viewbox='0 0 24 24')
+                path(fill='none' d='M0 0h24v24H0z')
+                path(d='M20 22h-2v-2a3 3 0 0 0-3-3H9a3 3 0 0 0-3 3v2H4v-2a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v2zm-8-9a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8z')
+
+
+        script(src='js/peerDiscovery.js')
+        script(src='js/peersUI.js')
