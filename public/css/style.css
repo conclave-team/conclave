@@ -574,3 +574,16 @@ ToolTip
   0%, 39%, 100% { opacity: 0; }
   40% { opacity: 1; }
 }
+
+/* Footer */
+
+footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  align-items: center;
+  padding: 0 0 16px 0;
+  text-align: center;
+  color: rgb(17, 117, 232);
+}
