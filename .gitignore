@@ -1,4 +1,5 @@
 /node_modules
+/public/js/*.js
 /public/js/*.txt
 /build
 debug.js
