@@ -24,7 +24,7 @@
   "homepage": "https://github.com/Super-NES/conclave#readme",
   "dependencies": {
     "acorn": "^6.4.2",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "feather-icons": "^4.28.0",
     "jquery": "^3.6.0",
     "peer": "^0.6.1",
