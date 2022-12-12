@@ -7,45 +7,47 @@ app.use(express.static('public'));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
-app.get('/', function (req, res) {
+app.get('/', (req, res) => {
   res.render('index', {title: 'Conclave'});
 });
 
-app.get('/peers', function (req, res) {
+app.get('/peers', (req, res) => {
   res.render('peerDiscovery', {title: 'Active Peers'});
 });
 
-app.get('/about', function (req, res) {
+app.get('/about', (req, res) => {
   res.render('about', {title: 'About'});
 });
 
-app.get('/bots', function(req, res) {
+app.get('/bots', (req, res) => {
   res.render('bots', {title: 'Talk to Bots'});
 });
 
-app.get('/idLength', function (req, res) {
+app.get('/idLength', (req, res) => {
   res.render('idGraph');
 });
 
-app.get('/opTime', function (req, res) {
+app.get('/opTime', (req, res) => {
   res.render('timeGraph');
 })
 
-app.get('/arraysGraph', function (req, res) {
+app.get('/arraysGraph', (req, res) => {
   res.render('arraysGraph');
 })
 
-var srv = app.listen(port, function() {
-	console.log('Listening on '+port)
+var srv = app.listen(port, () => {
+	console.log('Listening on ', port)
 })
 
 /***** PeerServer *****/
 
-app.use('/peerjs', require('peer').ExpressPeerServer(srv, {
-  port: 9000,
-  path: '/myapp',
-	debug: true
-}))
+const { ExpressPeerServer } = require('peer');
+
+const peerServer = ExpressPeerServer(srv, {
+  debug: true
+});
+
+app.use('/peerjs', peerServer);
 
 /***** WebSocket Server *****/ 
 
